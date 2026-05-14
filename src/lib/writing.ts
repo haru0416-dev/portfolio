@@ -91,12 +91,13 @@ export async function fetchZennEntries(): Promise<WritingEntry[]> {
 
   for (const meta of github) {
     if (seen.has(meta.slug)) continue;
-    if (!meta.publishedAt) continue;
+    // published_at 省略時は build 時刻（=「今ちょうど公開された」扱い）で並ばせる
+    const pubDate = meta.publishedAt ?? new Date();
     out.push({
       title: meta.title,
       href: meta.href,
-      pubDate: meta.publishedAt,
-      year: String(meta.publishedAt.getUTCFullYear()),
+      pubDate,
+      year: String(pubDate.getUTCFullYear()),
       source: 'zenn',
       external: true,
     });
