@@ -285,6 +285,21 @@ footer {
   letter-spacing: 0.06em;
 }
 
+.not-found {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 0 0 2rem;
+}
+
+.not-found-back {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
 article.note .note-head {
   margin-bottom: 3rem;
 }
