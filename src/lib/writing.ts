@@ -1,7 +1,7 @@
 import { getCollection } from 'astro:content';
 import { XMLParser } from 'fast-xml-parser';
 
-export type WritingSource = 'zenn' | 'notes';
+export type WritingSource = 'zenn' | 'blog';
 
 export interface WritingEntry {
   title: string;
@@ -68,16 +68,18 @@ export async function fetchZennEntries(): Promise<WritingEntry[]> {
   }
 }
 
-export async function getNoteEntries(): Promise<WritingEntry[]> {
-  const notes = await getCollection('notes');
-  return notes.map((note) => ({
-    title: note.data.title,
-    href: `/notes/${note.id}`,
-    pubDate: note.data.date,
-    year: String(note.data.date.getUTCFullYear()),
-    source: 'notes' as const,
-    external: false,
-  }));
+export async function getBlogEntries(): Promise<WritingEntry[]> {
+  const blog = await getCollection('blog');
+  return blog
+    .filter((entry) => !entry.data.draft)
+    .map((entry) => ({
+      title: entry.data.title,
+      href: `/blog/${entry.id}`,
+      pubDate: entry.data.date,
+      year: String(entry.data.date.getUTCFullYear()),
+      source: 'blog' as const,
+      external: false,
+    }));
 }
 
 export function sortNewestFirst(entries: WritingEntry[]): WritingEntry[] {

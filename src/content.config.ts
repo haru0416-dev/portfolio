@@ -1,14 +1,15 @@
 import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { fetchBlogContent } from '@lib/blog';
 import { z } from 'astro/zod';
 
-const notes = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/notes' }),
+const blog = defineCollection({
+  loader: async () => fetchBlogContent(),
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
     description: z.string().optional(),
+    draft: z.boolean().default(false),
   }),
 });
 
-export const collections = { notes };
+export const collections = { blog };
