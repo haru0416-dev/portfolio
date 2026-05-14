@@ -14,7 +14,7 @@
 
   --measure: 38rem;
   --gap-y: 4rem;
-  --gap-y-tight: 1.4rem;
+  --touch: 44px;
 
   color-scheme: light dark;
 }
@@ -77,25 +77,44 @@ section.field {
   margin-top: var(--gap-y);
 }
 
-section.field > header {
+.field-label {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin: 0 0 1.5rem;
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
-section.field > header::before {
+.field-label::before {
   content: "";
   display: inline-block;
   width: 1.5rem;
   height: 1px;
   background: currentColor;
   transform: translateY(-0.25em);
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border: 0;
+  z-index: 100;
+}
+
+.skip:focus {
+  left: 0.5rem;
+  top: 0.5rem;
 }
 
 ol.writing,
@@ -350,4 +369,15 @@ article.note .note-head h1 {
 ::selection {
   background: var(--accent);
   color: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

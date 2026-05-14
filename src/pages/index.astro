@@ -14,9 +14,9 @@ const projects = [
 ];
 
 const contact = [
-  { label: 'github', href: 'https://github.com/haru0416-dev' },
-  { label: 'zenn', href: 'https://zenn.dev/haru0416' },
-  { label: 'mail', href: 'mailto:haru_0416@pm.me' },
+  { label: 'github', href: 'https://github.com/haru0416-dev', aria: 'GitHub プロフィール' },
+  { label: 'zenn', href: 'https://zenn.dev/haru0416', aria: 'Zenn の記事一覧' },
+  { label: 'mail', href: 'mailto:haru_0416@pm.me', aria: 'メールを送る' },
 ];
 ---
 
@@ -25,8 +25,8 @@ const contact = [
     <h1>haru0416</h1>
   </header>
 
-  <section class="field" id="writing">
-    <header>Writing</header>
+  <section class="field" id="writing" aria-labelledby="writing-label">
+    <h2 class="field-label" id="writing-label">Writing</h2>
     {
       writingGroups.length === 0 ? (
         <p class="empty">準備中。</p>
@@ -54,8 +54,8 @@ const contact = [
     }
   </section>
 
-  <section class="field" id="projects">
-    <header>Projects</header>
+  <section class="field" id="projects" aria-labelledby="projects-label">
+    <h2 class="field-label" id="projects-label">Projects</h2>
     <ol class="projects">
       {
         projects.map((p) => (
@@ -72,14 +72,15 @@ const contact = [
     </ol>
   </section>
 
-  <section class="field" id="contact">
-    <header>Contact</header>
+  <section class="field" id="contact" aria-labelledby="contact-label">
+    <h2 class="field-label" id="contact-label">Contact</h2>
     <ul class="contact">
       {
         contact.map((c) => (
           <li>
             <a
               href={c.href}
+              aria-label={c.aria}
               target={c.href.startsWith('mailto:') ? undefined : '_blank'}
               rel={c.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
             >

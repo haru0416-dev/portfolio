@@ -24,7 +24,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <title>{title}</title>
   </head>
   <body>
-    <main>
+    <a href="#main" class="skip">Skip to content</a>
+    <main id="main">
       <slot />
       <footer>
         © {new Date().getFullYear()} haru0416
