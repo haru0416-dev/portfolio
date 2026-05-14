@@ -16,13 +16,13 @@ const dateStr = note.data.date.toISOString().slice(0, 10);
 ---
 
 <Base
-  title={`${note.data.title} — haru0416`}
+  title={`${note.data.title} — haru`}
   description={note.data.description ?? note.data.title}
   ogType="article"
 >
   <article class="note">
     <header class="note-head">
-      <a href="/" class="back">← haru0416</a>
+      <a href="/" class="back">← haru</a>
       <time datetime={note.data.date.toISOString()}>{dateStr}</time>
       <h1>{note.data.title}</h1>
     </header>

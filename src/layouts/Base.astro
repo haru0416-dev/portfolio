@@ -8,8 +8,8 @@ interface Props {
 }
 
 const {
-  title = 'haru0416',
-  description = 'haru0416 — writing, code, and things in between.',
+  title = 'haru',
+  description = 'haru — writing, code, and things in between.',
   ogType = 'website',
 } = Astro.props;
 
@@ -27,7 +27,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content="haru0416" />
+    <meta property="og:site_name" content="haru" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -43,7 +43,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <main id="main">
       <slot />
       <footer>
-        © {new Date().getFullYear()} haru0416
+        © {new Date().getFullYear()} haru
       </footer>
     </main>
   </body>
