@@ -8,14 +8,19 @@ const FETCH_TIMEOUT_MS = 10_000;
 
 export interface BlogLoaderEntry {
   id: string;
-  data: {
-    title: string;
-    date: string;
-    description?: string;
-    draft?: boolean;
-  };
+  title: string;
+  date: string;
+  description?: string;
+  draft?: boolean;
   body: string;
   filePath: string;
+}
+
+function toIsoDate(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return new Date(value).toISOString();
+  return String(value);
 }
 
 interface TreeNode {
@@ -63,10 +68,14 @@ export async function fetchBlogContent(): Promise<BlogLoaderEntry[]> {
           if (!r.ok) throw new Error(`raw fetch ${r.status} for ${path}`);
           const text = await r.text();
           const parsed = matter(text);
+          const fm = parsed.data as Record<string, unknown>;
           const slug = path.replace(new RegExp(`^${BLOG_PREFIX}`), '').replace(/\.md$/, '');
           return {
             id: slug,
-            data: parsed.data as BlogLoaderEntry['data'],
+            title: String(fm.title ?? slug),
+            date: toIsoDate(fm.date),
+            description: fm.description ? String(fm.description) : undefined,
+            draft: fm.draft === true,
             body: parsed.content,
             filePath: path,
           };
@@ -78,7 +87,7 @@ export async function fetchBlogContent(): Promise<BlogLoaderEntry[]> {
       }),
     );
 
-    return results.filter((e): e is BlogLoaderEntry => e !== null && e.data.draft !== true);
+    return results.filter((e): e is BlogLoaderEntry => e !== null && e.draft !== true);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.warn(`[blog] content fetch failed: ${msg}. Returning empty list.`);
