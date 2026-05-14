@@ -2,7 +2,7 @@
 import Base from '@layouts/Base.astro';
 import { fetchZennEntries, formatDate, getBlogEntries, sortNewestFirst } from '@lib/writing';
 
-const HOME_LIMIT = 12;
+const HOME_LIMIT = 5;
 const [zenn, blog] = await Promise.all([fetchZennEntries(), getBlogEntries()]);
 const all = sortNewestFirst([...zenn, ...blog]);
 const writing = all.slice(0, HOME_LIMIT);
