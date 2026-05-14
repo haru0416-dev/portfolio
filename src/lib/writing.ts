@@ -1,7 +1,10 @@
 import { getCollection } from 'astro:content';
+import { fetchZennArticles } from '@lib/zenn';
 import { XMLParser } from 'fast-xml-parser';
 
 export type WritingSource = 'zenn' | 'blog';
+
+const ZENN_SLUG_REGEX = /\/articles\/([^/?#]+)/;
 
 export interface WritingEntry {
   title: string;
@@ -14,10 +17,6 @@ export interface WritingEntry {
 
 const ZENN_FEED_URL = 'https://zenn.dev/haru0416/feed';
 const FETCH_TIMEOUT_MS = 10_000;
-
-// TODO(ADR-0001 follow-up): once the Zenn-content GitHub repo exists,
-// add fetchZennEntriesFromGitHub() and prefer it when RSS yields zero
-// entries. Use it also to enrich each entry with topics/emoji/type.
 
 interface ZennRawItem {
   title: string;
@@ -39,7 +38,7 @@ async function fetchWithTimeout(url: string, ms: number): Promise<Response> {
   }
 }
 
-export async function fetchZennEntries(): Promise<WritingEntry[]> {
+async function fetchZennRSS(): Promise<WritingEntry[]> {
   try {
     const res = await fetchWithTimeout(ZENN_FEED_URL, FETCH_TIMEOUT_MS);
     if (!res.ok) throw new Error(`Zenn feed responded ${res.status}`);
@@ -63,9 +62,47 @@ export async function fetchZennEntries(): Promise<WritingEntry[]> {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[writing] zenn fetch failed: ${msg}. Falling back to empty list.`);
+    console.warn(`[writing] zenn RSS fetch failed: ${msg}. Falling back to empty list.`);
     return [];
   }
+}
+
+function slugFromZennHref(href: string): string | null {
+  const m = ZENN_SLUG_REGEX.exec(href);
+  return m ? m[1] : null;
+}
+
+/**
+ * RSS と zenn-content の articles/ を slug でマージ。
+ * RSS は最新 ~10 件しか返さないため、それより古い記事は zenn-content から拾う。
+ * 両方にある記事は RSS の pubDate を採用（live で確実な値）。
+ */
+export async function fetchZennEntries(): Promise<WritingEntry[]> {
+  const [rss, github] = await Promise.all([fetchZennRSS(), fetchZennArticles()]);
+
+  const seen = new Set<string>();
+  const out: WritingEntry[] = [];
+
+  for (const entry of rss) {
+    const slug = slugFromZennHref(entry.href);
+    if (slug) seen.add(slug);
+    out.push(entry);
+  }
+
+  for (const meta of github) {
+    if (seen.has(meta.slug)) continue;
+    if (!meta.publishedAt) continue;
+    out.push({
+      title: meta.title,
+      href: meta.href,
+      pubDate: meta.publishedAt,
+      year: String(meta.publishedAt.getUTCFullYear()),
+      source: 'zenn',
+      external: true,
+    });
+  }
+
+  return out;
 }
 
 export async function getBlogEntries(): Promise<WritingEntry[]> {
