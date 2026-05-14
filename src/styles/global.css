@@ -12,8 +12,9 @@
     "Yu Gothic UI", "Noto Sans JP", sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Menlo, monospace;
 
-  --measure: 38rem;
-  --gap-y: 4rem;
+  --measure: 40rem;
+  --margin-col: 7.5rem;
+  --gap-y: 5rem;
   --touch: 44px;
 
   color-scheme: light dark;
@@ -41,6 +42,7 @@ html {
   color: var(--fg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  hanging-punctuation: first allow-end last;
 }
 
 body {
@@ -51,7 +53,7 @@ body {
 main {
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 6rem 1.5rem 8rem;
+  padding: 7rem 1.5rem 9rem;
 }
 
 @media (max-width: 480px) {
@@ -60,18 +62,23 @@ main {
   }
 }
 
+/* ---------- Masthead ---------- */
+
 .masthead {
-  margin-bottom: var(--gap-y);
+  margin-bottom: calc(var(--gap-y) * 1.2);
 }
 
 .masthead h1 {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: clamp(2.5rem, 7vw, 4rem);
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-size: clamp(3.5rem, 11vw, 6rem);
+  letter-spacing: -0.03em;
+  line-height: 0.92;
   margin: 0;
+  text-wrap: balance;
 }
+
+/* ---------- Section labels (letter-spaced caps) ---------- */
 
 section.field {
   margin-top: var(--gap-y);
@@ -80,24 +87,30 @@ section.field {
 .field-label {
   display: flex;
   align-items: baseline;
-  gap: 0.75rem;
-  margin: 0 0 1.5rem;
+  gap: 1.1rem;
+  margin: 0 0 2.25rem;
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 400;
+  letter-spacing: 0.36em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 
 .field-label::before {
   content: "";
-  display: inline-block;
-  width: 1.5rem;
+  flex: 0 0 2.5rem;
   height: 1px;
   background: currentColor;
-  transform: translateY(-0.25em);
+  transform: translateY(-0.3em);
 }
+
+.field-label > span {
+  /* drops the wrapping span used for first-letter weight contrast */
+  color: var(--fg);
+}
+
+/* ---------- Skip link ---------- */
 
 .skip {
   position: absolute;
@@ -117,127 +130,111 @@ section.field {
   top: 0.5rem;
 }
 
-ol.writing,
-ol.projects {
+/* ---------- Entry rows (marginalia layout) ---------- */
+
+ol.entries {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-ol.writing > li,
-ol.projects > li {
-  border-top: 1px solid var(--rule);
+.entry-row + .entry-row {
+  margin-top: 1.6rem;
 }
 
-ol.writing > li:last-child,
-ol.projects > li:last-child {
-  border-bottom: 1px solid var(--rule);
-}
-
-ol.writing .row,
-ol.projects .row {
+.entry-link {
   display: grid;
+  grid-template-columns: var(--margin-col) 1fr;
+  column-gap: 1.6rem;
   align-items: baseline;
-  column-gap: 1.25rem;
-  padding: 0.7rem 0;
+  padding: 0.4rem 0;
   min-height: var(--touch);
   border: 0;
   color: inherit;
   text-decoration: none;
 }
 
-ol.writing .row {
-  grid-template-columns: 3.5rem 1fr;
-}
-
-ol.writing .row > .year {
+.entry-link .margin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--muted);
   font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
 }
 
-ol.writing .row > .entry {
+.entry-link .margin time {
+  color: var(--fg);
+}
+
+.entry-link .margin .source {
+  text-transform: lowercase;
+  letter-spacing: 0.18em;
+  font-size: 0.62rem;
+}
+
+.entry-link .margin .name {
+  color: var(--fg);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.entry-link .body {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.55;
 }
 
-ol.writing .row > .entry > .title {
-  border-bottom: 1px solid var(--rule);
-  transition:
-    border-color 120ms ease,
-    color 120ms ease;
+.entry-link .body .title,
+.entry-link .body .desc {
+  text-wrap: pretty;
 }
 
-ol.writing .row:hover > .entry > .title,
-ol.writing .row:focus-visible > .entry > .title {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+.entry-link .body .title {
+  color: var(--fg);
+  transition: color 120ms ease;
 }
 
-ol.writing .row > .entry .ext {
-  display: inline-block;
-  margin-left: 0.45em;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
+.entry-link .body .desc {
   color: var(--muted);
-  vertical-align: 0.2em;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.entry-link:hover .body .title,
+.entry-link:focus-visible .body .title,
+.entry-link:hover .body .desc,
+.entry-link:focus-visible .body .desc {
+  color: var(--accent);
+}
+
+@media (max-width: 480px) {
+  :root {
+    --margin-col: 5.25rem;
+  }
+  .entry-link {
+    column-gap: 1.1rem;
+  }
 }
 
 .empty {
   font-family: var(--font-serif);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--muted);
-  margin: 0;
+  margin: 0 0 0 calc(var(--margin-col) + 1.6rem);
   font-style: italic;
 }
 
-ol.projects .row {
-  grid-template-columns: 8rem 1fr;
-  padding: 0.85rem 0;
-}
-
-ol.projects .row > .name {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--fg);
-  border-bottom: 1px solid var(--rule);
-  align-self: start;
-  transition:
-    border-color 120ms ease,
-    color 120ms ease;
-}
-
-ol.projects .row:hover > .name,
-ol.projects .row:focus-visible > .name {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-ol.projects .row > .desc {
-  font-family: var(--font-serif);
-  font-size: 0.95rem;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
 @media (max-width: 480px) {
-  ol.writing .row {
-    grid-template-columns: 2.5rem 1fr;
-    padding: 0.85rem 0;
-  }
-  ol.projects .row {
-    grid-template-columns: 1fr;
-    row-gap: 0.25rem;
-    padding: 1rem 0;
-  }
-  ol.projects .row > .name {
-    justify-self: start;
+  .empty {
+    margin-left: calc(var(--margin-col) + 1.1rem);
   }
 }
+
+/* ---------- Contact ---------- */
 
 ul.contact {
   list-style: none;
@@ -245,17 +242,20 @@ ul.contact {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem 1.25rem;
+  gap: 0.5rem 1.6rem;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
 }
 
 ul.contact > li > a {
   display: inline-flex;
   align-items: center;
   min-height: var(--touch);
-  padding: 0 0.1rem;
 }
+
+/* ---------- Links default ---------- */
 
 a {
   color: inherit;
@@ -277,69 +277,100 @@ a:focus-visible {
   border-radius: 1px;
 }
 
+.entry-link,
+article.note .back {
+  border-bottom: 0;
+}
+
+.entry-link:hover,
+.entry-link:focus-visible {
+  border-bottom: 0;
+}
+
+/* ---------- Footer ---------- */
+
 footer {
-  margin-top: calc(var(--gap-y) * 1.5);
+  margin-top: calc(var(--gap-y) * 1.6);
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
 }
+
+/* ---------- 404 ---------- */
 
 .not-found {
   font-family: var(--font-serif);
   font-size: 1.05rem;
-  line-height: 1.8;
+  line-height: 1.85;
   color: var(--muted);
   margin: 0 0 2rem;
+  text-wrap: pretty;
 }
 
 .not-found-back {
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   margin: 0;
 }
 
-article.note .note-head {
-  margin-bottom: 3rem;
-}
+/* ---------- Article page ---------- */
 
-article.note .note-head .back {
+article.note .back {
   display: inline-block;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 0;
-  margin-bottom: 2.5rem;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  margin-bottom: 4rem;
 }
 
-article.note .note-head .back:hover {
+article.note .back:hover {
   color: var(--accent);
 }
 
-article.note .note-head time {
-  display: block;
+article.note .note-head {
+  margin-bottom: 3.5rem;
+}
+
+article.note .note-head .meta {
+  display: flex;
+  gap: 1.1rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
   color: var(--muted);
-  letter-spacing: 0.06em;
-  margin-bottom: 0.6rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.2rem;
+}
+
+article.note .note-head .meta time {
+  color: var(--fg);
+}
+
+article.note .note-head .meta .source {
+  text-transform: lowercase;
+  letter-spacing: 0.18em;
 }
 
 article.note .note-head h1 {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -0.02em;
+  line-height: 1.12;
   margin: 0;
+  text-wrap: balance;
 }
+
+/* ---------- Prose with drop cap ---------- */
 
 .prose {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   line-height: 1.85;
 }
 
@@ -347,27 +378,43 @@ article.note .note-head h1 {
   margin-top: 1.2em;
 }
 
+.prose > p:first-of-type::first-letter {
+  font-family: var(--font-serif);
+  font-size: 3.8em;
+  line-height: 0.85;
+  font-weight: 600;
+  float: left;
+  padding: 0.08em 0.18em 0 0;
+  color: var(--fg);
+}
+
 .prose h2 {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   letter-spacing: -0.005em;
   line-height: 1.3;
   margin-top: 2.6em;
   margin-bottom: 0.6em;
+  text-wrap: balance;
 }
 
 .prose h3 {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.12rem;
   margin-top: 2em;
   margin-bottom: 0.5em;
+  text-wrap: balance;
+}
+
+.prose p {
+  text-wrap: pretty;
 }
 
 .prose blockquote {
-  margin: 1.4em 0;
-  padding-left: 1.2em;
+  margin: 1.6em 0;
+  padding-left: 1.4em;
   border-left: 2px solid var(--rule);
   color: var(--muted);
   font-style: italic;
@@ -417,10 +464,14 @@ article.note .note-head h1 {
   height: auto;
 }
 
+/* ---------- Selection ---------- */
+
 ::selection {
   background: var(--accent);
   color: var(--bg);
 }
+
+/* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -1,9 +1,9 @@
 ---
 import Base from '@layouts/Base.astro';
-import { fetchZennEntries, getBlogEntries, groupByYear, sortNewestFirst } from '@lib/writing';
+import { fetchZennEntries, formatDate, getBlogEntries, sortNewestFirst } from '@lib/writing';
 
 const [zenn, blog] = await Promise.all([fetchZennEntries(), getBlogEntries()]);
-const writingGroups = groupByYear(sortNewestFirst([...zenn, ...blog]));
+const writing = sortNewestFirst([...zenn, ...blog]);
 
 const projects = [
   {
@@ -26,46 +26,50 @@ const contact = [
   </header>
 
   <section class="field" id="writing" aria-labelledby="writing-label">
-    <h2 class="field-label" id="writing-label">Writing</h2>
+    <h2 class="field-label" id="writing-label"><span>W</span>riting</h2>
     {
-      writingGroups.length === 0 ? (
+      writing.length === 0 ? (
         <p class="empty">準備中。</p>
       ) : (
-        <ol class="writing">
-          {writingGroups.map(([year, items]) =>
-            items.map((entry, i) => (
-              <li>
-                <a
-                  class="row"
-                  href={entry.href}
-                  target={entry.external ? '_blank' : undefined}
-                  rel={entry.external ? 'noopener noreferrer' : undefined}
-                >
-                  <span class="year" aria-hidden={i !== 0}>
-                    {i === 0 ? year : ''}
-                  </span>
-                  <span class="entry">
-                    <span class="title">{entry.title}</span>
-                    {entry.source === 'zenn' && <span class="ext">zenn</span>}
-                  </span>
-                </a>
-              </li>
-            )),
-          )}
+        <ol class="entries">
+          {writing.map((entry) => (
+            <li class="entry-row">
+              <a
+                class="entry-link"
+                href={entry.href}
+                target={entry.external ? '_blank' : undefined}
+                rel={entry.external ? 'noopener noreferrer' : undefined}
+              >
+                <div class="margin">
+                  <time datetime={entry.pubDate.toISOString()}>
+                    {formatDate(entry.pubDate)}
+                  </time>
+                  <span class="source">{entry.source}</span>
+                </div>
+                <div class="body">
+                  <span class="title">{entry.title}</span>
+                </div>
+              </a>
+            </li>
+          ))}
         </ol>
       )
     }
   </section>
 
   <section class="field" id="projects" aria-labelledby="projects-label">
-    <h2 class="field-label" id="projects-label">Projects</h2>
-    <ol class="projects">
+    <h2 class="field-label" id="projects-label"><span>P</span>rojects</h2>
+    <ol class="entries">
       {
         projects.map((p) => (
-          <li>
-            <a class="row" href={p.href} target="_blank" rel="noopener noreferrer">
-              <span class="name">{p.name}</span>
-              <span class="desc">{p.desc}</span>
+          <li class="entry-row">
+            <a class="entry-link" href={p.href} target="_blank" rel="noopener noreferrer">
+              <div class="margin">
+                <span class="name">{p.name}</span>
+              </div>
+              <div class="body">
+                <span class="desc">{p.desc}</span>
+              </div>
             </a>
           </li>
         ))
@@ -74,7 +78,7 @@ const contact = [
   </section>
 
   <section class="field" id="contact" aria-labelledby="contact-label">
-    <h2 class="field-label" id="contact-label">Contact</h2>
+    <h2 class="field-label" id="contact-label"><span>C</span>ontact</h2>
     <ul class="contact">
       {
         contact.map((c) => (
