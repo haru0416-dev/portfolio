@@ -6,7 +6,7 @@ const HOME_LIMIT = 12;
 const [zenn, blog] = await Promise.all([fetchZennEntries(), getBlogEntries()]);
 const all = sortNewestFirst([...zenn, ...blog]);
 const writing = all.slice(0, HOME_LIMIT);
-const hasMore = all.length > HOME_LIMIT;
+const hiddenCount = Math.max(0, all.length - HOME_LIMIT);
 
 const projects = [
   {
@@ -58,11 +58,9 @@ const contact = [
         </ol>
       )
     }
-    {hasMore && (
-      <a class="more-link" href="/writing">
-        more in archive
-      </a>
-    )}
+    <a class="more-link" href="/writing">
+      {hiddenCount > 0 ? `${hiddenCount} more in archive` : 'writing archive'}
+    </a>
   </section>
 
   <section class="field" id="projects" aria-labelledby="projects-label">
