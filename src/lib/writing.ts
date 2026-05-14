@@ -15,6 +15,10 @@ export interface WritingEntry {
 const ZENN_FEED_URL = 'https://zenn.dev/haru0416/feed';
 const FETCH_TIMEOUT_MS = 10_000;
 
+// TODO(ADR-0001 follow-up): once the Zenn-content GitHub repo exists,
+// add fetchZennEntriesFromGitHub() and prefer it when RSS yields zero
+// entries. Use it also to enrich each entry with topics/emoji/type.
+
 interface ZennRawItem {
   title: string;
   link: string;
