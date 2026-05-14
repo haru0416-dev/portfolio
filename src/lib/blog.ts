@@ -1,8 +1,9 @@
 import matter from 'gray-matter';
 
 const OWNER = 'haru0416-dev';
-const REPO = 'blog-content';
+const REPO = 'haru-content';
 const BRANCH = 'main';
+const BLOG_PREFIX = 'blog/';
 const FETCH_TIMEOUT_MS = 10_000;
 
 export interface BlogLoaderEntry {
@@ -51,7 +52,7 @@ export async function fetchBlogContent(): Promise<BlogLoaderEntry[]> {
     }
     const data = (await res.json()) as { tree: TreeNode[] };
     const paths = data.tree
-      .filter((n) => n.type === 'blob' && n.path.startsWith('articles/') && n.path.endsWith('.md'))
+      .filter((n) => n.type === 'blob' && n.path.startsWith(BLOG_PREFIX) && n.path.endsWith('.md'))
       .map((n) => n.path);
 
     const results = await Promise.all(
@@ -62,7 +63,7 @@ export async function fetchBlogContent(): Promise<BlogLoaderEntry[]> {
           if (!r.ok) throw new Error(`raw fetch ${r.status} for ${path}`);
           const text = await r.text();
           const parsed = matter(text);
-          const slug = path.replace(/^articles\//, '').replace(/\.md$/, '');
+          const slug = path.replace(new RegExp(`^${BLOG_PREFIX}`), '').replace(/\.md$/, '');
           return {
             id: slug,
             data: parsed.data as BlogLoaderEntry['data'],
