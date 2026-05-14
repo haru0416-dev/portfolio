@@ -1,0 +1,62 @@
+---
+import Base from '@layouts/Base.astro';
+import {
+  fetchZennEntries,
+  formatDate,
+  getBlogEntries,
+  groupByYear,
+  sortNewestFirst,
+} from '@lib/writing';
+
+const [zenn, blog] = await Promise.all([fetchZennEntries(), getBlogEntries()]);
+const all = sortNewestFirst([...zenn, ...blog]);
+const groups = groupByYear(all);
+---
+
+<Base
+  title="Writing — haru"
+  description="haru の書いたもののアーカイブ。Zenn 記事と blog 記事を年ごとに。"
+>
+  <a href="/" class="back">← haru</a>
+
+  <header class="masthead">
+    <h1>Writing</h1>
+    <p class="masthead-meta">
+      {all.length} {all.length === 1 ? 'entry' : 'entries'}
+    </p>
+  </header>
+
+  {
+    groups.length === 0 ? (
+      <p class="empty">準備中。</p>
+    ) : (
+      groups.map(([year, items]) => (
+        <section class="year-group">
+          <h2 class="year-label">{year}</h2>
+          <ol class="entries">
+            {items.map((entry) => (
+              <li class="entry-row">
+                <a
+                  class="entry-link"
+                  href={entry.href}
+                  target={entry.external ? '_blank' : undefined}
+                  rel={entry.external ? 'noopener noreferrer' : undefined}
+                >
+                  <div class="margin">
+                    <time datetime={entry.pubDate.toISOString()}>
+                      {formatDate(entry.pubDate)}
+                    </time>
+                    <span class="source">{entry.source}</span>
+                  </div>
+                  <div class="body">
+                    <span class="title">{entry.title}</span>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    )
+  }
+</Base>

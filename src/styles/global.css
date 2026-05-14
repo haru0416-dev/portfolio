@@ -234,6 +234,70 @@ ol.entries {
   }
 }
 
+/* ---------- More link (Home → Archive) ---------- */
+
+.more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1.8rem;
+  margin-left: calc(var(--margin-col) + 1.6rem);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  border: 0;
+}
+
+.more-link::before {
+  content: "";
+  flex: 0 0 1.6rem;
+  height: 1px;
+  background: currentColor;
+  transform: translateY(-0.05em);
+}
+
+.more-link:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 480px) {
+  .more-link {
+    margin-left: calc(var(--margin-col) + 1.1rem);
+  }
+}
+
+/* ---------- Year groups (Archive page) ---------- */
+
+.masthead-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  margin: 1rem 0 0;
+}
+
+.year-group {
+  margin-top: calc(var(--gap-y) * 0.9);
+}
+
+.year-group:first-of-type {
+  margin-top: calc(var(--gap-y) * 1.1);
+}
+
+.year-label {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0 0 1.8rem;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Contact ---------- */
 
 ul.contact {
@@ -318,7 +382,7 @@ footer {
 
 /* ---------- Article page ---------- */
 
-article.note .back {
+.back {
   display: inline-block;
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -326,9 +390,10 @@ article.note .back {
   letter-spacing: 0.1em;
   text-transform: lowercase;
   margin-bottom: 4rem;
+  border: 0;
 }
 
-article.note .back:hover {
+.back:hover {
   color: var(--accent);
 }
 

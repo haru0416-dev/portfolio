@@ -2,8 +2,11 @@
 import Base from '@layouts/Base.astro';
 import { fetchZennEntries, formatDate, getBlogEntries, sortNewestFirst } from '@lib/writing';
 
+const HOME_LIMIT = 12;
 const [zenn, blog] = await Promise.all([fetchZennEntries(), getBlogEntries()]);
-const writing = sortNewestFirst([...zenn, ...blog]);
+const all = sortNewestFirst([...zenn, ...blog]);
+const writing = all.slice(0, HOME_LIMIT);
+const hasMore = all.length > HOME_LIMIT;
 
 const projects = [
   {
@@ -55,6 +58,11 @@ const contact = [
         </ol>
       )
     }
+    {hasMore && (
+      <a class="more-link" href="/writing">
+        more in archive
+      </a>
+    )}
   </section>
 
   <section class="field" id="projects" aria-labelledby="projects-label">
