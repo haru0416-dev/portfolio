@@ -15,7 +15,11 @@ const { Content } = await render(note);
 const dateStr = note.data.date.toISOString().slice(0, 10);
 ---
 
-<Base title={`${note.data.title} — haru0416`} description={note.data.description ?? note.data.title}>
+<Base
+  title={`${note.data.title} — haru0416`}
+  description={note.data.description ?? note.data.title}
+  ogType="article"
+>
   <article class="note">
     <header class="note-head">
       <a href="/" class="back">← haru0416</a>
