@@ -35,17 +35,20 @@ const contact = [
           {writingGroups.map(([year, items]) =>
             items.map((entry, i) => (
               <li>
-                <span class="year">{i === 0 ? year : ''}</span>
-                <span class="entry">
-                  <a
-                    href={entry.href}
-                    target={entry.external ? '_blank' : undefined}
-                    rel={entry.external ? 'noopener noreferrer' : undefined}
-                  >
-                    {entry.title}
-                  </a>
-                  {entry.source === 'zenn' && <span class="ext">zenn</span>}
-                </span>
+                <a
+                  class="row"
+                  href={entry.href}
+                  target={entry.external ? '_blank' : undefined}
+                  rel={entry.external ? 'noopener noreferrer' : undefined}
+                >
+                  <span class="year" aria-hidden={i !== 0}>
+                    {i === 0 ? year : ''}
+                  </span>
+                  <span class="entry">
+                    <span class="title">{entry.title}</span>
+                    {entry.source === 'zenn' && <span class="ext">zenn</span>}
+                  </span>
+                </a>
               </li>
             )),
           )}
@@ -60,12 +63,10 @@ const contact = [
       {
         projects.map((p) => (
           <li>
-            <span class="name">
-              <a href={p.href} target="_blank" rel="noopener noreferrer">
-                {p.name}
-              </a>
-            </span>
-            <span class="desc">{p.desc}</span>
+            <a class="row" href={p.href} target="_blank" rel="noopener noreferrer">
+              <span class="name">{p.name}</span>
+              <span class="desc">{p.desc}</span>
+            </a>
           </li>
         ))
       }
