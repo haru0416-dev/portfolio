@@ -1,9 +1,9 @@
 ---
 import Base from '@layouts/Base.astro';
-import { fetchZennEntries, groupByYear, sortNewestFirst } from '@lib/writing';
+import { fetchZennEntries, getNoteEntries, groupByYear, sortNewestFirst } from '@lib/writing';
 
-const zenn = await fetchZennEntries();
-const writingGroups = groupByYear(sortNewestFirst(zenn));
+const [zenn, notes] = await Promise.all([fetchZennEntries(), getNoteEntries()]);
+const writingGroups = groupByYear(sortNewestFirst([...zenn, ...notes]));
 
 const projects = [
   {

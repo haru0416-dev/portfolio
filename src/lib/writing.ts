@@ -1,3 +1,4 @@
+import { getCollection } from 'astro:content';
 import { XMLParser } from 'fast-xml-parser';
 
 export type WritingSource = 'zenn' | 'notes';
@@ -61,6 +62,18 @@ export async function fetchZennEntries(): Promise<WritingEntry[]> {
     console.warn(`[writing] zenn fetch failed: ${msg}. Falling back to empty list.`);
     return [];
   }
+}
+
+export async function getNoteEntries(): Promise<WritingEntry[]> {
+  const notes = await getCollection('notes');
+  return notes.map((note) => ({
+    title: note.data.title,
+    href: `/notes/${note.id}`,
+    pubDate: note.data.date,
+    year: String(note.data.date.getUTCFullYear()),
+    source: 'notes' as const,
+    external: false,
+  }));
 }
 
 export function sortNewestFirst(entries: WritingEntry[]): WritingEntry[] {
