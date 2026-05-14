@@ -1,27 +1,9 @@
 ---
 import Base from '@layouts/Base.astro';
+import { fetchZennEntries, groupByYear, sortNewestFirst } from '@lib/writing';
 
-interface WritingEntry {
-  year: string;
-  title: string;
-  href: string;
-  external?: boolean;
-}
-
-const writing: WritingEntry[] = [
-  {
-    year: '2026',
-    title: 'コンパニオンAIの感情を、ラベルじゃなく経路で作った話',
-    href: 'https://zenn.dev/haru0416/articles/d107ea122be434',
-    external: true,
-  },
-  {
-    year: '2026',
-    title: 'コンパニオンAIの記憶を、普通のRAGじゃない設計にした話',
-    href: 'https://zenn.dev/haru0416/articles/843c6c29c04c7c',
-    external: true,
-  },
-];
+const zenn = await fetchZennEntries();
+const writingGroups = groupByYear(sortNewestFirst(zenn));
 
 const projects = [
   {
@@ -45,25 +27,31 @@ const contact = [
 
   <section class="field" id="writing">
     <header>Writing</header>
-    <ol class="writing">
-      {
-        writing.map((entry) => (
-          <li>
-            <span class="year">{entry.year}</span>
-            <span class="entry">
-              <a
-                href={entry.href}
-                target={entry.external ? '_blank' : undefined}
-                rel={entry.external ? 'noopener noreferrer' : undefined}
-              >
-                {entry.title}
-              </a>
-              {entry.external && <span class="ext">zenn</span>}
-            </span>
-          </li>
-        ))
-      }
-    </ol>
+    {
+      writingGroups.length === 0 ? (
+        <p class="empty">準備中。</p>
+      ) : (
+        <ol class="writing">
+          {writingGroups.map(([year, items]) =>
+            items.map((entry, i) => (
+              <li>
+                <span class="year">{i === 0 ? year : ''}</span>
+                <span class="entry">
+                  <a
+                    href={entry.href}
+                    target={entry.external ? '_blank' : undefined}
+                    rel={entry.external ? 'noopener noreferrer' : undefined}
+                  >
+                    {entry.title}
+                  </a>
+                  {entry.source === 'zenn' && <span class="ext">zenn</span>}
+                </span>
+              </li>
+            )),
+          )}
+        </ol>
+      )
+    }
   </section>
 
   <section class="field" id="projects">
