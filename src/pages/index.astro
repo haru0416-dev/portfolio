@@ -1,0 +1,105 @@
+---
+import Base from '@layouts/Base.astro';
+
+interface WritingEntry {
+  year: string;
+  title: string;
+  href: string;
+  external?: boolean;
+}
+
+const writing: WritingEntry[] = [
+  {
+    year: '2026',
+    title: 'コンパニオンAIの感情を、ラベルじゃなく経路で作った話',
+    href: 'https://zenn.dev/haru0416/articles/d107ea122be434',
+    external: true,
+  },
+  {
+    year: '2026',
+    title: 'コンパニオンAIの記憶を、普通のRAGじゃない設計にした話',
+    href: 'https://zenn.dev/haru0416/articles/843c6c29c04c7c',
+    external: true,
+  },
+];
+
+const projects = [
+  {
+    name: 'asterel',
+    desc: 'Rust で書いているコンパニオン AI ランタイム。記憶と人格を構造で扱う。',
+    href: 'https://github.com/asterel-rs/asterel',
+  },
+];
+
+const contact = [
+  { label: 'github', href: 'https://github.com/haru0416-dev' },
+  { label: 'zenn', href: 'https://zenn.dev/haru0416' },
+  { label: 'mail', href: 'mailto:haru_0416@pm.me' },
+];
+---
+
+<Base>
+  <header class="masthead">
+    <h1>haru0416</h1>
+  </header>
+
+  <section class="field" id="writing">
+    <header>Writing</header>
+    <ol class="writing">
+      {
+        writing.map((entry) => (
+          <li>
+            <span class="year">{entry.year}</span>
+            <span class="entry">
+              <a
+                href={entry.href}
+                target={entry.external ? '_blank' : undefined}
+                rel={entry.external ? 'noopener noreferrer' : undefined}
+              >
+                {entry.title}
+              </a>
+              {entry.external && <span class="ext">zenn</span>}
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="field" id="projects">
+    <header>Projects</header>
+    <ol class="projects">
+      {
+        projects.map((p) => (
+          <li>
+            <span class="name">
+              <a href={p.href} target="_blank" rel="noopener noreferrer">
+                {p.name}
+              </a>
+            </span>
+            <span class="desc">{p.desc}</span>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="field" id="contact">
+    <header>Contact</header>
+    <ul class="contact">
+      {
+        contact.map((c) => (
+          <li>
+            <a
+              href={c.href}
+              target={c.href.startsWith('mailto:') ? undefined : '_blank'}
+              rel={c.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+            >
+              {c.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>

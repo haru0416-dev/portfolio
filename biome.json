@@ -16,9 +16,9 @@
       "**/*.json",
       "**/*.jsonc",
       "**/*.css",
-      "!**/dist/**",
-      "!**/.astro/**",
-      "!**/node_modules/**"
+      "!**/dist",
+      "!**/.astro",
+      "!**/node_modules"
     ]
   },
   "formatter": {
@@ -52,5 +52,21 @@
       "indentStyle": "space",
       "indentWidth": 2
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          },
+          "style": {
+            "useImportType": "off"
+          }
+        }
+      }
+    }
+  ]
 }
