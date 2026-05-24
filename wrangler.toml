@@ -1,10 +1,12 @@
-name = "haru0416"
+name = "portfolio"
 compatibility_date = "2026-05-14"
 
 [assets]
 directory = "./dist"
 not_found_handling = "404-page"
 
-[[routes]]
-pattern = "haru0416.dev"
-custom_domain = true
+# Custom domain is reattached manually after this Worker is deployed
+# under the new name. Re-enable after the dashboard swap.
+# [[routes]]
+# pattern = "haru0416.dev"
+# custom_domain = true

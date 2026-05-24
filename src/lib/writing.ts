@@ -30,7 +30,7 @@ async function fetchWithTimeout(url: string, ms: number): Promise<Response> {
   const timer = setTimeout(() => ac.abort(), ms);
   try {
     return await fetch(url, {
-      headers: { 'User-Agent': 'haru0416-portfolio-build/1.0' },
+      headers: { 'User-Agent': 'portfolio-build/1.0' },
       signal: ac.signal,
     });
   } finally {
