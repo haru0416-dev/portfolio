@@ -19,6 +19,7 @@ const { Content } = await render(entry);
   title={`${entry.data.title} — haru`}
   description={entry.data.description ?? entry.data.title}
   ogType="article"
+  ogImage={`/og/blog/${entry.id}.png`}
 >
   <article class="note">
     <a href="/" class="back">← haru</a>
