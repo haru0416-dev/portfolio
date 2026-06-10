@@ -1,6 +1,12 @@
 ---
 import Base from '@layouts/Base.astro';
-import { fetchZennEntries, formatDate, getBlogEntries, sortNewestFirst } from '@lib/writing';
+import {
+  fetchZennEntries,
+  formatDate,
+  getBlogEntries,
+  isoDate,
+  sortNewestFirst,
+} from '@lib/writing';
 
 const HOME_LIMIT = 5;
 const [zenn, blog] = await Promise.all([fetchZennEntries(), getBlogEntries()]);
@@ -49,7 +55,7 @@ const contact = [
                 rel={entry.external ? 'noopener noreferrer' : undefined}
               >
                 <div class="margin">
-                  <time datetime={entry.pubDate.toISOString()}>
+                  <time datetime={isoDate(entry.pubDate)}>
                     {formatDate(entry.pubDate)}
                   </time>
                   <span class="source">{entry.source}</span>

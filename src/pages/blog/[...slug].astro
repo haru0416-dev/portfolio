@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '@layouts/Base.astro';
-import { formatDate } from '@lib/writing';
+import { formatDate, isoDate } from '@lib/writing';
 
 export async function getStaticPaths() {
   const blog = await getCollection('blog');
@@ -20,12 +20,13 @@ const { Content } = await render(entry);
   description={entry.data.description ?? entry.data.title}
   ogType="article"
   ogImage={`/og/blog/${entry.id}.png`}
+  publishedTime={entry.data.date}
 >
   <article class="note">
     <a href="/" class="back">← haru</a>
     <header class="note-head">
       <div class="meta">
-        <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+        <time datetime={isoDate(entry.data.date)}>{formatDate(entry.data.date)}</time>
         <span class="source">blog</span>
       </div>
       <h1>{entry.data.title}</h1>

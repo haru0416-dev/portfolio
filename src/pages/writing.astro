@@ -5,6 +5,7 @@ import {
   formatDate,
   getBlogEntries,
   groupByYear,
+  isoDate,
   sortNewestFirst,
 } from '@lib/writing';
 
@@ -43,7 +44,7 @@ const groups = groupByYear(all);
                   rel={entry.external ? 'noopener noreferrer' : undefined}
                 >
                   <div class="margin">
-                    <time datetime={entry.pubDate.toISOString()}>
+                    <time datetime={isoDate(entry.pubDate)}>
                       {formatDate(entry.pubDate)}
                     </time>
                     <span class="source">{entry.source}</span>
