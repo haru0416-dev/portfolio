@@ -35,7 +35,7 @@ function div(style: Record<string, unknown>, children?: unknown): SatoriNode {
 }
 
 function buildTree({ title, date, subtitle }: OgInput): SatoriNode {
-  const titleSize = title.length > 40 ? 56 : 68;
+  const titleSize = title.length > 60 ? 48 : title.length > 40 ? 56 : 68;
 
   return div(
     {
