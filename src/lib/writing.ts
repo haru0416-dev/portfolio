@@ -13,6 +13,7 @@ export interface WritingEntry {
   year: string;
   source: WritingSource;
   external: boolean;
+  description?: string;
 }
 
 const ZENN_FEED_URL = 'https://zenn.dev/haru0416/feed';
@@ -22,6 +23,7 @@ interface ZennRawItem {
   title: string;
   link: string;
   pubDate: string;
+  description?: string;
   guid?: string | { '#text': string };
 }
 
@@ -58,6 +60,7 @@ async function fetchZennRSS(): Promise<WritingEntry[]> {
         year: String(pubDate.getUTCFullYear()),
         source: 'zenn' as const,
         external: true,
+        description: item.description ? String(item.description).trim() : undefined,
       };
     });
   } catch (err) {
@@ -117,6 +120,7 @@ export async function getBlogEntries(): Promise<WritingEntry[]> {
       year: String(entry.data.date.getUTCFullYear()),
       source: 'blog' as const,
       external: false,
+      description: entry.data.description,
     }));
 }
 
@@ -132,6 +136,10 @@ export function groupByYear(entries: WritingEntry[]): Array<[string, WritingEntr
     map.set(e.year, arr);
   }
   return Array.from(map.entries()).sort(([a], [b]) => Number(b) - Number(a));
+}
+
+export function isoDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
 }
 
 export function formatDate(d: Date): string {

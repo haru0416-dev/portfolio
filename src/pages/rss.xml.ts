@@ -16,6 +16,7 @@ export const GET: APIRoute = async (context) => {
       title: entry.title,
       link: entry.external ? entry.href : new URL(entry.href, context.site).toString(),
       pubDate: entry.pubDate,
+      description: entry.description,
     })),
     customData: '<language>ja</language>',
   });
