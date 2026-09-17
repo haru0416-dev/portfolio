@@ -47,6 +47,10 @@ bun run preview  # dist/ を配信して確認
 bunx astro check
 ```
 
+## curl で見ると
+
+トップを curl / wget / HTTPie で取ると、HTML の代わりに名刺のようなテキストが返る(`functions/_middleware.ts`、Cloudflare Pages Functions)。`?html` で HTML、`?plain` で色なし。データは `/meta.json`(ビルド時に生成)。ローカルで試すには `bun run build && bunx wrangler pages dev dist`。
+
 ## デプロイ (Cloudflare Pages)
 
 Git 連携で以下を設定する。
