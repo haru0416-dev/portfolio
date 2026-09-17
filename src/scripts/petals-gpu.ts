@@ -54,7 +54,7 @@ fn simulate(@builtin(global_invocation_id) id: vec3u) {
   let goal = vec2f(u.wind.x + flow.x + flutter.x, 34.0 + 46.0 * d + flow.y * 0.5 + flutter.y);
   p.vel = mix(p.vel, goal * d, 1.0 - exp(-u.dt * 1.8));
   p.pos += p.vel * u.dt;
-  p.rot += (p.spin + n1 * 1.5) * u.dt;
+  p.rot += (p.spin + n1 * 0.6) * u.dt;
   p.tilt += p.tiltSpeed * u.dt;
   let m = p.size * 3.0;
   if (p.pos.y > u.res.y + m || p.pos.x < -m * 6.0 || p.pos.x > u.res.x + m * 6.0) {
@@ -115,28 +115,38 @@ struct POut {
   let p = particlesRO[ii];
   var corners = array<vec2f, 6>(vec2f(-1,-1), vec2f(1,-1), vec2f(-1,1), vec2f(-1,1), vec2f(1,-1), vec2f(1,1));
   let c = corners[vi];
+  // 縦軸回り(横幅が縮む)と横軸回り(縦幅が縮む)の 2 軸で裏返る
   let face = cos(p.tilt);
-  let sx = 0.28 + 0.72 * abs(face);
-  let half = p.size * 1.25;
-  let local = vec2f(c.x * sx, c.y) * half;
+  let face2 = cos(p.tilt * 0.63 + p.phase);
+  let sx = 0.22 + 0.78 * abs(face);
+  let sy = 0.55 + 0.45 * abs(face2);
+  let margin = 1.35; // ボケと影がはみ出さないよう四角形に余白を取る
+  let half = p.size * 1.25 * margin;
+  let local = vec2f(c.x * sx, c.y * sy) * half;
   let cs = cos(p.rot); let sn = sin(p.rot);
   let world = p.pos + vec2f(cs * local.x - sn * local.y, sn * local.x + cs * local.y);
   var o: POut;
   let ndc = world / u.res * 2.0 - 1.0;
   o.pos = vec4f(ndc.x, -ndc.y, 0.0, 1.0);
-  o.uv = c;
+  o.uv = c * margin;
   o.depth = p.depth;
   o.color = p.color;
-  o.face = face;
+  o.face = face * face2; // 表向き +1 / 裏向き -1
   o.px = half * sx; // 1 uv 単位あたりの画素数(横)
   return o;
 }
+// 幅プロファイルで作る倒卵形の花びら。肩が上寄りで、付け根がすっと細くなり、先端に浅い切れ込み
+fn petalWidth(y: f32) -> f32 {
+  let r = select(1.2, 0.8, y > 0.2); // 肩(y=0.2)より上は短く、下は長く
+  let k = max(0.0, 1.0 - pow((y - 0.2) / r, 2.0));
+  let w = 0.66 * pow(k, 0.6);
+  return w * pow(smoothstep(-1.0, -0.45, y), 0.8); // 付け根を滑らかに尖らせる(柄を作らない)
+}
 fn petalSdf(uv: vec2f) -> f32 {
-  // 付け根(y=-1)が細く、先端(y=+1)に切れ込み
-  let wy = mix(0.42, 1.0, smoothstep(-1.0, 0.35, uv.y));
-  let e = length(vec2f(uv.x / (0.66 * wy), uv.y / 0.92)) - 1.0;
-  let notch = length(uv - vec2f(0.0, 1.0)) - 0.24;
-  return max(e, -notch);
+  // 幅が 0 の区間で中心線が残らないよう、縦の境界も距離に入れる
+  let d = max(abs(uv.x) - petalWidth(uv.y), abs(uv.y) - 1.0);
+  let notch = length(uv - vec2f(0.0, 1.05)) - 0.17;
+  return max(d, -notch);
 }
 fn palette(k: f32) -> vec3f {
   var cols = array<vec3f, 5>(
@@ -146,33 +156,39 @@ fn palette(k: f32) -> vec3f {
 }
 @fragment fn petalFrag(i: POut) -> @location(0) vec4f {
   let sdf = petalSdf(i.uv);
-  // 奥ほどぼける。ぼけ幅は uv 単位で指定し、画素数で正規化
-  let blur = mix(0.42, 0.0, smoothstep(0.35, 1.0, i.depth));
+  // 奥ほどぼける
+  let blur = mix(0.22, 0.0, smoothstep(0.35, 0.9, i.depth)) + 0.05 * smoothstep(0.93, 1.0, i.depth); // 遠景と近景のボケ
   let aa = fwidth(sdf) * 1.2 + blur;
   var a = 1.0 - smoothstep(-aa * 0.5, aa * 0.5, sdf);
-  // 色: 付け根が濃く先端が淡い
+
+  // 色: 先端は白に近く、付け根に向かって桃色が濃くなる(桜の「爪」)
   var base = palette(i.color);
-  base = mix(base, vec3f(1.0), 0.10 * sin(i.color * 7.0 + i.depth * 31.0)); // 個体差
-  // ライトでは背景が淡いので、花びらを少し濃くして輪郭を出す
-  // ライトでは少し濃く、ダークでは桃色を強めて灰色に見えないようにする
-  base = mix(mix(base, u.tint.rgb, 0.18) * 0.96, mix(base, u.tint.rgb, 0.35), u.dark.x);
-  let dark = base * 0.84;
-  let light = mix(base, vec3f(1.0), mix(0.18, 0.08, u.dark.x));
-  var col = mix(dark, light, smoothstep(-1.0, 1.0, i.uv.y));
-  // 中央の筋と、縁の淡い光
-  let vein = exp(-i.uv.x * i.uv.x * 38.0) * (1.0 - abs(i.uv.y)) * mix(0.22, 0.10, u.dark.x);
-  let rim = smoothstep(-0.02, -0.28, sdf);
-  col = mix(col + vein, col, rim * 0.0) + vein;
-  col = mix(col * 1.06, col, rim);
-  // 裏返るときは少し白く透ける
-  let back = 1.0 - abs(i.face);
-  col = mix(col, vec3f(1.0, 0.96, 0.97), back * 0.12);
-  a *= mix(0.92, 0.72, back);
+  base = mix(base, vec3f(1.0), 0.08 * sin(i.color * 7.0 + i.depth * 31.0)); // 個体差
+  base = mix(mix(base, u.tint.rgb, 0.26) * 0.97, mix(base, u.tint.rgb, 0.35), u.dark.x);
+  let tip = mix(base, vec3f(1.0, 0.985, 0.99), mix(0.40, 0.30, u.dark.x));
+  let root = mix(base, u.tint.rgb, 0.65);
+  let ty = smoothstep(-1.0, 0.7, i.uv.y);
+  var col = mix(root, tip, ty);
+
+  // 曲面: 横方向にゆるく丸まっているとして、傾きで明暗が流れる
+  let curl = 0.92 + 0.10 * cos(i.uv.x * 2.2 + i.face * 1.6);
+  col *= curl;
+  // 表と裏: 表は少し明るく、裏は透けて白っぽく
+  let front = smoothstep(-0.2, 0.6, i.face);
+  col = mix(mix(col, vec3f(1.0, 0.95, 0.96), 0.22), col * 1.03, front);
+  // 縁は薄く透ける(厚みが無いので)
+  let edge = smoothstep(-0.02, -0.22, sdf);
+  a *= mix(0.78, 1.0, edge);
+  // 葉脈: 中央 1 本と、付け根から扇状に広がる細い筋
+  let vein = exp(-i.uv.x * i.uv.x * 60.0) * (1.0 - abs(i.uv.y)) * 0.10
+           + exp(-pow(abs(i.uv.x) - 0.38 * (i.uv.y + 1.0), 2.0) * 90.0) * smoothstep(-1.0, 0.0, i.uv.y) * (1.0 - ty) * 0.06;
+  col = mix(col, vec3f(1.0), vein * (1.0 - 0.5 * u.dark.x));
+  // 裏返る瞬間は細く薄い
+  a *= mix(0.55, 1.0, abs(i.face));
   // 奥行きで薄く
-  a *= mix(0.5, 1.0, i.depth);
-  // 淡い光暈(手前ほど)
-  let halo = exp(-max(sdf, 0.0) * 5.0) * 0.08 * i.depth * u.dark.x; // ダークでは淡く光る
-  // ライトでは手前の花びらの下に薄い落ち影
+  a *= mix(0.6, 1.0, i.depth);
+
+  let halo = exp(-max(sdf, 0.0) * 5.0) * 0.08 * i.depth * u.dark.x;
   let shadow = exp(-max(sdf, 0.0) * 3.0) * 0.10 * i.depth * (1.0 - u.dark.x) * (1.0 - a);
   let out = col * a + base * halo + u.tint.rgb * 0.45 * shadow;
   return vec4f(out, a + halo + shadow);
@@ -232,18 +248,18 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
   };
 
   /** 画面サイズを決めて花びらを撒く。奥から手前の順に並べる(半透明の重なりが自然になる) */
-  const seed = (W: number, H: number) => {
+  const seed = (W: number, H: number, sizeMul = 1) => {
     st.W = W; st.H = H;
-    st.count = Math.min(MAX, Math.round((W * H) / (900 * dpr * dpr)));
+    st.count = Math.min(MAX, Math.round((W * H) / (1000 * dpr * dpr * sizeMul * sizeMul)));
     const data = new Float32Array(MAX * FLOATS);
-    const depths = Array.from({ length: MAX }, () => 0.3 + 0.7 * Math.pow(Math.random(), 1.25)).sort((a, b) => a - b);
+    const depths = Array.from({ length: MAX }, () => 0.3 + 0.7 * Math.pow(Math.random(), 1.1)).sort((a, b) => a - b);
     for (let i = 0; i < MAX; i++) {
       const d = depths[i], o = i * FLOATS;
       data[o] = Math.random() * W; data[o + 1] = Math.random() * H * 1.2 - H * 0.2;
       data[o + 2] = 0; data[o + 3] = 20 * d;
-      data[o + 4] = Math.random() * Math.PI * 2; data[o + 5] = (Math.random() - 0.5) * 1.6;
+      data[o + 4] = Math.random() * Math.PI * 2; data[o + 5] = (Math.random() - 0.5) * 0.7;
       data[o + 6] = Math.random() * Math.PI * 2; data[o + 7] = 1.2 + Math.random() * 2.2;
-      data[o + 8] = (14 + Math.random() * 20) * d * dpr; data[o + 9] = d;
+      data[o + 8] = (16 + Math.random() * 28) * d * dpr * sizeMul; data[o + 9] = d;
       data[o + 10] = (Math.random() * 5) | 0; data[o + 11] = Math.random() * Math.PI * 2;
     }
     device.queue.writeBuffer(storage, 0, data);
@@ -325,12 +341,12 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<{ count
 
   // ?debug のときだけ: 別デバイスで同じ描画をオフスクリーンに行い、画素を PNG で返す(GPU のない検証環境用)
   if (location.search.includes('debug')) {
-    (window as any).__petalsCapture = async (steps = 240): Promise<string> => {
+    (window as any).__petalsCapture = async (steps = 240, sizeMul = 1): Promise<string> => {
       const g2 = await makeDevice();
       if (!g2) throw new Error('no device');
       const W = canvas.width, H = canvas.height;
       const r2 = createRenderer(g2.device, g2.module, 'rgba8unorm', dpr);
-      r2.seed(W, H);
+      r2.seed(W, H, sizeMul);
       for (let i = 0; i < steps; i++) g2.device.queue.submit([r2.encodeFrame(1 / 60).finish()]);
       const tex = g2.device.createTexture({ size: [W, H], format: 'rgba8unorm', usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
       const bpr = Math.ceil((W * 4) / 256) * 256;
