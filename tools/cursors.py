@@ -1,45 +1,43 @@
 # カーソルの SVG を生成して global.css の第 6 節を書き換える。形や色を変えるときはこのファイルを編集して `python3 tools/cursors.py`
-import urllib.parse
-SAFE = "/:=,()' "
+# 形は lucide の文法(24 の格子、線幅 2、角丸、塗りなし)に従う。矢印は mouse-pointer-2、I ビームは text-cursor、リンクは sprout。
+# 線は桃色、その下に白い太線を敷いて縁取りにする(ライト・ダーク両方で見える)。
+import os, urllib.parse
+
+PINK = '#ea689f'; WHITE = '#fff'
+ARROW = "M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"
+TEXT = ["M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1", "M7 22h1a4 4 0 0 0 4-4", "M7 2h1a4 4 0 0 1 4 4"]
+SPROUT = ["M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3", "M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4", "M5 21h14"]
+
+def lucide(paths, size, scale, tx, ty, fill=None, extra=''):
+    """lucide の線画を、白い太線の縁取り → 桃色の線、の順で重ねる"""
+    ps = ''.join(f"<path d='{d}'/>" for d in paths)
+    f = f" fill='{fill}'" if fill else " fill='none'"
+    return (f"<svg xmlns='http://www.w3.org/2000/svg' width='{size}' height='{size}' viewBox='0 0 {size} {size}'>"
+            f"{extra}<g transform='translate({tx} {ty}) scale({scale})' stroke-linecap='round' stroke-linejoin='round'>"
+            f"<g fill='none' stroke='{WHITE}' stroke-width='5'>{ps}</g>"
+            f"<g{f} stroke='{PINK}' stroke-width='2'>{ps}</g></g></svg>")
+
 def url(svg, hx, hy, fb):
-    q = urllib.parse.quote(svg.replace('\n',''), safe=SAFE).replace('#', '%23')
-    return 'url("data:image/svg+xml,' + q + '") ' + str(hx) + ' ' + str(hy) + ', ' + fb
-PINK='#ea689f'; DARK='#3d3452'
-arrow = f"""<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>
-<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#f59ac0'/><stop offset='1' stop-color='{PINK}'/></linearGradient></defs>
-<path d='M6.2 5.2c-.5-1.4 1-2.6 2.2-1.7l14.3 10.6c1.3 1 .6 3-1 3.1l-6.2.5-3.4 5.3c-.9 1.4-3 1-3.3-.6z' fill='url(%23g)' stroke='#fff' stroke-width='2.4' stroke-linejoin='round'/>
-<path d='M6.2 5.2c-.5-1.4 1-2.6 2.2-1.7l14.3 10.6c1.3 1 .6 3-1 3.1l-6.2.5-3.4 5.3c-.9 1.4-3 1-3.3-.6z' fill='none' stroke='{DARK}' stroke-opacity='.3' stroke-width='.9' stroke-linejoin='round'/>
-<path d='M9.2 6.8l6.5 4.8' stroke='#fff' stroke-opacity='.75' stroke-width='1.6' stroke-linecap='round'/>
-</svg>"""
-sprout = f"""<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>
-<defs><radialGradient id='s' cx='.35' cy='.25' r='.9'><stop offset='0' stop-color='#fff'/><stop offset='1' stop-color='#f3eef9'/></radialGradient></defs>
-<circle cx='16' cy='17.5' r='13' fill='{DARK}' fill-opacity='.14'/>
-<circle cx='16' cy='16' r='13' fill='url(%23s)' stroke='{DARK}' stroke-opacity='.22'/>
-<path d='M8 9.5a9 9 0 0 1 16 0' fill='none' stroke='#fff' stroke-width='2' stroke-linecap='round' stroke-opacity='.9'/>
-<g transform='translate(5.5 5.5) scale(.875)' fill='none' stroke='{PINK}' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3'/><path d='M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4'/><path d='M5 21h14'/></g>
-</svg>"""
-sprout_down = (sprout.replace(f"<circle cx='16' cy='17.5' r='13' fill='{DARK}' fill-opacity='.14'/>", "")
-    .replace("r='13' fill='url(%23s)'", "r='11.5' fill='url(%23s)'")
-    .replace("translate(5.5 5.5) scale(.875)", "translate(6.6 6.6) scale(.78)")
-    .replace("M8 9.5a9 9 0 0 1 16 0", "M9 10a8 8 0 0 1 14 0"))
-ibeam = f"""<svg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'>
-<path d='M12 6v16' stroke='#fff' stroke-width='5' stroke-linecap='round'/>
-<path d='M12 6v16' stroke='{PINK}' stroke-width='2.2' stroke-linecap='round'/>
-<circle cx='12' cy='4.5' r='3.2' fill='{PINK}' stroke='#fff' stroke-width='1.6'/><circle cx='12' cy='23.5' r='3.2' fill='{PINK}' stroke='#fff' stroke-width='1.6'/>
-<circle cx='11' cy='3.6' r='.9' fill='#fff' fill-opacity='.8'/><circle cx='11' cy='22.6' r='.9' fill='#fff' fill-opacity='.8'/>
-</svg>"""
-# 画像確認用は %23 を # に戻す
-show = [x.replace('%23','#') for x in (arrow, sprout, sprout_down, ibeam)]
+    return 'url("data:image/svg+xml,' + urllib.parse.quote(svg, safe="/:=,()' ").replace('#', '%23') + '") ' + f'{hx} {hy}, {fb}'
+
+# 矢印: 28px に 24 格子を 1.0 倍で。先端(4,4)がホットスポット。中は淡い桃で薄く塗る
+arrow = lucide([ARROW], 28, 1.0, 2, 2, fill='#f9c9d8')
+# 芽: 白い丸い座布団の上に。中心がホットスポット
+sprout = lucide(SPROUT, 32, 0.8, 6.4, 6.4, extra=f"<circle cx='16' cy='16' r='13' fill='{WHITE}' stroke='#3d3452' stroke-opacity='.22'/>")
+sprout_down = lucide(SPROUT, 32, 0.7, 7.6, 7.6, extra=f"<circle cx='16' cy='16' r='11.5' fill='{WHITE}' stroke='#3d3452' stroke-opacity='.22'/>")
+# I ビーム: 中心がホットスポット
+ibeam = lucide(TEXT, 28, 1.0, 2, 2)
+
 css = f"""
 /* =====================================================================
-   6. カーソル(ホバーできる端末だけ)。桃色の飴玉のような矢印、リンクの上は芽、文字の上は玉付きの I ビーム
+   6. カーソル(ホバーできる端末だけ)。lucide の線画に倣う: 矢印 / 芽(リンク) / I ビーム。tools/cursors.py で生成
    ===================================================================== */
 @media (hover: hover) and (pointer: fine) {{
   :root {{
-    --cursor-arrow: {url(arrow, 6, 4, 'auto')};
+    --cursor-arrow: {url(arrow, 6, 6, 'auto')};
     --cursor-hand:  {url(sprout, 16, 16, 'pointer')};
     --cursor-hand-down: {url(sprout_down, 16, 16, 'pointer')};
-    --cursor-text:  {url(ibeam, 12, 14, 'text')};
+    --cursor-text:  {url(ibeam, 14, 14, 'text')};
   }}
   html, body {{ cursor: var(--cursor-arrow); }}
   a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn {{ cursor: var(--cursor-hand); }}
@@ -49,9 +47,13 @@ css = f"""
   canvas {{ cursor: var(--cursor-arrow); }}
 }}
 """
-import os; p=os.path.join(os.path.dirname(__file__), '..', 'src/styles/global.css'); s=open(p).read()
-a=s.index("/* =====================================================================\n   6. カーソル")
-open(p,'w').write(s[:a].rstrip('\n')+'\n'+css)
-html='<body style="margin:0;background:#f8f5fd;display:flex;gap:36px;padding:24px;align-items:center">'+''.join(f'<div style="zoom:3">{x}</div>' for x in show)+'<div style="background:#15121c;padding:20px;display:flex;gap:36px">'+''.join(f'<div style="zoom:3">{x}</div>' for x in show)+'</div></body>'
-pass
+p = os.path.join(os.path.dirname(__file__), '..', 'src/styles/global.css')
+s = open(p).read()
+a = s.index("/* =====================================================================\n   6. カーソル")
+open(p, 'w').write(s[:a].rstrip('\n') + '\n' + css)
+
+if os.environ.get('PREVIEW'):
+    show = [arrow, sprout, sprout_down, ibeam]
+    row = ''.join(f'<div style="zoom:3">{x}</div>' for x in show)
+    open(os.environ['PREVIEW'], 'w').write(f'<body style="margin:0;background:#f8f5fd;display:flex;gap:36px;padding:24px;align-items:center">{row}<div style="background:#15121c;padding:20px;display:flex;gap:36px">{row}</div></body>')
 print('ok')
