@@ -220,9 +220,10 @@ ol .tag { background: var(--paper-2); }
   --sea-bubble: light-dark(transparent, oklch(90% 0.05 var(--sea-h) / 40%));
   --sea-bubble-hi: light-dark(transparent, oklch(98% 0.02 var(--sea-h) / 60%));
   /* ライト = 水面 */
-  --sea-ripple: light-dark(oklch(62% 0.10 var(--sea-h) / 45%), transparent);
-  --sea-glint:  light-dark(oklch(82% 0.13 88 / 85%), transparent); /* 日差しの淡い金 */
-  --sea-sky:    light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
+  --sea-ripple:   light-dark(oklch(62% 0.10 var(--sea-h) / 11%), transparent);
+  --sea-caustic:  light-dark(oklch(70% 0.10 var(--sea-h) / 7%), transparent);  /* 水面のゆらめき */
+  --sea-glint:    light-dark(oklch(85% 0.12 88 / 45%), transparent);           /* 日差しの淡い金 */
+  --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
 .sea { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
   /* ダーク: 下ほど深く。ライト: 上ほど空の水色 */
@@ -288,48 +289,58 @@ ol .tag { background: var(--paper-2); }
   80%  { transform: translate(12px, -80vh) scale(1.05); opacity: .9; }
   100% { transform: translate(0, -104vh) scale(1.1); opacity: 0; }
 }
-/* 波紋(ライト): 雨粒が落ちたように輪が広がって消える。個体差は nth-child で */
+/* 水面のゆらめき(ライト): 網目状の光の模様を 2 層、逆向きにゆっくり流して重ねる。上部だけに出て下へ消える */
+.sea .caustics {
+  inset: -30% -20%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 52%, var(--sea-caustic) 60%, transparent 68%) 0 0 / 220px 220px,
+    radial-gradient(circle at 50% 50%, transparent 52%, var(--sea-caustic) 60%, transparent 68%) 110px 130px / 220px 220px;
+  mask-image: linear-gradient(to bottom, black 15%, transparent 50%);
+  animation: caustic-flow 38s ease-in-out infinite alternate;
+}
+.sea .caustics-2 {
+  background-size: 300px 300px, 300px 300px; background-position: 70px 40px, 220px 190px;
+  opacity: .7; animation: caustic-flow-2 53s ease-in-out infinite alternate;
+}
+@keyframes caustic-flow   { from { transform: translate(0, 0) scale(1); }        to { transform: translate(3vw, 2vh) scale(1.06); } }
+@keyframes caustic-flow-2 { from { transform: translate(2vw, 1vh) scale(1.04); } to { transform: translate(-2vw, -1vh) scale(1); } }
+
+/* 波紋(ライト): 輪郭線ではなく、内外へぼける濃淡の環が 3 重。ゆっくり広がって消える */
 .sea .ripples i {
   left: var(--x); top: var(--y); width: var(--r); height: var(--r); margin: calc(var(--r) / -2) 0 0 calc(var(--r) / -2);
-  border-radius: 50%; border: 1.5px solid var(--sea-ripple);
-  opacity: 0; transform: scale(.1);
-  animation: ripple var(--t) cubic-bezier(0.2, 0.6, 0.4, 1) infinite; animation-delay: var(--d);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    transparent 30%, var(--sea-ripple) 36%, transparent 42%,
+    transparent 52%, var(--sea-ripple) 57%, transparent 62%,
+    transparent 71%, var(--sea-ripple) 75%, transparent 79%);
+  opacity: 0; transform: scale(.3);
+  animation: ripple var(--t) cubic-bezier(0.15, 0.5, 0.35, 1) infinite; animation-delay: var(--d);
 }
-.sea .ripples i::after { /* 二重の輪で水らしく */
-  content: ""; position: absolute; inset: 18%; border-radius: 50%; border: 1px solid var(--sea-ripple); opacity: .6;
-}
-.sea .ripples i:nth-child(1) { --x: 14%; --y: 22%; --r: 260px; --t: 11s; --d: -2s; }
-.sea .ripples i:nth-child(2) { --x: 72%; --y: 18%; --r: 320px; --t: 14s; --d: -9s; }
-.sea .ripples i:nth-child(3) { --x: 38%; --y: 58%; --r: 200px; --t: 9s;  --d: -5s; }
-.sea .ripples i:nth-child(4) { --x: 86%; --y: 66%; --r: 280px; --t: 13s; --d: -12s; }
-.sea .ripples i:nth-child(5) { --x: 55%; --y: 88%; --r: 240px; --t: 12s; --d: -7s; }
-.sea .ripples i:nth-child(6) { --x: 8%;  --y: 80%; --r: 180px; --t: 10s; --d: -3s; }
+.sea .ripples i:nth-child(1) { --x: 22%; --y: 28%; --r: 420px; --t: 22s; --d: -4s; }
+.sea .ripples i:nth-child(2) { --x: 76%; --y: 20%; --r: 520px; --t: 27s; --d: -15s; }
+.sea .ripples i:nth-child(3) { --x: 48%; --y: 72%; --r: 380px; --t: 24s; --d: -9s; }
 @keyframes ripple {
-  0%   { transform: scale(.1); opacity: 0; }
-  10%  { opacity: .9; }
-  70%  { opacity: .25; }
+  0%   { transform: scale(.3); opacity: 0; }
+  12%  { opacity: .7; }
+  75%  { opacity: .2; }
   100% { transform: scale(1); opacity: 0; }
 }
-/* 日差しのきらめき(ライト): 四つ星が小さく瞬く */
+
+/* 日差しのきらめき(ライト): 柔らかく光る点が息をするように明滅する */
 .sea .glints i {
-  left: var(--x); top: var(--y); width: 14px; height: 14px; margin: -7px 0 0 -7px;
-  background: var(--sea-glint);
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-  opacity: 0; transform: scale(0);
+  left: var(--x); top: var(--y); width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  background: radial-gradient(circle, var(--sea-glint) 0 18%, transparent 60%);
+  opacity: 0; transform: scale(.6);
   animation: glint var(--t) ease-in-out infinite; animation-delay: var(--d);
 }
-.sea .glints i:nth-child(1) { --x: 22%; --y: 14%; --t: 5s;   --d: -1s; }
-.sea .glints i:nth-child(2) { --x: 61%; --y: 9%;  --t: 6.5s; --d: -3s; }
-.sea .glints i:nth-child(3) { --x: 83%; --y: 27%; --t: 4.5s; --d: -2s; }
-.sea .glints i:nth-child(4) { --x: 45%; --y: 33%; --t: 7s;   --d: -5s; }
-.sea .glints i:nth-child(5) { --x: 12%; --y: 48%; --t: 5.5s; --d: -4s; }
-.sea .glints i:nth-child(6) { --x: 70%; --y: 52%; --t: 6s;   --d: -.5s; }
-.sea .glints i:nth-child(7) { --x: 33%; --y: 76%; --t: 4.8s; --d: -2.5s; }
-.sea .glints i:nth-child(8) { --x: 91%; --y: 84%; --t: 6.2s; --d: -1.8s; }
+.sea .glints i:nth-child(1) { --x: 24%; --y: 16%; --t: 7s;   --d: -1s; }
+.sea .glints i:nth-child(2) { --x: 63%; --y: 11%; --t: 9s;   --d: -4s; }
+.sea .glints i:nth-child(3) { --x: 85%; --y: 30%; --t: 6.5s; --d: -2.5s; }
+.sea .glints i:nth-child(4) { --x: 42%; --y: 38%; --t: 8s;   --d: -6s; }
+.sea .glints i:nth-child(5) { --x: 10%; --y: 46%; --t: 7.5s; --d: -3.5s; }
 @keyframes glint {
-  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
-  45%      { transform: scale(1) rotate(35deg); opacity: 1; }
-  55%      { transform: scale(.9) rotate(45deg); opacity: .9; }
+  0%, 100% { transform: scale(.6); opacity: 0; }
+  50%      { transform: scale(1);  opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea :is(.bubbles, .ripples, .glints) i { display: none; } }
 
