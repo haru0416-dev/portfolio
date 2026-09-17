@@ -19,6 +19,7 @@ const works = defineCollection({
     name: z.string(),
     summary: z.string(),
     stack: z.array(z.string()),
+    icon: z.string().default('box'),
     repo: z.string().url().optional(),
     url: z.string().url().optional(),
     status: z.enum(['active', 'wip', 'archived']).default('active'),

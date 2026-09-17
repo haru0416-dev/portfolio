@@ -1,6 +1,6 @@
 ---
 import { SITE } from '../site';
-import Mark from './Mark.astro';
+import { SITE_ICON as SiteIcon } from '../data/icons';
 const nav = [
   { href: '/blog', label: 'Blog' },
   { href: '/works', label: 'Works' },
@@ -10,7 +10,7 @@ const path = Astro.url.pathname;
 ---
 <header class="sticky top-0 z-10 bg-paper/85 backdrop-blur border-b border-line">
   <div class="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-    <a href="/" class="serif text-2xl leading-none flex items-center gap-2"><Mark seed={SITE.name} size={26} class="rounded-lg" /><span>{SITE.name}<span class="text-accent">.</span></span></a>
+    <a href="/" class="serif text-2xl leading-none flex items-center gap-2"><SiteIcon size={22} stroke-width={2.5} class="text-accent" aria-hidden="true" /><span>{SITE.name}<span class="text-accent">.</span></span></a>
     <nav class="flex items-center gap-6 sm:gap-8 text-[12px] tracking-[.1em] uppercase">
       {nav.map((n) => (
         <a

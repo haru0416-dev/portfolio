@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import Mark from '../components/Mark.astro';
+import Tile from '../components/Tile.astro';
 import Wordmark from '../components/Wordmark.astro';
 import FlowMark from '../components/FlowMark.astro';
 import { SITE } from '../site';
@@ -45,7 +45,7 @@ const lab = LAB.slice(0, 3);
           {works.map((w) => (
             <li>
               <a href={w.data.url ?? w.data.repo} class="group flex gap-4 items-start">
-                <Mark seed={w.id} size={44} class="shrink-0 rounded-xl" />
+                <Tile icon={w.data.icon as any} size={44} class="bg-paper-2" />
                 <div>
                   <div class="font-medium group-hover:text-accent transition-colors">{w.data.name}</div>
                   <p class="text-[.85rem] text-muted leading-relaxed line-clamp-2">{w.data.summary}</p>

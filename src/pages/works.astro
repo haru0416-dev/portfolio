@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import Mark from '../components/Mark.astro';
+import Tile from '../components/Tile.astro';
 import Hero from '../components/Hero.astro';
 const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
 const badge = { active: '', wip: 'Work in progress', archived: 'Archived' } as const;
@@ -12,7 +12,7 @@ const badge = { active: '', wip: 'Work in progress', archived: 'Archived' } as c
     {works.map((w) => (
       <li class="card flex flex-col gap-3">
         <div class="flex items-center gap-3">
-          <Mark seed={w.id} size={48} class="rounded-xl shrink-0" />
+          <Tile icon={w.data.icon as any} size={48} />
           <div class="min-w-0">
             <h2 class="serif-jp text-[1.15rem] leading-snug">{w.data.name}</h2>
             {badge[w.data.status] && <span class="text-[10px] font-bold tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}

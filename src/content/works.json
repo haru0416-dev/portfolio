@@ -3,45 +3,67 @@
     "id": "munou",
     "name": "人工無脳君 (munou)",
     "summary": "既製の LLM や配布重みを使わず、理解せずに会話が成立する対話プログラム。育つ様子を観察するのが本線。v0.2 から純 Rust の自作小型言語モデルも候補源に足せる。",
-    "stack": ["Rust", "WebAssembly"],
+    "stack": [
+      "Rust",
+      "WebAssembly"
+    ],
     "repo": "https://github.com/haru0416-dev/munou",
     "url": "https://haru0416-dev.github.io/munou/",
     "status": "active",
-    "order": 10
+    "order": 10,
+    "icon": "message-circle"
   },
   {
     "id": "dubito",
     "name": "dubito",
     "summary": "解答を疑うツール。数学の問題を複数のソルバで独立に定式化し、解を交換して Z3 で照合し、決定的なスコアベクトルを出す。LLM 不要の適応度関数として使える。",
-    "stack": ["Python", "Z3"],
+    "stack": [
+      "Python",
+      "Z3"
+    ],
     "repo": "https://github.com/haru0416-dev/dubito",
     "status": "wip",
-    "order": 20
+    "order": 20,
+    "icon": "scale"
   },
   {
     "id": "famulus",
     "name": "famulus",
     "summary": "AI の動向を追い、外に出す文を書く常駐エージェント。Effect と SQLite で組んだ Bun 製。",
-    "stack": ["Bun", "TypeScript", "Effect", "SQLite"],
+    "stack": [
+      "Bun",
+      "TypeScript",
+      "Effect",
+      "SQLite"
+    ],
     "repo": "https://github.com/haru0416-dev/famulus",
     "status": "active",
-    "order": 30
+    "order": 30,
+    "icon": "newspaper"
   },
   {
     "id": "fraxinus",
     "name": "Fraxinus",
     "summary": "検索・画像生成・図表・PDF・スライドを 1 機能ずつ呼ぶ JSON CLI。Bot などの呼び出し元へ結果とローカル生成物を返す。",
-    "stack": ["Bun", "TypeScript"],
+    "stack": [
+      "Bun",
+      "TypeScript"
+    ],
     "repo": "https://github.com/haru0416-dev/Fraxinus",
     "status": "active",
-    "order": 40
+    "order": 40,
+    "icon": "wand-sparkles"
   },
   {
     "id": "dopacode",
     "name": "DopaCode",
     "summary": "vibe coding をソシャゲ化した風刺ダッシュボード。agent の diff が N / R / SR / SSR でドロップする Go 製 TUI。",
-    "stack": ["Go", "TUI"],
+    "stack": [
+      "Go",
+      "TUI"
+    ],
     "status": "active",
-    "order": 50
+    "order": 50,
+    "icon": "dices"
   }
 ]
