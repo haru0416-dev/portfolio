@@ -63,8 +63,8 @@
   --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --font-serif: "Fredoka", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif;
-  --font-sans: "Nunito", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", sans-serif;
+  --font-serif: var(--font-fredoka);
+  --font-sans: var(--font-nunito);
 }
 
 html { color-scheme: light dark; }
@@ -81,7 +81,7 @@ body {
 
 /* 見出しは丸ゴシック(クラス名は以前のまま) */
 .serif { font-family: var(--font-serif); font-weight: 600; letter-spacing: 0; }
-.serif-jp { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif; font-weight: 700; }
+.serif-jp { font-family: var(--font-zen-maru); font-weight: 700; }
 
 /* セクション見出し: 小さなラベル + 点線 */
 .eyebrow {
@@ -149,7 +149,7 @@ body {
 /* 記事本文 */
 .prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
 .prose > * + * { margin-top: 1.5rem; }
-.prose :is(h2, h3) { font-family: "Zen Maru Gothic", var(--font-serif); font-weight: 700; color: var(--ink); }
+.prose :is(h2, h3) { font-family: var(--font-zen-maru); font-weight: 700; color: var(--ink); }
 .prose h2 { font-size: var(--text-xl); line-height: 2rem; margin-top: 4rem; }
 .prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
 .prose h2 + *, .prose h3 + * { margin-top: 1rem; }

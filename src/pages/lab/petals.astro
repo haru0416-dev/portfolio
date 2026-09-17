@@ -11,14 +11,14 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
 </Base>
 
 <script>
-  import { startPetalsGPU } from '../../scripts/petals-gpu';
   import { startPetals } from '../../scripts/petals';
   // ページ遷移で来ても動くよう、astro:page-load で初期化する
   document.addEventListener('astro:page-load', () => {
     const canvas = document.getElementById('petals') as HTMLCanvasElement | null;
     const label = document.getElementById('renderer');
     if (!canvas || !label) return;
-    startPetalsGPU(canvas).then((gpu) => {
+    const gpuReady = ('gpu' in navigator) ? import('../../scripts/petals-gpu').then((m) => m.startPetalsGPU(canvas)) : Promise.resolve(null);
+    gpuReady.then((gpu) => {
       if (gpu) { label.textContent = `WebGPU · ${gpu.count.toLocaleString()} petals`; return; }
       // WebGPU が使えない環境は Canvas 2D 版へ
       const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
