@@ -7,9 +7,9 @@ export type LabEntry = {
 
 export const LAB: LabEntry[] = [
   {
-    slug: 'flow-field',
-    title: 'Flow Field',
-    description: 'ノイズで作ったベクトル場に粒子を流す。クリックで場を作り直す。',
+    slug: 'petals',
+    title: 'Petals',
+    description: '桜の花びらが舞う。クリックした側から風が吹く。',
     date: '2026-09-17',
   },
 ];

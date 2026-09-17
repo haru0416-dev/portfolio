@@ -2,14 +2,14 @@
 import Base from '../../layouts/Base.astro';
 import Hero from '../../components/Hero.astro';
 import { LAB } from '../../data/lab';
-const meta = LAB.find((l) => l.slug === 'flow-field')!;
+const meta = LAB.find((l) => l.slug === 'petals')!;
 ---
 <Base title={meta.title} description={meta.description} wide>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} pattern="graph" />
-  <canvas id="c" class="w-full aspect-[16/10] rounded-3xl border-4 border-paper-2 cursor-pointer"></canvas>
+  <canvas id="c" class="w-full aspect-[16/10] rounded-3xl bg-paper-2 cursor-pointer" title="クリックで風が吹く"></canvas>
 </Base>
 
 <script>
-  import { startFlow } from '../../scripts/flow';
-  startFlow(document.getElementById('c') as HTMLCanvasElement);
+  import { startPetals } from '../../scripts/petals';
+  startPetals(document.getElementById('c') as HTMLCanvasElement);
 </script>
