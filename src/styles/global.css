@@ -95,10 +95,9 @@ body {
 /* 名前の文字を順に出す(読み込み時に一度だけ) */
 .wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 45ms + 80ms); }
 .hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
-.hero-mark { opacity: 0; animation: wm-in 800ms var(--ease-out) forwards; animation-delay: 200ms; }
 @keyframes wm-in { to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .wm-char, .hero-lead, .hero-mark { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
+  .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
 }
 
 /* ページごとの背景罫線。下に向かって消える */
