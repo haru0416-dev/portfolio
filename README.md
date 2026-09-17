@@ -15,7 +15,7 @@
 
 - **余白**: 8px の倍数だけ使う(Tailwind の `2 / 4 / 6 / 8 / 12 / 16 / 24 / 32`)。ピルやチップの内側だけ 4px 刻みを許容。
 - **文字**: 16px 基準、比率 1.25 の型スケール(`text-xs` 〜 `text-7xl`)。行送りは 8px の倍数に丸めてある。`text-[...]` や `leading-*` で個別に指定しない。
-- **角丸**: `rounded-lg`(8)/ `rounded-2xl`(16)/ `rounded-3xl`(24)/ `rounded-full` の 4 段階。
+- **角丸**: `rounded-lg`(8)/ `rounded-2xl`(16)/ `rounded-3xl`(24)/ `rounded-4xl`(40)/ `rounded-full`。入れ子にするときは **内側の角丸 = 外側の角丸 − 余白** で同心にする(カード 40 − 余白 24 = 座布団 16)。角の曲線は対応ブラウザでは `corner-shape: squircle`(超楕円)になり、円弧の角にある曲率の段差がなくなる。
 - **幅**: 本文 42rem、広い面 64rem。日付の列は 6rem。
 - 定義は `src/styles/global.css` の `@theme`。
 

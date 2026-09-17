@@ -38,8 +38,8 @@
   --text-5xl: 3.815rem;    --text-5xl--line-height: 4rem;
   --text-6xl: 4.768rem;    --text-6xl--line-height: 5rem;
   --text-7xl: 5.96rem;     --text-7xl--line-height: 6rem;
-  /* 角丸は 8 / 16 / 24 */
-  --radius-lg: 0.5rem; --radius-2xl: 1rem; --radius-3xl: 1.5rem;
+  /* 角丸は 8 / 16 / 24 / 40。入れ子は「内側 = 外側 − 余白」で同心にする */
+  --radius-lg: 0.5rem; --radius-2xl: 1rem; --radius-3xl: 1.5rem; --radius-4xl: 2.5rem;
 }
 
 @theme inline {
@@ -104,7 +104,13 @@ body {
 .dotted { border-top: 2px dotted var(--line); }
 
 /* ふんわりしたカード */
-.card { background: var(--paper-2); border-radius: 1.5rem; padding: 1.5rem; }
+/* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
+.card { background: var(--paper-2); border-radius: 2.5rem; padding: 1.5rem; }
+
+/* 角の曲線は円弧ではなくスクワークル(対応ブラウザのみ。他は円弧のまま) */
+@supports (corner-shape: squircle) {
+  .card, .tile, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
+}
 
 /* リンクの下線アニメーション(ホバーできる端末だけ) */
 .u-link { position: relative; text-decoration: none; }
