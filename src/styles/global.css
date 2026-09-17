@@ -212,15 +212,21 @@ ol .tag { background: var(--paper-2); }
    light-dark() は色しか受け付けないので、濃さは色の不透明度に含める */
 :root {
   --sea-h: 225;
-  --sea-depth: light-dark(oklch(60% 0.08 var(--sea-h) / 10%),  oklch(45% 0.09 var(--sea-h) / 18%));
-  --sea-ray:   light-dark(oklch(78% 0.09 var(--sea-h) / 9%),   oklch(75% 0.10 var(--sea-h) / 18%));
-  --sea-dot:   light-dark(oklch(55% 0.10 var(--sea-h) / 24%),  oklch(90% 0.05 var(--sea-h) / 50%));
-  --sea-dot-2: light-dark(oklch(55% 0.10 var(--sea-h) / 14%),  oklch(90% 0.05 var(--sea-h) / 32%));
-  --sea-bubble: light-dark(oklch(60% 0.08 var(--sea-h) / 30%), oklch(90% 0.05 var(--sea-h) / 40%));
-  --sea-bubble-hi: light-dark(oklch(98% 0.02 var(--sea-h) / 70%), oklch(98% 0.02 var(--sea-h) / 60%));
+  /* ダーク = 深海 */
+  --sea-depth: light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
+  --sea-ray:   light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
+  --sea-dot:   light-dark(transparent, oklch(90% 0.05 var(--sea-h) / 50%));
+  --sea-dot-2: light-dark(transparent, oklch(90% 0.05 var(--sea-h) / 32%));
+  --sea-bubble: light-dark(transparent, oklch(90% 0.05 var(--sea-h) / 40%));
+  --sea-bubble-hi: light-dark(transparent, oklch(98% 0.02 var(--sea-h) / 60%));
+  /* ライト = 水面 */
+  --sea-ripple: light-dark(oklch(62% 0.10 var(--sea-h) / 45%), transparent);
+  --sea-glint:  light-dark(oklch(82% 0.13 88 / 85%), transparent); /* 日差しの淡い金 */
+  --sea-sky:    light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
 .sea { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
-  background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)); }
+  /* ダーク: 下ほど深く。ライト: 上ほど空の水色 */
+  background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%); }
 .sea i { position: absolute; display: block; }
 
 /* 光の帯: 斜めの淡い縞を、下に向かって消しながら左右にゆっくり揺らす。2 層目は角度と速さを変えて厚みを出す */
@@ -282,7 +288,51 @@ ol .tag { background: var(--paper-2); }
   80%  { transform: translate(12px, -80vh) scale(1.05); opacity: .9; }
   100% { transform: translate(0, -104vh) scale(1.1); opacity: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea .bubbles i { display: none; } }
+/* 波紋(ライト): 雨粒が落ちたように輪が広がって消える。個体差は nth-child で */
+.sea .ripples i {
+  left: var(--x); top: var(--y); width: var(--r); height: var(--r); margin: calc(var(--r) / -2) 0 0 calc(var(--r) / -2);
+  border-radius: 50%; border: 1.5px solid var(--sea-ripple);
+  opacity: 0; transform: scale(.1);
+  animation: ripple var(--t) cubic-bezier(0.2, 0.6, 0.4, 1) infinite; animation-delay: var(--d);
+}
+.sea .ripples i::after { /* 二重の輪で水らしく */
+  content: ""; position: absolute; inset: 18%; border-radius: 50%; border: 1px solid var(--sea-ripple); opacity: .6;
+}
+.sea .ripples i:nth-child(1) { --x: 14%; --y: 22%; --r: 260px; --t: 11s; --d: -2s; }
+.sea .ripples i:nth-child(2) { --x: 72%; --y: 18%; --r: 320px; --t: 14s; --d: -9s; }
+.sea .ripples i:nth-child(3) { --x: 38%; --y: 58%; --r: 200px; --t: 9s;  --d: -5s; }
+.sea .ripples i:nth-child(4) { --x: 86%; --y: 66%; --r: 280px; --t: 13s; --d: -12s; }
+.sea .ripples i:nth-child(5) { --x: 55%; --y: 88%; --r: 240px; --t: 12s; --d: -7s; }
+.sea .ripples i:nth-child(6) { --x: 8%;  --y: 80%; --r: 180px; --t: 10s; --d: -3s; }
+@keyframes ripple {
+  0%   { transform: scale(.1); opacity: 0; }
+  10%  { opacity: .9; }
+  70%  { opacity: .25; }
+  100% { transform: scale(1); opacity: 0; }
+}
+/* 日差しのきらめき(ライト): 四つ星が小さく瞬く */
+.sea .glints i {
+  left: var(--x); top: var(--y); width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  background: var(--sea-glint);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  opacity: 0; transform: scale(0);
+  animation: glint var(--t) ease-in-out infinite; animation-delay: var(--d);
+}
+.sea .glints i:nth-child(1) { --x: 22%; --y: 14%; --t: 5s;   --d: -1s; }
+.sea .glints i:nth-child(2) { --x: 61%; --y: 9%;  --t: 6.5s; --d: -3s; }
+.sea .glints i:nth-child(3) { --x: 83%; --y: 27%; --t: 4.5s; --d: -2s; }
+.sea .glints i:nth-child(4) { --x: 45%; --y: 33%; --t: 7s;   --d: -5s; }
+.sea .glints i:nth-child(5) { --x: 12%; --y: 48%; --t: 5.5s; --d: -4s; }
+.sea .glints i:nth-child(6) { --x: 70%; --y: 52%; --t: 6s;   --d: -.5s; }
+.sea .glints i:nth-child(7) { --x: 33%; --y: 76%; --t: 4.8s; --d: -2.5s; }
+.sea .glints i:nth-child(8) { --x: 91%; --y: 84%; --t: 6.2s; --d: -1.8s; }
+@keyframes glint {
+  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+  45%      { transform: scale(1) rotate(35deg); opacity: 1; }
+  55%      { transform: scale(.9) rotate(45deg); opacity: .9; }
+}
+@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea :is(.bubbles, .ripples, .glints) i { display: none; } }
+
 
 /* 5b. スクロール連動(CSS のみ)。animation ショートハンドは timeline を初期化するので longhand で書く */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {

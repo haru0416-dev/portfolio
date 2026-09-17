@@ -51,11 +51,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">
-    <!-- 背景: 深海の気配。水面から差す光と、ゆっくり昇るマリンスノー(装飾。本文の裏、CSS のみ) -->
+    <!-- 背景(装飾。本文の裏、CSS のみ)。ダークは深海(光の帯・泡・マリンスノー)、ライトは水面(波紋・日差しのきらめき)。
+         出ない側は色を透明にして隠す -->
     <div class="sea" aria-hidden="true">
       <i class="rays"></i><i class="rays rays-2"></i>
       <i class="snow"></i><i class="snow far"></i>
       <span class="bubbles">{Array.from({ length: 10 }, () => <i></i>)}</span>
+      <span class="ripples">{Array.from({ length: 6 }, () => <i></i>)}</span>
+      <span class="glints">{Array.from({ length: 8 }, () => <i></i>)}</span>
     </div>
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
