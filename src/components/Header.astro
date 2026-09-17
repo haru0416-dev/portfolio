@@ -17,7 +17,7 @@ const path = Astro.url.pathname;
           class:list={['u-link transition-colors', path.startsWith(n.href) ? 'text-ink' : 'text-muted hover:text-ink']}
         >{n.label}</a>
       ))}
-      <button id="theme-toggle" type="button" aria-label="テーマ切替" class="text-muted hover:text-ink transition-colors -mr-1">
+      <button id="theme-toggle" type="button" aria-label="テーマ切替" class="press text-muted hover:text-ink transition-colors -mr-1">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>

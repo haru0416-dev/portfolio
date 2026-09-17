@@ -1,79 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Hero from '../../components/Hero.astro';
 import { LAB } from '../../data/lab';
 const meta = LAB.find((l) => l.slug === 'flow-field')!;
 ---
 <Base title={meta.title} description={meta.description} wide>
-  <header class="mb-8 max-w-[42rem]">
-    <p class="eyebrow mb-4"><span>Lab / {meta.date.replaceAll('-', '.')}</span></p>
-    <h1 class="serif text-4xl">{meta.title}</h1>
-    <p class="text-ink-2 mt-3">{meta.description}</p>
-  </header>
+  <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} pattern="graph" />
   <canvas id="c" class="w-full aspect-[16/10] rounded-sm border border-line cursor-pointer"></canvas>
 </Base>
 
 <script>
-  const canvas = document.getElementById('c') as HTMLCanvasElement;
-  const ctx = canvas.getContext('2d')!;
-
-  // --- 2D value noise(依存ゼロ) ---
-  let seed = Math.random() * 1e9;
-  const hash = (x: number, y: number) => {
-    let h = (x * 374761393 + y * 668265263 + seed) | 0;
-    h = ((h ^ (h >>> 13)) * 1274126177) | 0;
-    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-  };
-  const smooth = (t: number) => t * t * (3 - 2 * t);
-  const noise = (x: number, y: number) => {
-    const xi = Math.floor(x), yi = Math.floor(y);
-    const xf = smooth(x - xi), yf = smooth(y - yi);
-    const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
-    return a + (b - a) * xf + (c - a) * yf + (a - b - c + d) * xf * yf;
-  };
-
-  type P = { x: number; y: number; life: number };
-  let W = 0, H = 0, dpr = 1;
-  const N = 1400;
-  let ps: P[] = [];
-  const scale = 0.004;
-
-  const spawn = (): P => ({ x: Math.random() * W, y: Math.random() * H, life: 60 + Math.random() * 200 });
-
-  const resize = () => {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    const r = canvas.getBoundingClientRect();
-    W = r.width; H = r.height;
-    canvas.width = W * dpr; canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    reset();
-  };
-  const reset = () => {
-    ps = Array.from({ length: N }, spawn);
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--paper');
-    ctx.fillRect(0, 0, W, H);
-  };
-
-  const frame = () => {
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-    const bg = getComputedStyle(document.documentElement).getPropertyValue('--paper');
-    ctx.fillStyle = bg; ctx.globalAlpha = 0.04; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-    ctx.strokeStyle = accent; ctx.lineWidth = 1; ctx.globalAlpha = 0.35;
-    ctx.beginPath();
-    for (const p of ps) {
-      const a = noise(p.x * scale, p.y * scale) * Math.PI * 4;
-      const nx = p.x + Math.cos(a) * 1.6, ny = p.y + Math.sin(a) * 1.6;
-      ctx.moveTo(p.x, p.y); ctx.lineTo(nx, ny);
-      p.x = nx; p.y = ny; p.life--;
-      if (p.life <= 0 || p.x < 0 || p.y < 0 || p.x > W || p.y > H) Object.assign(p, spawn());
-    }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    requestAnimationFrame(frame);
-  };
-
-  canvas.addEventListener('click', () => { seed = Math.random() * 1e9; reset(); });
-  new MutationObserver(reset).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  addEventListener('resize', resize);
-  resize();
-  frame();
+  import { startFlow } from '../../scripts/flow';
+  startFlow(document.getElementById('c') as HTMLCanvasElement);
 </script>

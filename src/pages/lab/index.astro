@@ -1,13 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Hero from '../../components/Hero.astro';
 import { LAB } from '../../data/lab';
 ---
 <Base title="Lab">
-  <header class="mb-10">
-    <p class="eyebrow mb-4"><span>Lab</span></p>
-    <h1 class="serif text-4xl">Experiments</h1>
-    <p class="text-ink-2 mt-3">小さな実験置き場。1 ページ 1 個。</p>
-  </header>
+  <Hero eyebrow="Lab" title="Experiments" lead="小さな実験置き場。1 ページ 1 個。" pattern="graph" />
   <ol class="divide-y divide-line">
     {LAB.map((l) => (
       <li>

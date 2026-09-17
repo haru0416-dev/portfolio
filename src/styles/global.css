@@ -32,11 +32,12 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --font-serif: "Instrument Serif", "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
   --font-sans: "Inter", "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", system-ui, sans-serif;
 }
 
-html { color-scheme: light dark; scroll-behavior: smooth; }
+html { color-scheme: light dark; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -58,13 +59,44 @@ body {
 }
 .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
-/* リンクの下線アニメーション */
+/* リンクの下線アニメーション(ホバーできる端末だけ) */
 .u-link { position: relative; text-decoration: none; }
 .u-link::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -.1em; height: 1px;
-  background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .25s ease;
+  background: currentColor; transform: scaleX(0); transform-origin: left;
+  transition: transform 200ms var(--ease-out);
 }
-.u-link:hover::after { transform: scaleX(1); }
+@media (hover: hover) and (pointer: fine) {
+  .u-link:hover::after { transform: scaleX(1); }
+}
+
+/* 押せるものは押した瞬間に応える */
+.press { transition: transform 160ms var(--ease-out); }
+.press:active { transform: scale(0.94); }
+
+/* 名前の文字を順に出す(読み込み時に一度だけ) */
+.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 45ms + 80ms); }
+.hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
+.hero-mark { opacity: 0; animation: wm-in 800ms var(--ease-out) forwards; animation-delay: 200ms; }
+@keyframes wm-in { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .wm-char, .hero-lead, .hero-mark { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
+}
+
+/* ページごとの背景罫線。下に向かって消える */
+.hero { --pat: color-mix(in srgb, var(--ink) 9%, transparent); }
+.hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  mask-image: linear-gradient(to bottom, black 20%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent);
+}
+.hero-ruled::before { background: repeating-linear-gradient(to bottom, transparent 0 31px, var(--pat) 31px 32px); }
+.hero-dots::before { background: radial-gradient(var(--pat) 1px, transparent 1.2px) 0 0 / 24px 24px; }
+.hero-graph::before {
+  background:
+    linear-gradient(to right, var(--pat) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(to bottom, var(--pat) 1px, transparent 1px) 0 0 / 32px 32px;
+}
 
 /* 記事本文 */
 .prose { font-size: 1.02rem; line-height: 2; color: var(--ink); }

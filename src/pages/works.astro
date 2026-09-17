@@ -2,15 +2,12 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Mark from '../components/Mark.astro';
+import Hero from '../components/Hero.astro';
 const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
 const badge = { active: '', wip: 'Work in progress', archived: 'Archived' } as const;
 ---
 <Base title="Works" wide>
-  <header class="mb-12 max-w-[42rem]">
-    <p class="eyebrow mb-4"><span>Works</span></p>
-    <h1 class="serif text-4xl">Selected works</h1>
-    <p class="text-ink-2 mt-3">代表的なものだけ。ほかは GitHub に。</p>
-  </header>
+  <Hero eyebrow="Works" title="Selected works" lead="代表的なものだけ。ほかは GitHub に。" pattern="dots" />
   <ol class="border-t border-line">
     {works.map((w, i) => (
       <li class="border-b border-line py-8 grid gap-6 sm:grid-cols-[3rem_4.5rem_1fr] items-start">

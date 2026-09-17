@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import Mark from '../components/Mark.astro';
+import Wordmark from '../components/Wordmark.astro';
+import FlowMark from '../components/FlowMark.astro';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
 
@@ -13,18 +15,23 @@ const works = (await getCollection('works')).sort((a, b) => a.data.order - b.dat
 const lab = LAB.slice(0, 3);
 ---
 <Base wide>
-  <section class="max-w-[42rem] mb-24 mt-6">
-    <p class="eyebrow mb-6"><span>Notes &amp; experiments</span></p>
-    <h1 class="serif-jp text-[1.9rem] sm:text-[2.9rem] leading-[1.35] tracking-tight">
-      作ったものと、<br />作りながら考えたこと。
-    </h1>
-    <p class="mt-6 text-ink-2 leading-relaxed max-w-[34rem]">
-      {SITE.name} の個人サイト。小さなツールや対話プログラムを Rust や TypeScript で作り、
-      その過程で気づいたことを書き留めています。
-    </p>
+  <!-- 顔: 名前と一文だけ。画面の大半を余白にする -->
+  <section class="min-h-[calc(100dvh-4rem-6rem)] flex items-center -mt-12">
+    <div class="w-full grid gap-12 sm:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)] items-center">
+      <div>
+        <p class="eyebrow mb-8"><span>Notes &amp; experiments</span></p>
+        <h1 class="serif text-[4.5rem] sm:text-[7rem] leading-[0.95] tracking-[-0.02em]">
+          <Wordmark text={SITE.name} /><span class="text-accent">.</span>
+        </h1>
+        <p class="serif-jp mt-8 text-[1.2rem] sm:text-[1.6rem] leading-[1.6] text-ink-2 max-w-[24em] hero-lead">
+          作ったものと、作りながら考えたこと。
+        </p>
+      </div>
+      <FlowMark class="hero-mark max-w-[16rem] sm:max-w-[22rem] justify-self-center sm:justify-self-end" />
+    </div>
   </section>
 
-  <div class="grid gap-x-16 gap-y-20 lg:grid-cols-[1fr_20rem]">
+  <div class="grid gap-x-16 gap-y-20 lg:grid-cols-[1fr_20rem] pt-24 border-t border-line">
     <section>
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} />
