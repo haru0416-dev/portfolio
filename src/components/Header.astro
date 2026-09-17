@@ -25,8 +25,11 @@ const path = Astro.url.pathname;
   </div>
 </header>
 <script>
-  document.getElementById('theme-toggle')?.addEventListener('click', () => {
-    const dark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  // ページ遷移のたびに新しいボタンへ付け直す
+  document.addEventListener('astro:page-load', () => {
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
   });
 </script>

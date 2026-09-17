@@ -13,7 +13,7 @@ const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
 const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
 ---
 <Base title="Blog">
-  <Hero eyebrow="Blog" title="Writing" lead="作りながら考えたことの記録。" pattern="ruled" />
+  <Hero eyebrow="Blog" title="Writing" lead="作りながら考えたことの記録。" />
 
   {latest && (
     <a href={`/blog/${latest.id}/`} class="card card-cover block group mb-10">
@@ -46,7 +46,8 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
 </Base>
 
 <script>
-  // タグで絞り込む。最新カードは常に出す
+  // タグで絞り込む。最新カードは常に出す。ページ遷移のたびに付け直す
+  document.addEventListener('astro:page-load', () => {
   const box = document.getElementById('tag-filter');
   box?.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-tag]');
@@ -59,5 +60,6 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
     document.querySelectorAll<HTMLElement>('section[data-year]').forEach((sec) => {
       sec.hidden = ![...sec.querySelectorAll('li[data-tags]')].some((li) => !(li as HTMLLIElement).hidden);
     });
+  });
   });
 </script>

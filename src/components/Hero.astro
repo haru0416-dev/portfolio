@@ -1,16 +1,15 @@
 ---
-// ページ冒頭。pattern でページごとに背景の罫線を変える(本体の部品は共通のまま)。
+// ページ冒頭の見出し。小さなラベル、大きな題、一文。
 interface Props {
   eyebrow?: string;
   title: string;
   lead?: string;
-  pattern?: 'none' | 'ruled' | 'dots' | 'graph';
   serifJp?: boolean;
 }
-const { eyebrow, title, lead, pattern = 'none', serifJp = false } = Astro.props;
+const { eyebrow, title, lead, serifJp = false } = Astro.props;
 ---
-<header class:list={['hero', `hero-${pattern}`, 'relative -mx-5 sm:-mx-8 px-5 sm:px-8 pt-6 pb-10 mb-8']}>
-  {eyebrow && <p class="eyebrow mb-5"><span>{eyebrow}</span></p>}
+<header class="pt-4 pb-10 mb-6">
+  {eyebrow && <p class="eyebrow eyebrow-plain mb-5"><span>{eyebrow}</span></p>}
   <h1 class:list={[serifJp ? 'serif-jp' : 'serif', 'text-[2.4rem] sm:text-5xl leading-tight']}>{title}</h1>
   {lead && <p class="text-ink-2 mt-4 max-w-[36rem] leading-relaxed">{lead}</p>}
 </header>

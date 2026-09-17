@@ -8,7 +8,7 @@ const { posts, compact = false } = Astro.props;
 <ol class="-mx-3">
   {posts.map((p) => (
     <li data-tags={p.data.tags.join(' ')}>
-      <a href={`/blog/${p.id}/`} class="row group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 px-3 py-4 rounded-2xl">
+      <a href={`/blog/${p.id}/`} class="group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 px-3 py-4 rounded-2xl">
         <div class="text-xs text-muted pt-1.5 leading-relaxed">
           <FormattedDate date={p.data.pubDate} />
           {!compact && <div class="mt-0.5">{readingMinutes(p.body)} min</div>}

@@ -87,13 +87,7 @@ body {
 .dotted { border-top: 2px dotted var(--line); }
 
 /* ふんわりしたカード */
-.card {
-  background: var(--paper-2); border-radius: 1.25rem; padding: 1.25rem;
-  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
-}
-@media (hover: hover) and (pointer: fine) {
-  .card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--ink) 25%, transparent); }
-}
+.card { background: var(--paper-2); border-radius: 1.25rem; padding: 1.25rem; }
 
 /* リンクの下線アニメーション(ホバーできる端末だけ) */
 .u-link { position: relative; text-decoration: none; }
@@ -118,20 +112,6 @@ body {
   .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
 }
 
-/* ページごとの背景罫線。下に向かって消える */
-.hero { --pat: color-mix(in srgb, var(--accent) 22%, transparent); }
-.hero::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  mask-image: linear-gradient(to bottom, black 20%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent);
-}
-.hero-ruled::before { background: repeating-linear-gradient(to bottom, transparent 0 30px, var(--pat) 30px 32px); }
-.hero-dots::before { background: radial-gradient(var(--pat) 2px, transparent 2.5px) 0 0 / 22px 22px; }
-.hero-graph::before {
-  background:
-    linear-gradient(to right, var(--pat) 1px, transparent 1px) 0 0 / 32px 32px,
-    linear-gradient(to bottom, var(--pat) 1px, transparent 1px) 0 0 / 32px 32px;
-}
 
 /* 記事本文 */
 .prose { font-size: 1.02rem; line-height: 2; color: var(--ink); }
@@ -161,11 +141,6 @@ body {
 /* Petals の背景: 薄い空のグラデーション */
 .petal-sky { background: linear-gradient(to bottom, color-mix(in srgb, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
-/* 一覧の行: ホバーで薄く浮く */
-@media (hover: hover) and (pointer: fine) {
-  .row { transition: background-color 150ms ease; }
-  .row:hover { background: color-mix(in srgb, var(--paper-2) 70%, transparent); }
-}
 
 /* タグ */
 .tag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: .2rem .6rem; border-radius: 999px; }
@@ -178,8 +153,8 @@ body {
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 @media (hover: hover) and (pointer: fine) { .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); } }
 
-/* 最新記事のカード: 淡いグラデーション */
-.card-cover { background: linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 55%, var(--paper-2)), var(--paper-2) 60%); }
+/* 最新記事のカード */
+.card-cover { background: var(--paper-2); }
 
 /* Works の座布団を 3 色で回す */
 .tile.hue-0 { background: color-mix(in srgb, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
