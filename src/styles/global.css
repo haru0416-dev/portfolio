@@ -2,27 +2,36 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* 配色は OKLCH。色相を 3 つ決め、明度と彩度の段階で全色を作る */
 :root {
-  --paper: #f8f5fd;
-  --paper-2: #efeaf9;
-  --ink: #3d3452;
-  --ink-2: #665c7d;
-  --muted: #9a92ad;
-  --line: #e2dbf1;
-  --accent: #f26d99;
-  --accent-soft: #fde1ea;
-  --mint: #79d3c0;
+  --h: 300;        /* 地と文字: 薄紫 */
+  --h-accent: 356; /* 差し色: 桃 */
+  --h-mint: 175;   /* 副の差し色: 薄荷 */
+
+  --paper:       oklch(97.5% 0.010 var(--h));
+  --paper-2:     oklch(94.5% 0.022 var(--h));
+  --ink:         oklch(32%   0.050 var(--h));
+  --ink-2:       oklch(47%   0.040 var(--h));
+  --muted:       oklch(55%   0.035 var(--h));
+  --line:        oklch(91%   0.030 var(--h));
+  --accent:      oklch(66%   0.175 var(--h-accent));
+  --accent-ink:  oklch(52%   0.170 var(--h-accent)); /* 小さな文字用の濃い桃 */
+  --accent-soft: oklch(92%   0.060 var(--h-accent));
+  --on-accent:   white;
+  --mint:        oklch(82%   0.100 var(--h-mint));
 }
 :root.dark {
-  --paper: #1c1926;
-  --paper-2: #262133;
-  --ink: #efeaf8;
-  --ink-2: #c5bdd8;
-  --muted: #877ea0;
-  --line: #342d45;
-  --accent: #ff8fb4;
-  --accent-soft: #4a2a3a;
-  --mint: #6fcbb7;
+  --paper:       oklch(19%   0.020 var(--h));
+  --paper-2:     oklch(25%   0.028 var(--h));
+  --ink:         oklch(94%   0.012 var(--h));
+  --ink-2:       oklch(80%   0.022 var(--h));
+  --muted:       oklch(66%   0.030 var(--h));
+  --line:        oklch(32%   0.030 var(--h));
+  --accent:      oklch(77%   0.150 var(--h-accent));
+  --accent-ink:  oklch(80%   0.140 var(--h-accent));
+  --accent-soft: oklch(36%   0.070 var(--h-accent));
+  --on-accent:   var(--paper);
+  --mint:        oklch(78%   0.100 var(--h-mint));
 }
 
 @theme {
@@ -51,6 +60,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --font-serif: "Fredoka", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif;
@@ -92,11 +102,11 @@ body {
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .pill:hover { background: color-mix(in srgb, var(--paper-2) 70%, var(--accent-soft)); }
+  .pill:hover { background: color-mix(in oklch, var(--paper-2) 70%, var(--accent-soft)); }
 }
-.pill-accent { background: var(--accent); color: #fff; }
+.pill-accent { background: var(--accent); color: var(--on-accent); }
 @media (hover: hover) and (pointer: fine) {
-  .pill-accent:hover { background: color-mix(in srgb, var(--accent) 88%, black); }
+  .pill-accent:hover { background: color-mix(in oklch, var(--accent) 88%, black); }
 }
 
 /* 区切り線も点線に */
@@ -162,14 +172,14 @@ body {
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
 /* Petals の背景: 薄い空のグラデーション */
-.petal-sky { background: linear-gradient(to bottom, color-mix(in srgb, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
+.petal-sky { background: linear-gradient(to bottom, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
 
 /* タグ */
 .tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .625rem; border-radius: 999px; }
 .card .tag { background: var(--paper); }
 :where(.card-cover, ol) .tag { background: var(--paper-2); }
-.card-cover .tag { background: color-mix(in srgb, var(--paper) 70%, transparent); }
+.card-cover .tag { background: color-mix(in oklch, var(--paper) 70%, transparent); }
 
 /* 絞り込みチップ */
 .chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
@@ -180,10 +190,10 @@ body {
 .card-cover { background: var(--paper-2); }
 
 /* Works の座布団を 3 色で回す */
-.tile.hue-0 { background: color-mix(in srgb, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
-.tile.hue-1 { background: color-mix(in srgb, var(--mint) 22%, var(--paper)); color: color-mix(in srgb, var(--mint) 70%, var(--ink)); }
-.tile.hue-2 { background: color-mix(in srgb, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
+.tile.hue-0 { background: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
+.tile.hue-1 { background: color-mix(in oklch, var(--mint) 22%, var(--paper)); color: color-mix(in oklch, var(--mint) 70%, var(--ink)); }
+.tile.hue-2 { background: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
 
 /* アイコンボタン */
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--paper); color: var(--ink); }
-.icon-btn-accent { background: var(--accent); color: #fff; }
+.icon-btn-accent { background: var(--accent); color: var(--on-accent); }

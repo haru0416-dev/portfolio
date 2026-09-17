@@ -17,7 +17,7 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
 
   {latest && (
     <a href={`/blog/${latest.id}/`} class="card card-cover block group mb-8">
-      <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent mb-2">
+      <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent-ink mb-2">
         <span>Latest</span><span class="text-muted">·</span>
         <FormattedDate date={latest.data.pubDate} class="text-muted" />
         <span class="text-muted">· {readingMinutes(latest.body)} min</span>

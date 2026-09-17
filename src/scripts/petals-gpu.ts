@@ -196,12 +196,13 @@ fn palette(k: f32) -> vec3f {
 `;
 
 function cssColor(name: string): [number, number, number] {
-  const el = document.createElement('span');
-  el.style.color = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  document.body.appendChild(el);
-  const m = getComputedStyle(el).color.match(/[\d.]+/g)!;
-  el.remove();
-  return [+m[0] / 255, +m[1] / 255, +m[2] / 255];
+  // CSS 変数(oklch など)を Canvas 2D に塗って sRGB の数値に解決する
+  const c = document.createElement('canvas'); c.width = c.height = 1;
+  const x = c.getContext('2d')!;
+  x.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  x.fillRect(0, 0, 1, 1);
+  const [r, g, b] = x.getImageData(0, 0, 1, 1).data;
+  return [r / 255, g / 255, b / 255];
 }
 
 type Renderer = ReturnType<typeof createRenderer>;

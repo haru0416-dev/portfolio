@@ -17,7 +17,7 @@ const Code = ICONS.code, Ext = ICONS['external-link'];
           <Tile icon={w.data.icon as any} size={48} class={`hue-${i % 3}`} />
           <div class="min-w-0 flex-1">
             <h2 class="serif-jp text-lg">{w.data.name}</h2>
-            {badge[w.data.status] && <span class="block text-xs leading-4 font-bold tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}
+            {badge[w.data.status] && <span class="block text-xs leading-4 font-bold tracking-[.1em] uppercase text-accent-ink">{badge[w.data.status]}</span>}
           </div>
         </div>
         <p class="text-sm text-ink-2 flex-1">{w.data.summary}</p>
