@@ -1,0 +1,12 @@
+---
+import { SITE } from '../site';
+---
+<footer class="border-t border-line">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between text-xs text-muted">
+    <span>© {new Date().getFullYear()} {SITE.name}</span>
+    <span class="flex gap-4">
+      <a href={SITE.github} class="hover:text-fg">GitHub</a>
+      <a href="/rss.xml" class="hover:text-fg">RSS</a>
+    </span>
+  </div>
+</footer>
