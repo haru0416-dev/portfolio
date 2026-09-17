@@ -141,7 +141,7 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 
 /* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
 .card { border-radius: 2.5rem; padding: 1.5rem; }
-.card:not(.glass) { background: var(--paper-2); }
+.card:where(:not(.glass)) { background: var(--paper-2); }
 
 /* 座布団(アイコンの台)。寸法は --tile、Works では 3 色で回す */
 .tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
@@ -156,15 +156,15 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
   color: var(--ink);
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
-.pill:not(.glass) { background: var(--paper-2); }
+.pill:where(:not(.glass)) { background: var(--paper-2); }
 .pill-accent, .pill-accent.glass { background: var(--accent-btn); color: var(--on-accent); backdrop-filter: none; -webkit-backdrop-filter: none; }
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; color: var(--ink); }
-.icon-btn:not(.glass) { background: var(--paper); }
+.icon-btn:where(:not(.glass)) { background: var(--paper); }
 .icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
 
 /* 絞り込みチップ(押した状態は aria-pressed) */
 .chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
-.chip:not(.glass) { background: var(--paper-2); }
+.chip:where(:not(.glass)) { background: var(--paper-2); }
 .chip[aria-pressed="true"], .chip.glass[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
