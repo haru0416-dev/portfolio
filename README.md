@@ -37,11 +37,14 @@
 
 ## コマンド
 
+パッケージ管理は Bun。
+
 ```sh
-pnpm dev       # 開発サーバー
-pnpm build     # dist/ に静的出力
-pnpm preview   # dist/ を配信して確認
-pnpm astro check
+bun install
+bun run dev      # 開発サーバー
+bun run build    # dist/ に静的出力
+bun run preview  # dist/ を配信して確認
+bunx astro check
 ```
 
 ## デプロイ (Cloudflare Pages)
@@ -50,8 +53,8 @@ Git 連携で以下を設定する。
 
 | 項目 | 値 |
 |---|---|
-| Build command | `pnpm build` |
+| Build command | `bun run build` |
 | Build output directory | `dist` |
-| 環境変数 | `NODE_VERSION=24` |
+| 環境変数 | `BUN_VERSION=1.4.2`(`bun.lock` があれば Bun が使われる) |
 
 デプロイ後、`astro.config.mjs` の `site` を独自ドメインの URL に変える。
