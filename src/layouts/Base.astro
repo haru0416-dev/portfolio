@@ -46,6 +46,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     </script>
   </head>
   <body class="min-h-dvh flex flex-col">
+    <script>
+      import { installSmoothScroll } from '../scripts/smooth-scroll';
+      installSmoothScroll();
+    </script>
     <Header />
     <main class:list={['flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
       <slot />
