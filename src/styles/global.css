@@ -3,36 +3,28 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* 配色は OKLCH。色相を 3 つ決め、明度と彩度の段階で全色を作る */
+/* light-dark() で両テーマを 1 か所に。.light / .dark は color-scheme を固定するだけ */
 :root {
   --h: 300;        /* 地と文字: 薄紫 */
   --h-accent: 356; /* 差し色: 桃 */
   --h-mint: 175;   /* 副の差し色: 薄荷 */
+  color-scheme: light dark;
 
-  --paper:       oklch(97.5% 0.010 var(--h));
-  --paper-2:     oklch(94.5% 0.022 var(--h));
-  --ink:         oklch(32%   0.050 var(--h));
-  --ink-2:       oklch(47%   0.040 var(--h));
-  --muted:       oklch(55%   0.035 var(--h));
-  --line:        oklch(91%   0.030 var(--h));
-  --accent:      oklch(66%   0.175 var(--h-accent));
-  --accent-ink:  oklch(52%   0.170 var(--h-accent)); /* 小さな文字用の濃い桃 */
-  --accent-soft: oklch(92%   0.060 var(--h-accent));
-  --on-accent:   white;
-  --mint:        oklch(82%   0.100 var(--h-mint));
+  --paper:       light-dark(oklch(97.5% 0.010 var(--h)),        oklch(19% 0.020 var(--h)));
+  --paper-2:     light-dark(oklch(94.5% 0.022 var(--h)),        oklch(25% 0.028 var(--h)));
+  --ink:         light-dark(oklch(32%   0.050 var(--h)),        oklch(94% 0.012 var(--h)));
+  --ink-2:       light-dark(oklch(47%   0.040 var(--h)),        oklch(80% 0.022 var(--h)));
+  --muted:       light-dark(oklch(50%   0.035 var(--h)),        oklch(66% 0.030 var(--h)));
+  --line:        light-dark(oklch(91%   0.030 var(--h)),        oklch(32% 0.030 var(--h)));
+  --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
+  --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
+  --accent-soft: light-dark(oklch(92%   0.060 var(--h-accent)), oklch(36% 0.070 var(--h-accent)));
+  --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent))); /* ボタンの地。白文字で 4.5 以上 */
+  --on-accent:   light-dark(white, var(--paper));
+  --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
 }
-:root.dark {
-  --paper:       oklch(19%   0.020 var(--h));
-  --paper-2:     oklch(25%   0.028 var(--h));
-  --ink:         oklch(94%   0.012 var(--h));
-  --ink-2:       oklch(80%   0.022 var(--h));
-  --muted:       oklch(66%   0.030 var(--h));
-  --line:        oklch(32%   0.030 var(--h));
-  --accent:      oklch(77%   0.150 var(--h-accent));
-  --accent-ink:  oklch(80%   0.140 var(--h-accent));
-  --accent-soft: oklch(36%   0.070 var(--h-accent));
-  --on-accent:   var(--paper);
-  --mint:        oklch(78%   0.100 var(--h-mint));
-}
+:root.light { color-scheme: light; }
+:root.dark  { color-scheme: dark; }
 
 @theme {
   /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
@@ -67,7 +59,7 @@
   --font-sans: var(--font-nunito);
 }
 
-html { color-scheme: light dark; }
+html { }
 
 /* ---- 日本語の折り返し ----
    見出しや短い文は文節で折り返し、段落は泣き別れを避ける。
@@ -79,11 +71,12 @@ body {
   text-spacing-trim: space-first;     /* 「」や。、が連続したときのアキを詰める */
   hanging-punctuation: allow-end;     /* 行末の句読点をぶら下げる(対応ブラウザのみ) */
 }
-:is(h1, h2, h3, .serif, .serif-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; text-wrap: balance; }
+:is(h1, h2, h3, .serif, .serif-jp) { text-wrap: balance; }
+:is(h1, h2, h3, .serif, .serif-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; }
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
 p.hero-lead, .card p, ol p, .prose :is(p, li, blockquote) { word-break: auto-phrase; }
 /* 数字と単位、日付は途中で切らない */
-time, .tabular-nums { white-space: nowrap; }
+time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
 
 body {
   background: var(--paper);
@@ -121,9 +114,9 @@ body {
 @media (hover: hover) and (pointer: fine) {
   .pill:hover { background: color-mix(in oklch, var(--paper-2) 70%, var(--accent-soft)); }
 }
-.pill-accent { background: var(--accent); color: var(--on-accent); }
+.pill-accent { background: var(--accent-btn); color: var(--on-accent); }
 @media (hover: hover) and (pointer: fine) {
-  .pill-accent:hover { background: color-mix(in oklch, var(--accent) 88%, black); }
+  .pill-accent:hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
 }
 
 /* 区切り線も点線に */
@@ -150,12 +143,19 @@ body {
   .u-link:hover::after { transform: scaleX(1); }
 }
 
+/* キーボード操作時のフォーカス輪郭 */
+:where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: inherit; }
+/* 画面外に置くが AT には読ませる */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
+.skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
 /* 押せるものは押した瞬間に応える */
 .press { transition: transform 160ms var(--ease-out); }
 .press:active { transform: scale(0.94); }
 
 /* 名前の文字を順に出す(読み込み時に一度だけ) */
-.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); }
+.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
 .hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
 @keyframes wm-in { to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
@@ -170,12 +170,11 @@ body {
 .prose h2 { font-size: var(--text-xl); line-height: 2rem; margin-top: 4rem; }
 .prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
 .prose h2 + *, .prose h3 + * { margin-top: 1rem; }
-.prose ul { list-style: none; padding-left: 1.4em; }
-.prose ul li { position: relative; }
-.prose ul li::before { content: "•"; font-weight: 700; position: absolute; left: -1.4em; color: var(--accent); }
+.prose ul { list-style: disc; padding-left: 1.4em; }
+.prose ul li::marker { color: var(--accent); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
 .prose li + li { margin-top: .5rem; }
-.prose a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .prose strong { font-weight: 600; }
 .prose code { font-size: .875em; background: var(--paper-2); padding: .15em .45em; border-radius: 6px; }
 .prose pre { padding: 1.5rem; border-radius: 1rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; border: 1px solid var(--line); }
@@ -189,7 +188,7 @@ body {
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
 /* Petals の背景: 薄い空のグラデーション */
-.petal-sky { background: linear-gradient(to bottom, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
+.petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
 
 /* タグ */
@@ -201,10 +200,14 @@ body {
 /* 絞り込みチップ */
 .chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 @media (hover: hover) and (pointer: fine) { .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); } }
 
 /* 最新記事のカード */
 .card-cover { background: var(--paper-2); }
+
+/* 座布団の寸法は変数で(インライン style を減らす) */
+.tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
 
 /* Works の座布団を 3 色で回す */
 .tile.hue-0 { background: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
@@ -213,14 +216,15 @@ body {
 
 /* アイコンボタン */
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--paper); color: var(--ink); }
-.icon-btn-accent { background: var(--accent); color: var(--on-accent); }
+.icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
 
 /* ---- スクロールの遊び(CSS のスクロール連動。JS は使わない) ---- */
-@supports (animation-timeline: view()) {
+@supports ((animation-timeline: view()) and (animation-range: entry)) {
   @media (prefers-reduced-motion: no-preference) {
     /* 画面に入るとき、少し下から浮かぶ。一度きり */
+    /* ショートハンドの animation は timeline を初期化するので、必ず longhand で書く */
     .reveal {
-      animation: reveal both linear;
+      animation-name: reveal; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: view();
       animation-range: entry 0% entry 40%;
     }
@@ -230,7 +234,7 @@ body {
     }
     /* トップの名前は、スクロールより少しゆっくり上へずれて薄くなる */
     .parallax {
-      animation: drift both linear;
+      animation-name: drift; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: scroll(root);
       animation-range: 0 480px;
     }
@@ -239,7 +243,7 @@ body {
     }
     /* ヘッダーはスクロールし始めると線が濃くなる */
     header.site {
-      animation: header-line both linear;
+      animation-name: header-line; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: scroll(root);
       animation-range: 0 64px;
     }
@@ -263,6 +267,6 @@ html[data-astro-transition="back"]::view-transition-new(main) { animation-name: 
 /* 記事タイトルの移動はゆっくり、加速も減速もなだらかに */
 ::view-transition-group(*) { animation-duration: 520ms; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
 ::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(main), ::view-transition-new(main), ::view-transition-group(*) { animation-duration: 1ms; }
-}
+/* タグ絞り込み(同一ページ内)では本文の出入りは動かさず、項目だけが詰まる */
+html:active-view-transition-type(filter)::view-transition-old(main),
+html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; }

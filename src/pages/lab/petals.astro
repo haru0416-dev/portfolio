@@ -6,27 +6,41 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
 ---
 <Base title={meta.title} description={meta.description} wide>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} />
-  <canvas id="petals" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
-  <p id="renderer" class="mt-4 text-xs text-muted tracking-[.08em]"></p>
+  <canvas id="petals" role="img" aria-label="桜の花びらが風に乗って舞うアニメーション" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
+  <div class="mt-4 flex items-center justify-between gap-4">
+    <p id="renderer" class="text-xs text-muted tracking-[.08em]"></p>
+    <button type="button" id="petals-pause" class="chip press" aria-pressed="false">一時停止</button>
+  </div>
 </Base>
 
 <script>
-  import { startPetals } from '../../scripts/petals';
-  // ページ遷移で来ても動くよう、astro:page-load で初期化する
+  import { startPetals, type PetalsControl } from '../../scripts/petals';
+  // ページ遷移で来ても動くよう、astro:page-load で初期化し、去るときに片付ける
   document.addEventListener('astro:page-load', () => {
     const canvas = document.getElementById('petals') as HTMLCanvasElement | null;
     const label = document.getElementById('renderer');
-    if (!canvas || !label) return;
+    const pause = document.getElementById('petals-pause') as HTMLButtonElement | null;
+    if (!canvas || !label || !pause) return;
     const gpuReady = ('gpu' in navigator) ? import('../../scripts/petals-gpu').then((m) => m.startPetalsGPU(canvas)) : Promise.resolve(null);
     gpuReady.then((gpu) => {
-      if (gpu) { label.textContent = `WebGPU · ${gpu.count.toLocaleString()} petals`; return; }
-      // WebGPU が使えない環境は Canvas 2D 版へ
-      const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
-      canvas.replaceWith(c2);
-      startPetals(c2);
-      label.textContent = !window.isSecureContext
-        ? 'Canvas 2D (WebGPU には HTTPS が必要)'
-        : !('gpu' in navigator) ? 'Canvas 2D (このブラウザは WebGPU 未対応)' : 'Canvas 2D (GPU アダプタなし)';
+      let ctl: PetalsControl | null = gpu;
+      if (gpu) { label.textContent = `WebGPU · ${gpu.count.toLocaleString()} petals`; }
+      else {
+        // WebGPU が使えない環境は Canvas 2D 版へ
+        const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
+        canvas.replaceWith(c2);
+        ctl = startPetals(c2);
+        label.textContent = !window.isSecureContext
+          ? 'Canvas 2D (WebGPU には HTTPS が必要)'
+          : !('gpu' in navigator) ? 'Canvas 2D (このブラウザは WebGPU 未対応)' : 'Canvas 2D (GPU アダプタなし)';
+      }
+      pause.addEventListener('click', () => {
+        const paused = pause.getAttribute('aria-pressed') !== 'true';
+        pause.setAttribute('aria-pressed', String(paused));
+        pause.textContent = paused ? '再生' : '一時停止';
+        paused ? ctl?.pause() : ctl?.resume();
+      });
+      document.addEventListener('astro:before-swap', () => ctl?.dispose(), { once: true });
     });
   });
 </script>

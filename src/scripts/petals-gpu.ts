@@ -196,16 +196,19 @@ fn palette(k: f32) -> vec3f {
 `;
 
 function cssColor(name: string): [number, number, number] {
-  // CSS 変数(oklch など)を Canvas 2D に塗って sRGB の数値に解決する
+  // CSS 変数(oklch / light-dark など)を要素に当てて算出値を得る。算出値は oklch(...) 文字列で返るので、
+  // Canvas 2D に塗って sRGB の数値に落とす
+  const el = document.createElement('span');
+  el.style.color = `var(${name})`;
+  document.body.append(el);
+  const computed = getComputedStyle(el).color;
+  el.remove();
   const c = document.createElement('canvas'); c.width = c.height = 1;
   const x = c.getContext('2d')!;
-  x.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  x.fillRect(0, 0, 1, 1);
+  x.fillStyle = computed; x.fillRect(0, 0, 1, 1);
   const [r, g, b] = x.getImageData(0, 0, 1, 1).data;
   return [r / 255, g / 255, b / 255];
 }
-
-type Renderer = ReturnType<typeof createRenderer>;
 
 /** デバイスに対してパイプラインとバッファを組み立てる。Canvas でもオフスクリーンでも同じ */
 function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUTextureFormat, dpr: number) {
@@ -244,7 +247,7 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
 
   const colors = () => {
     const bg0 = cssColor('--paper'), bg1 = cssColor('--paper-2'), tint = cssColor('--accent');
-    const dark = document.documentElement.classList.contains('dark') ? 1 : 0;
+    const dark = getComputedStyle(document.documentElement).colorScheme === 'dark' ? 1 : 0;
     uf.set([...bg0, 1], 8); uf.set([...bg1, 1], 12); uf.set([...tint, 1], 16); uf.set([dark, 0, 0, 0], 20);
   };
 
@@ -302,7 +305,7 @@ async function makeDevice(): Promise<{ device: GPUDevice; module: GPUShaderModul
   return { device, module };
 }
 
-export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<{ count: number } | null> {
+export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ count: number } & import('./petals').PetalsControl) | null> {
   const gpu = await makeDevice();
   if (!gpu) return null;
   const { device, module } = gpu;
@@ -334,11 +337,18 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<{ count
     }
   };
 
-  new MutationObserver(r.colors).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  new ResizeObserver(resize).observe(canvas);
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? start() : cancelAnimationFrame(raf); }).observe(canvas);
+  let paused = false;
+  const mo = new MutationObserver(r.colors); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  const mq = matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener('change', r.colors);
+  const ro = new ResizeObserver(resize); ro.observe(canvas);
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible && !paused ? start() : cancelAnimationFrame(raf); }); io.observe(canvas);
   resize();
   start();
+  const control = {
+    pause() { paused = true; cancelAnimationFrame(raf); },
+    resume() { paused = false; if (visible) start(); },
+    dispose() { cancelAnimationFrame(raf); mo.disconnect(); mq.removeEventListener('change', r.colors); ro.disconnect(); io.disconnect(); device.destroy(); },
+  };
 
   // ?debug のときだけ: 別デバイスで同じ描画をオフスクリーンに行い、画素を PNG で返す(GPU のない検証環境用)
   if (location.search.includes('debug')) {
@@ -367,5 +377,5 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<{ count
       return c.toDataURL('image/png');
     };
   }
-  return { count: r.st.count };
+  return { count: r.st.count, ...control };
 }

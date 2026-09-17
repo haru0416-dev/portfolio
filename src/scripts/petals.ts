@@ -58,7 +58,9 @@ function shade(hex: string, k: number) {
   return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
 }
 
-export function startPetals(canvas: HTMLCanvasElement) {
+export type PetalsControl = { pause(): void; resume(): void; dispose(): void };
+
+export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
   const ctx = canvas.getContext('2d', { alpha: true })!;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -136,9 +138,16 @@ export function startPetals(canvas: HTMLCanvasElement) {
     if (reduce) { for (let i = 0; i < 3; i++) step(0.5); }
   };
 
-  new ResizeObserver(resize).observe(canvas);
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? start() : cancelAnimationFrame(raf); }).observe(canvas);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) last = performance.now(); });
+  let paused = false;
+  const ro = new ResizeObserver(resize); ro.observe(canvas);
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible && !paused ? start() : cancelAnimationFrame(raf); }); io.observe(canvas);
+  const onVis = () => { if (!document.hidden) last = performance.now(); };
+  document.addEventListener('visibilitychange', onVis);
   resize();
   start();
+  return {
+    pause() { paused = true; cancelAnimationFrame(raf); },
+    resume() { paused = false; if (visible) start(); },
+    dispose() { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', onVis); },
+  };
 }

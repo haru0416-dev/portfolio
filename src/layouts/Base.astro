@@ -27,6 +27,21 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      // 保存したテーマがあれば color-scheme を固定、無ければ OS に追従。遷移で <html> が差し替わるたびに再適用
+      (() => {
+        const apply = () => {
+          const t = localStorage.getItem('theme');
+          const h = document.documentElement;
+          h.classList.toggle('dark', t === 'dark');
+          h.classList.toggle('light', t === 'light');
+          document.querySelector('meta[name="color-scheme"]').content = t ?? 'light dark';
+        };
+        apply();
+        document.addEventListener('astro:after-swap', apply);
+      })();
+    </script>
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -34,26 +49,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     {preloads.map((p) => <link rel="preload" href={p.url} as="font" type={`font/${p.type}`} crossorigin />)}
     <link rel="stylesheet" href="/fonts.css" />
     <ClientRouter />
-    <script is:inline>
-      // FOUC 回避のため先にテーマを決める。ページ遷移で <html> が差し替わるたびに再適用する
-      (() => {
-        const apply = () => {
-          const t = localStorage.getItem('theme');
-          const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.classList.toggle('dark', dark);
-        };
-        apply();
-        document.addEventListener('astro:after-swap', apply);
-      })();
-    </script>
   </head>
   <body class="min-h-dvh flex flex-col">
+    <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
       installSmoothScroll();
     </script>
     <Header />
-    <main transition:name="main" class:list={['flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
+    <main id="content" tabindex="-1" transition:name="main" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
       <slot />
     </main>
     <Footer />

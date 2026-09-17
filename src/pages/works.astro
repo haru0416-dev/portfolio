@@ -10,7 +10,7 @@ const Code = ICONS.code, Ext = ICONS['external-link'];
 ---
 <Base title="Works" wide>
   <Hero eyebrow="Works" title="Selected works" lead="代表的なものだけ。ほかは GitHub に。" />
-  <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <ul role="list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {works.map((w, i) => (
       <li class="card reveal flex flex-col gap-4">
         <div class="flex items-center gap-4">
@@ -23,8 +23,8 @@ const Code = ICONS.code, Ext = ICONS['external-link'];
         <p class="text-sm text-ink-2 flex-1">{w.data.summary}</p>
         <div class="flex items-center gap-2">
           <div class="flex flex-wrap gap-2 flex-1">{w.data.stack.map((s) => <span class="tag">{s}</span>)}</div>
-          {w.data.url && <a href={w.data.url} class="icon-btn icon-btn-accent press" aria-label="サイトを開く" title="Site"><Ext size={14} stroke-width={2.5} /></a>}
-          {w.data.repo && w.data.status !== 'soon' && <a href={w.data.repo} class="icon-btn press" aria-label="リポジトリを開く" title="Repository"><Code size={14} stroke-width={2.5} /></a>}
+          {w.data.url && <a href={w.data.url} class="icon-btn icon-btn-accent press" aria-label={`${w.data.name} のサイトを開く`}><Ext size={14} stroke-width={2.5} aria-hidden="true" /></a>}
+          {w.data.repo && w.data.status !== 'soon' && <a href={w.data.repo} class="icon-btn press" aria-label={`${w.data.name} のリポジトリを開く`}><Code size={14} stroke-width={2.5} aria-hidden="true" /></a>}
         </div>
       </li>
     ))}

@@ -22,13 +22,13 @@ const { Content, remarkPluginFrontmatter } = await render(post);
         {post.data.updatedDate && <span>updated <FormattedDate date={post.data.updatedDate} /></span>}
         {post.data.tags.map((t) => <span>#{t}</span>)}
       </div>
-      <h1 transition:name={`post-${post.id}`} class="serif-jp text-2xl sm:text-3xl">{post.data.title}</h1>
+      <h1 transition:name={`post-${post.id}`} class="serif-jp text-2xl sm:text-3xl w-fit">{post.data.title}</h1>
       {post.data.description && <p class="mt-4 text-base text-ink-2">{post.data.description}</p>}
     </header>
     <div class="prose"><Content /></div>
   </article>
 
-  {(older || newer) && <nav class="mt-16 pt-8 dotted grid sm:grid-cols-2 gap-8 text-sm">
+  {(older || newer) && <nav aria-label="前後の記事" class="mt-16 pt-8 dotted grid sm:grid-cols-2 gap-8 text-sm">
     <div>
       {older && (
         <a href={`/blog/${older.id}/`} class="group block">

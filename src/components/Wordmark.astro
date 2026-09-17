@@ -1,9 +1,11 @@
 ---
 // 名前を 1 文字ずつ順に出す。読み込み時に一度だけ見る演出なので許容範囲。
+// 支援技術には分割前の文字列を読ませ、分割した文字は隠す
 interface Props { text: string; class?: string }
 const { text, class: cls } = Astro.props;
 const chars = [...text];
 ---
-<span class:list={['wordmark', cls]} aria-label={text}>
-  {chars.map((c, i) => <span class="wm-char" style={`--i:${i}`} aria-hidden="true">{c === ' ' ? ' ' : c}</span>)}
+<span class:list={['wordmark', cls]}>
+  <span class="sr-only">{text}</span>
+  <span aria-hidden="true">{chars.map((c, i) => <span class="wm-char" style={`--i:${i}`}>{c === ' ' ? '\u00a0' : c}</span>)}</span>
 </span>

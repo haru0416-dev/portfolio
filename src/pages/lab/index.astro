@@ -5,13 +5,13 @@ import { LAB } from '../../data/lab';
 ---
 <Base title="Lab">
   <Hero eyebrow="Lab" title="Experiments" lead="小さな実験置き場。1 ページ 1 個。" />
-  <ol class="divide-line">
+  <ol role="list" class="divide-line">
     {LAB.map((l) => (
       <li class="reveal">
         <a href={`/lab/${l.slug}/`} class="group grid grid-cols-[6rem_1fr] gap-x-4 py-4">
           <span class="text-xs leading-4 text-muted pt-1 tabular-nums">{l.date.replaceAll('-', '.')}</span>
           <div>
-            <h3 class="serif text-lg group-hover:text-accent transition-colors">{l.title}</h3>
+            <h2 class="serif text-lg group-hover:text-accent transition-colors">{l.title}</h2>
             <p class="text-sm text-ink-2 mt-1">{l.description}</p>
           </div>
         </a>

@@ -13,6 +13,8 @@ export default defineConfig({
     plugins: [tailwindcss()],
     // Tailscale 経由で dev サーバーを見るため
     server: { allowedHosts: ['.ts.net'] },
+    // lightningcss は animation-timeline を animation ショートハンドに畳み込んで無効化してしまう
+    build: { cssMinify: 'esbuild' },
   },
   integrations: [mdx(), sitemap()],
   // フォントはビルド時に取り込んで自前配信する(外部ドメインへの接続をなくし、preload できるようにする)
