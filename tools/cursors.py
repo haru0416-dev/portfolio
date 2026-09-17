@@ -28,10 +28,11 @@ def url(name, svg, hx, hy, fb):
 
 # 矢印: 28px に 24 格子を 1.0 倍で。先端(4,4)がホットスポット。中は淡い桃で薄く塗る
 arrow = lucide([ARROW], 28, 1.0, 2, 2, fill='#f9c9d8')
-# 芽: 白い丸い座布団の上に。中心がホットスポット
-sprout = lucide(SPROUT, 32, 0.8, 6.4, 6.4, extra=f"<circle cx='16' cy='16' r='13' fill='{WHITE}' stroke='#3d3452' stroke-opacity='.22'/>")
-sprout_down = lucide(SPROUT, 32, 0.7, 7.6, 7.6, extra=f"<circle cx='16' cy='16' r='11.5' fill='{WHITE}' stroke='#3d3452' stroke-opacity='.22'/>")
-# I ビーム: 中心がホットスポット
+# リンクの上: 形は矢印のまま(切り替わりで点滅しないように)。中を濃く塗り、右下に小さな芽を添える
+badge = f"<g transform='translate(15.5 15.5) scale(.4)' fill='none' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='14' fill='{WHITE}'/><g stroke='{PINK}' stroke-width='2.6'>" + ''.join(f"<path d='{d}'/>" for d in SPROUT) + "</g></g>"
+sprout = lucide([ARROW], 28, 1.0, 2, 2, fill='#f3a5c4', extra='') .replace('</svg>', badge + '</svg>')
+sprout_down = lucide([ARROW], 28, 0.92, 3, 3, fill=PINK).replace('</svg>', badge + '</svg>')
+# I ビーム(入力欄だけ): 中心がホットスポット
 ibeam = lucide(TEXT, 28, 1.0, 2, 2)
 
 css = f"""
@@ -49,7 +50,7 @@ css = f"""
   html, body {{ cursor: var(--cursor-arrow); }}
   a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn {{ cursor: var(--cursor-hand); }}
   :is(a, button, .press, .chip, .pill, .icon-btn):active {{ cursor: var(--cursor-hand-down); }} /* 押している間は少し縮む */
-  :is(p, li, h1, h2, h3, dd, blockquote, .prose, time, pre, code, td, th):not(:has(a:hover)) {{ cursor: var(--cursor-text); }}
+  input, textarea, [contenteditable] {{ cursor: var(--cursor-text); }} /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * {{ cursor: inherit; }}
   canvas {{ cursor: var(--cursor-arrow); }}
 }}

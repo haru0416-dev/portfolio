@@ -343,7 +343,7 @@ html:active-view-transition-type(filter)::view-transition-new(main) { animation:
   html, body { cursor: var(--cursor-arrow); }
   a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn { cursor: var(--cursor-hand); }
   :is(a, button, .press, .chip, .pill, .icon-btn):active { cursor: var(--cursor-hand-down); } /* 押している間は少し縮む */
-  :is(p, li, h1, h2, h3, dd, blockquote, .prose, time, pre, code, td, th):not(:has(a:hover)) { cursor: var(--cursor-text); }
+  input, textarea, [contenteditable] { cursor: var(--cursor-text); } /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * { cursor: inherit; }
   canvas { cursor: var(--cursor-arrow); }
 }
