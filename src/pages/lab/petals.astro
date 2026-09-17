@@ -21,6 +21,8 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
     const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
     canvas.replaceWith(c2);
     startPetals(c2);
-    label.textContent = 'Canvas 2D (WebGPU unavailable)';
+    label.textContent = !window.isSecureContext
+      ? 'Canvas 2D (WebGPU には HTTPS が必要)'
+      : !('gpu' in navigator) ? 'Canvas 2D (このブラウザは WebGPU 未対応)' : 'Canvas 2D (GPU アダプタなし)';
   });
 </script>
