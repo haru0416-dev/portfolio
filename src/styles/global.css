@@ -335,9 +335,9 @@ html:active-view-transition-type(filter)::view-transition-new(main) { animation:
    ===================================================================== */
 @media (hover: hover) and (pointer: fine) {
   :root {
-    --cursor-arrow: url(/cursors/arrow.svg) 6 6, auto;
-    --cursor-hand:  url(/cursors/sprout.svg) 16 16, pointer;
-    --cursor-hand-down: url(/cursors/sprout-down.svg) 16 16, pointer;
+    --cursor-arrow: url(/cursors/arrow.svg) 6 7, auto;
+    --cursor-hand:  url(/cursors/sprout.svg) 6 7, pointer;
+    --cursor-hand-down: url(/cursors/sprout-down.svg) 6 7, pointer;
     --cursor-text:  url(/cursors/text.svg) 14 14, text;
   }
   html, body { cursor: var(--cursor-arrow); }

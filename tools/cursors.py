@@ -30,7 +30,7 @@ def url(name, svg, hx, hy, fb):
 arrow = lucide([ARROW], 28, 1.0, 2, 2, fill='#f9c9d8')
 # リンクの上: 形は矢印のまま、中を濃く塗るだけ(切り替わりで点滅しないように)
 sprout = lucide([ARROW], 28, 1.0, 2, 2, fill='#f3a5c4')
-sprout_down = lucide([ARROW], 28, 0.92, 3, 3, fill=PINK)
+sprout_down = lucide([ARROW], 28, 1.0, 2, 2, fill=PINK)  # 変換は他と同じ(ホットスポットがずれないように)
 # I ビーム(入力欄だけ): 中心がホットスポット
 ibeam = lucide(TEXT, 28, 1.0, 2, 2)
 
@@ -41,9 +41,9 @@ css = f"""
    ===================================================================== */
 @media (hover: hover) and (pointer: fine) {{
   :root {{
-    --cursor-arrow: {url('arrow', arrow, 6, 6, 'auto')};
-    --cursor-hand:  {url('sprout', sprout, 16, 16, 'pointer')};
-    --cursor-hand-down: {url('sprout-down', sprout_down, 16, 16, 'pointer')};
+    --cursor-arrow: {url('arrow', arrow, 6, 7, 'auto')};
+    --cursor-hand:  {url('sprout', sprout, 6, 7, 'pointer')};
+    --cursor-hand-down: {url('sprout-down', sprout_down, 6, 7, 'pointer')};
     --cursor-text:  {url('text', ibeam, 14, 14, 'text')};
   }}
   html, body {{ cursor: var(--cursor-arrow); }}
