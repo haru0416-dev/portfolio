@@ -7,7 +7,7 @@ import { LAB } from '../../data/lab';
   <Hero eyebrow="Lab" title="Experiments" lead="小さな実験置き場。1 ページ 1 個。" />
   <ol class="divide-line">
     {LAB.map((l) => (
-      <li>
+      <li class="reveal">
         <a href={`/lab/${l.slug}/`} class="group grid grid-cols-[6rem_1fr] gap-x-4 py-4">
           <span class="text-xs leading-4 text-muted pt-1 tabular-nums">{l.date.replaceAll('-', '.')}</span>
           <div>

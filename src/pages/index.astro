@@ -16,7 +16,7 @@ const lab = LAB.slice(0, 3);
 <Base wide>
   <!-- 顔: 名前と一文だけ。画面の大半を余白にする -->
   <section class="min-h-[min(32rem,72dvh)] flex items-center">
-    <div class="w-full max-w-[44rem]">
+    <div class="w-full max-w-[44rem] parallax">
       <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
       <h1 class="serif text-6xl sm:text-7xl tracking-[-0.01em]">
         <Wordmark text={SITE.name} /><span class="text-accent">.</span>
@@ -36,14 +36,14 @@ const lab = LAB.slice(0, 3);
   </section>
 
   <div class="grid gap-x-16 gap-y-16 lg:grid-cols-[1fr_20rem] pt-16 dotted">
-    <section>
+    <section class="reveal">
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} compact />
       <a href="/blog" class="u-link inline-block mt-4 text-sm text-muted hover:text-ink">すべての記事 →</a>
     </section>
 
     <aside class="space-y-16">
-      <section>
+      <section class="reveal">
         <h2 class="eyebrow mb-4"><span>Works</span></h2>
         <ul class="space-y-4">
           {works.map((w) => (
@@ -61,7 +61,7 @@ const lab = LAB.slice(0, 3);
         <a href="/works" class="u-link inline-block mt-4 text-sm text-muted hover:text-ink">すべての作品 →</a>
       </section>
 
-      <section>
+      <section class="reveal">
         <h2 class="eyebrow mb-4"><span>Lab</span></h2>
         <ul class="space-y-2">
           {lab.map((l) => (

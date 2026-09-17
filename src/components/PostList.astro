@@ -7,7 +7,7 @@ const { posts, compact = false } = Astro.props;
 ---
 <ol>
   {posts.map((p) => (
-    <li data-tags={p.data.tags.join(' ')}>
+    <li class="reveal" data-tags={p.data.tags.join(' ')}>
       <a href={`/blog/${p.id}/`} class="group grid grid-cols-[6rem_1fr] gap-x-4 py-4">
         <div class="text-xs text-muted pt-1">
           <FormattedDate date={p.data.pubDate} class="block leading-4" />
