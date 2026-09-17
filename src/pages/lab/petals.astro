@@ -6,10 +6,21 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
 ---
 <Base title={meta.title} description={meta.description} wide>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} pattern="graph" />
-  <canvas id="c" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
+  <canvas id="petals" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
+  <p id="renderer" class="mt-3 text-xs text-muted tracking-[.08em]"></p>
 </Base>
 
 <script>
+  import { startPetalsGPU } from '../../scripts/petals-gpu';
   import { startPetals } from '../../scripts/petals';
-  startPetals(document.getElementById('c') as HTMLCanvasElement);
+  const canvas = document.getElementById('petals') as HTMLCanvasElement;
+  const label = document.getElementById('renderer')!;
+  startPetalsGPU(canvas).then((gpu) => {
+    if (gpu) { label.textContent = `WebGPU · ${gpu.count.toLocaleString()} petals`; return; }
+    // WebGPU が使えない環境は Canvas 2D 版へ
+    const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
+    canvas.replaceWith(c2);
+    startPetals(c2);
+    label.textContent = 'Canvas 2D (WebGPU unavailable)';
+  });
 </script>
