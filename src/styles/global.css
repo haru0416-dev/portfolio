@@ -332,7 +332,7 @@ ol .tag { background: var(--paper-2); }
 :root.dark .sea .caustics { display: none; }
 
 /* 波紋(ライト): src/scripts/surface.ts が高さ場を解いて描く canvas。上部は薄く、下へ行くほど見える */
-.sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .7; }
+.sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .65; }
 @media (prefers-reduced-motion: reduce) { .sea .surface { display: none; } }
 
 /* 日差しのきらめき(ライト): 柔らかく光る点が息をするように明滅する */

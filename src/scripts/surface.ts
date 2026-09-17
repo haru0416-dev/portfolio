@@ -60,10 +60,10 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
       for (let x = 1; x < cw - 1; x++) {
         const i = y * cw + x;
         const gx = cur[i + 1] - cur[i - 1], gy = cur[i + cw] - cur[i - cw];
-        const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.5; // 光に向く斜面は明るく、背く斜面は暗く
+        const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.3; // 光に向く斜面は明るく、背く斜面は暗く
         const o = i * 4;
-        if (s > 0) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, s * 255 * 0.9); }
-        else       { d[o] = 96;  d[o + 1] = 132; d[o + 2] = 200; d[o + 3] = Math.min(255, -s * 255 * 0.55); }
+        if (s > 0) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, s * 255 * 0.75); }
+        else       { d[o] = 112; d[o + 1] = 128; d[o + 2] = 208; d[o + 3] = Math.min(255, -s * 255 * 0.5); } // 配色の薄紫に寄せた青
       }
     }
     offCtx.putImageData(img, 0, 0);
@@ -82,7 +82,7 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
         // ときどき雨粒。大きいものは稀に
         const big = Math.random() < 0.18;
         drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, big ? 4 : 3, big ? 3 : 1.6);
-        nextDrop = now + 1200 + Math.random() * 3000;
+        nextDrop = now + 2200 + Math.random() * 3300;
       }
       step(); render();
     }
@@ -102,7 +102,7 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
   document.addEventListener('visibilitychange', onVis);
   resize();
   // 最初に数滴落としておく
-  for (let k = 0; k < 2; k++) drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, 3, 2);
+  for (let k = 0; k < 1; k++) drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, 3, 2);
   sync();
 
   return { dispose() { stop(); mo.disconnect(); mq.removeEventListener('change', sync); removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); } };
