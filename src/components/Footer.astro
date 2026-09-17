@@ -2,7 +2,7 @@
 import { SITE } from '../site';
 import { SITE_ICON as SiteIcon } from '../data/icons';
 ---
-<footer class="border-t border-line">
+<footer transition:name="footer" transition:animate="none" class="border-t border-line">
   <div class="max-w-[64rem] mx-auto px-4 sm:px-8 py-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
     <div>
       <div class="serif text-xl leading-8 flex items-center gap-2"><SiteIcon size={26} stroke-width={2.5} class="text-accent" aria-hidden="true" /><span>{SITE.name}<span class="text-accent">.</span></span></div>

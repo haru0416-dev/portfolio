@@ -231,3 +231,16 @@ body {
     }
   }
 }
+
+/* ---- ページ遷移: 本文だけが短く入れ替わる。全画面のクロスフェードはしない ---- */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(main) { animation: vt-out 160ms var(--ease-out) both; }
+::view-transition-new(main) { animation: vt-in 280ms var(--ease-out) 60ms both; }
+@keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(10px); } }
+/* 記事タイトルの移動は少しゆっくり、字の重なりは見せない */
+::view-transition-group(*) { animation-duration: 320ms; animation-timing-function: var(--ease-out); }
+::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(main), ::view-transition-new(main), ::view-transition-group(*) { animation-duration: 1ms; }
+}

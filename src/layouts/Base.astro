@@ -51,7 +51,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       installSmoothScroll();
     </script>
     <Header />
-    <main class:list={['flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
+    <main transition:name="main" class:list={['flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
       <slot />
     </main>
     <Footer />
