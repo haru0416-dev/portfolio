@@ -245,7 +245,6 @@ ol .tag { background: var(--paper-2); }
   /* ダーク = 深海 */
   --sea-depth: light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
   /* ライト = 水面 */
-  --sea-glint:    light-dark(oklch(85% 0.12 88 / 45%), transparent);           /* 日差しの淡い金 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
 .sea { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
@@ -256,41 +255,11 @@ ol .tag { background: var(--paper-2); }
 /* 深海(ダーク): src/scripts/deep.ts が描く canvas(光の柱・沈むマリンスノー・泡の列) */
 .sea .deep { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-/* 水面のゆらめき(ライト): SVG ノイズで一度だけ描いた有機的な模様を 2 層、逆向きにゆっくり流す。
-   タイルではないので整列して見えない。ライトだけ表示する */
-.sea .caustics {
-  position: absolute; inset: -25% -20%; width: 140%; height: 150%;
-  opacity: .22;
-  mask-image: linear-gradient(to bottom, black 12%, transparent 48%);
-  animation: caustic-flow 44s ease-in-out infinite alternate;
-}
-.sea .caustics-2 { opacity: .14; animation: caustic-flow-2 61s ease-in-out infinite alternate; }
-@keyframes caustic-flow   { from { transform: translate(0, 0) scale(1); }        to { transform: translate(3vw, 2vh) scale(1.06); } }
-@keyframes caustic-flow-2 { from { transform: translate(2vw, 1vh) scale(1.04); } to { transform: translate(-2vw, -1vh) scale(1); } }
-@media (prefers-color-scheme: dark) { :root:not(.light) .sea .caustics { display: none; } }
-:root.dark .sea .caustics { display: none; }
-
 /* 波紋(ライト): src/scripts/surface.ts が高さ場を解いて描く canvas。上部は薄く、下へ行くほど見える */
 .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .65; }
 @media (prefers-reduced-motion: reduce) { .sea .surface { display: none; } }
 
-/* 日差しのきらめき(ライト): 柔らかく光る点が息をするように明滅する */
-.sea .glints i {
-  left: var(--x); top: var(--y); width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
-  background: radial-gradient(circle, var(--sea-glint) 0 18%, transparent 60%);
-  opacity: 0; transform: scale(.6);
-  animation: glint var(--t) ease-in-out infinite; animation-delay: var(--d);
-}
-.sea .glints i:nth-child(1) { --x: 24%; --y: 16%; --t: 7s;   --d: -1s; }
-.sea .glints i:nth-child(2) { --x: 63%; --y: 11%; --t: 9s;   --d: -4s; }
-.sea .glints i:nth-child(3) { --x: 85%; --y: 30%; --t: 6.5s; --d: -2.5s; }
-.sea .glints i:nth-child(4) { --x: 42%; --y: 38%; --t: 8s;   --d: -6s; }
-.sea .glints i:nth-child(5) { --x: 10%; --y: 46%; --t: 7.5s; --d: -3.5s; }
-@keyframes glint {
-  0%, 100% { transform: scale(.6); opacity: 0; }
-  50%      { transform: scale(1);  opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea .glints i { display: none; } }
+@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } }
 
 
 /* 5b. スクロール連動(CSS のみ)。animation ショートハンドは timeline を初期化するので longhand で書く */

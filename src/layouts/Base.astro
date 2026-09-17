@@ -55,23 +55,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
          出ない側は色を透明にして隠す -->
     <div class="sea" aria-hidden="true">
       <canvas class="deep"></canvas>
-      <!-- 水面のゆらめき(ライト): ノイズで一度だけ描いた有機的な模様を 2 層、逆向きにゆっくり流す -->
-      <svg class="caustics" viewBox="0 0 960 540" preserveAspectRatio="none">
-        <filter id="caustic" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feTurbulence type="turbulence" baseFrequency="0.009 0.014" numOctaves="2" seed="11" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0.60  0 0 0 0 0.74  0 0 0 0 0.92  0.9 0.9 0.9 0 -0.55" />
-        </filter>
-        <rect width="960" height="540" filter="url(#caustic)" />
-      </svg>
-      <svg class="caustics caustics-2" viewBox="0 0 960 540" preserveAspectRatio="none">
-        <filter id="caustic-2" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feTurbulence type="turbulence" baseFrequency="0.006 0.010" numOctaves="2" seed="29" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0.60  0 0 0 0 0.74  0 0 0 0 0.92  0.9 0.9 0.9 0 -0.6" />
-        </filter>
-        <rect width="960" height="540" filter="url(#caustic-2)" />
-      </svg>
       <canvas class="surface"></canvas>
-      <span class="glints">{Array.from({ length: 5 }, () => <i></i>)}</span>
     </div>
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>

@@ -2,7 +2,7 @@
 // 描画は高さの勾配から「左上から光が当たった水面」の明暗を作り、拡大時の補間で滑らかに見せる。
 
 const CELL = 4;          // 1 セルが画面の何 px か(小さいほど精細で重い)
-const DAMP = 0.978;      // 減衰(1 に近いほど長く残る)。短命にして小さな環で消す
+const DAMP = 0.966;      // 減衰(1 に近いほど長く残る)。短命にして小さな環で消す
 const FPS = 30;          // 更新頻度。背景なので 30 で十分
 const LIGHT = [-0.7, -0.7]; // 光の向き(左上)
 import { isDark, onThemeChange } from './theme';
@@ -65,13 +65,19 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
   const render = () => {
     if (!img || !offCtx || !off) return;
     const d = img.data;
+    const tt = performance.now() * 0.00025;
     // 水の色(青)と光(白)。勾配の向きで明暗を分ける
     for (let y = 1; y < ch - 1; y++) {
       for (let x = 1; x < cw - 1; x++) {
         const i = y * cw + x;
         const gx = cur[i + 1] - cur[i - 1], gy = cur[i + cw] - cur[i - cw];
-        const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.3; // 光に向く斜面は明るく、背く斜面は暗く
+        const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.1; // 光に向く斜面は明るく、背く斜面は暗く
+        // 水面の光の網目: 位相の違う波の干渉。下へ行くほど消える
+        const fade = Math.max(0, 1 - y / (ch * 0.55));
+        const cx = Math.sin(x * 0.21 + tt * 1.7 + Math.sin(y * 0.13 + tt)) + Math.sin(y * 0.17 - tt * 1.3 + Math.sin(x * 0.11 - tt * 0.7));
+        const net = Math.max(0, cx - 1.3) * fade * 0.4;
         const o = i * 4;
+        if (net > 0.02 && s <= 0.02) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, net * 255); continue; }
         if (s > 0) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, s * 255 * 0.75); }
         else       { d[o] = 112; d[o + 1] = 128; d[o + 2] = 208; d[o + 3] = Math.min(255, -s * 255 * 0.5); } // 配色の薄紫に寄せた青
       }
@@ -91,7 +97,7 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
       if (now >= nextDrop) {
         // ときどき雨粒。大きいものは稀に
         const big = Math.random() < 0.18;
-        drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, big ? 5 : 4, big ? 5 : 3, big ? 6 : 4);
+        drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, big ? 4 : 3, big ? 3.2 : 2, big ? 6 : 4);
         nextDrop = now + 2200 + Math.random() * 3300;
       }
       applyDrops(); step(); render();
