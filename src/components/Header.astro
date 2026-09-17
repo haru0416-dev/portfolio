@@ -7,18 +7,18 @@ const nav = [
 ];
 const path = Astro.url.pathname;
 ---
-<header class="border-b border-line">
-  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-6">
-    <a href="/" class="font-semibold tracking-tight">{SITE.name}</a>
-    <nav class="flex items-center gap-5 text-sm">
+<header class="sticky top-0 z-10 bg-paper/85 backdrop-blur border-b border-line">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+    <a href="/" class="serif text-2xl leading-none">{SITE.name}<span class="text-accent">.</span></a>
+    <nav class="flex items-center gap-6 sm:gap-8 text-[13px] tracking-[.12em] uppercase">
       {nav.map((n) => (
         <a
           href={n.href}
-          class:list={['hover:text-accent transition-colors', path.startsWith(n.href) ? 'text-accent' : 'text-muted']}
+          class:list={['u-link transition-colors', path.startsWith(n.href) ? 'text-ink' : 'text-muted hover:text-ink']}
         >{n.label}</a>
       ))}
-      <button id="theme-toggle" type="button" aria-label="テーマ切替" class="text-muted hover:text-fg transition-colors">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9c0-.5 0-1-.1-1.4A5.5 5.5 0 0 1 12.4 3.1C12.3 3 12.1 3 12 3z"/></svg>
+      <button id="theme-toggle" type="button" aria-label="テーマ切替" class="text-muted hover:text-ink transition-colors -mr-1">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>
   </div>

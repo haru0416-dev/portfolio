@@ -4,16 +4,19 @@ import FormattedDate from './FormattedDate.astro';
 interface Props { posts: CollectionEntry<'blog'>[] }
 const { posts } = Astro.props;
 ---
-<ul class="divide-y divide-line">
+<ol class="divide-y divide-line">
   {posts.map((p) => (
-    <li class="py-4">
-      <a href={`/blog/${p.id}/`} class="group block">
-        <div class="flex items-baseline justify-between gap-4">
-          <span class="font-medium group-hover:text-accent transition-colors">{p.data.title}</span>
-          <FormattedDate date={p.data.pubDate} class="text-xs text-muted shrink-0" />
+    <li>
+      <a href={`/blog/${p.id}/`} class="group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 py-5">
+        <FormattedDate date={p.data.pubDate} class="text-xs text-muted pt-1.5" />
+        <div>
+          <h3 class="serif-jp text-[1.2rem] leading-snug group-hover:text-accent transition-colors">{p.data.title}</h3>
+          {p.data.description && <p class="text-[.92rem] text-ink-2 mt-1.5 leading-relaxed">{p.data.description}</p>}
+          {p.data.tags.length > 0 && (
+            <div class="mt-2 flex gap-3 text-[11px] tracking-[.08em] text-muted">{p.data.tags.map((t) => <span>#{t}</span>)}</div>
+          )}
         </div>
-        {p.data.description && <p class="text-sm text-muted mt-1">{p.data.description}</p>}
       </a>
     </li>
   ))}
-</ul>
+</ol>

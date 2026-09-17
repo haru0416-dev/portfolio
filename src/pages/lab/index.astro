@@ -3,19 +3,22 @@ import Base from '../../layouts/Base.astro';
 import { LAB } from '../../data/lab';
 ---
 <Base title="Lab">
-  <h1 class="text-2xl font-semibold tracking-tight mb-2">Lab</h1>
-  <p class="text-muted text-sm mb-6">小さな実験置き場。1 ページ 1 個。</p>
-  <ul class="divide-y divide-line">
+  <header class="mb-10">
+    <p class="eyebrow mb-4"><span>Lab</span></p>
+    <h1 class="serif text-4xl">Experiments</h1>
+    <p class="text-ink-2 mt-3">小さな実験置き場。1 ページ 1 個。</p>
+  </header>
+  <ol class="divide-y divide-line">
     {LAB.map((l) => (
-      <li class="py-4">
-        <a href={`/lab/${l.slug}/`} class="group block">
-          <div class="flex items-baseline justify-between gap-4">
-            <span class="font-medium group-hover:text-accent transition-colors">{l.title}</span>
-            <span class="text-xs text-muted">{l.date.replaceAll('-', '.')}</span>
+      <li>
+        <a href={`/lab/${l.slug}/`} class="group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 py-5">
+          <span class="text-xs text-muted pt-1.5 tabular-nums">{l.date.replaceAll('-', '.')}</span>
+          <div>
+            <h3 class="serif text-[1.35rem] leading-snug group-hover:text-accent transition-colors">{l.title}</h3>
+            <p class="text-[.92rem] text-ink-2 mt-1.5 leading-relaxed">{l.description}</p>
           </div>
-          <p class="text-sm text-muted mt-1">{l.description}</p>
         </a>
       </li>
     ))}
-  </ul>
+  </ol>
 </Base>

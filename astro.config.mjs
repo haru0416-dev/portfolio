@@ -11,6 +11,8 @@ export default defineConfig({
   site: 'https://example.com',
   vite: {
     plugins: [tailwindcss()],
+    // Tailscale 経由で dev サーバーを見るため
+    server: { allowedHosts: ['.ts.net'] },
   },
   integrations: [mdx(), sitemap()],
 });

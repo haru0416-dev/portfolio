@@ -27,6 +27,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet" />
     <script is:inline>
       // FOUC 回避のため先にテーマを決める
       const t = localStorage.getItem('theme');
@@ -34,9 +37,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       document.documentElement.classList.toggle('dark', dark);
     </script>
   </head>
-  <body class="min-h-dvh flex flex-col antialiased">
+  <body class="min-h-dvh flex flex-col">
     <Header />
-    <main class:list={['flex-1 w-full mx-auto px-4 py-10', wide ? 'max-w-5xl' : 'max-w-2xl']}>
+    <main class:list={['flex-1 w-full mx-auto px-5 sm:px-8 pt-12 pb-24', wide ? 'max-w-5xl' : 'max-w-[42rem]']}>
       <slot />
     </main>
     <Footer />
