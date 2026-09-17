@@ -139,3 +139,6 @@ body {
 .prose table { width: 100%; font-size: .9em; border-collapse: collapse; }
 .prose th, .prose td { padding: .5em .75em; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
+
+/* Petals の背景: 薄い空のグラデーション */
+.petal-sky { background: linear-gradient(to bottom, color-mix(in srgb, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }

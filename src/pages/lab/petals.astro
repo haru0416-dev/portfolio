@@ -6,7 +6,7 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
 ---
 <Base title={meta.title} description={meta.description} wide>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} pattern="graph" />
-  <canvas id="c" class="w-full aspect-[16/10] rounded-3xl bg-paper-2 cursor-pointer" title="クリックで風が吹く"></canvas>
+  <canvas id="c" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
 </Base>
 
 <script>
