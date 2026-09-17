@@ -81,7 +81,7 @@ body {
 }
 :is(h1, h2, h3, .serif, .serif-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; text-wrap: balance; }
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
-p.hero-lead, .card p, ol p { word-break: auto-phrase; }
+p.hero-lead, .card p, ol p, .prose :is(p, li, blockquote) { word-break: auto-phrase; }
 /* 数字と単位、日付は途中で切らない */
 time, .tabular-nums { white-space: nowrap; }
 
@@ -255,6 +255,11 @@ body {
 ::view-transition-new(main) { animation: vt-in 480ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both; }
 @keyframes vt-out { to { opacity: 0; transform: translateY(-4px); filter: blur(3px); } }
 @keyframes vt-in { from { opacity: 0; transform: translateY(6px); filter: blur(3px); } }
+/* 「戻る」では上下を逆にして、来た道を戻る感じにする(Astro が方向を属性で教えてくれる) */
+html[data-astro-transition="back"]::view-transition-old(main) { animation-name: vt-out-back; }
+html[data-astro-transition="back"]::view-transition-new(main) { animation-name: vt-in-back; }
+@keyframes vt-out-back { to { opacity: 0; transform: translateY(4px); filter: blur(3px); } }
+@keyframes vt-in-back { from { opacity: 0; transform: translateY(-6px); filter: blur(3px); } }
 /* 記事タイトルの移動はゆっくり、加速も減速もなだらかに */
 ::view-transition-group(*) { animation-duration: 520ms; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
 ::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
