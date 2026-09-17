@@ -250,8 +250,6 @@ ol .tag { background: var(--paper-2); }
   --sea-bubble: light-dark(transparent, oklch(90% 0.05 var(--sea-h) / 40%));
   --sea-bubble-hi: light-dark(transparent, oklch(98% 0.02 var(--sea-h) / 60%));
   /* ライト = 水面 */
-  --sea-ripple:    light-dark(oklch(58% 0.11 var(--sea-h) / 14%), transparent); /* 環の暗い側(屈折の影) */
-  --sea-ripple-hi: light-dark(oklch(99% 0.01 var(--sea-h) / 55%), transparent); /* 環の明るい側(屈折の光) */
   --sea-glint:    light-dark(oklch(85% 0.12 88 / 45%), transparent);           /* 日差しの淡い金 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
@@ -333,34 +331,9 @@ ol .tag { background: var(--paper-2); }
 @media (prefers-color-scheme: dark) { :root:not(.light) .sea .caustics { display: none; } }
 :root.dark .sea .caustics { display: none; }
 
-/* 波紋(ライト): 本物の見え方に寄せる。
-   - 環は「明るい帯 + 暗い帯」の対(水面の傾きで光が屈折して見える明暗)
-   - 間隔は内側が狭く外側が広い(短い波ほど速く外へ出る分散)。外ほど薄く幅広く
-   - 数秒で薄れて消える */
-.sea .ripples i {
-  left: var(--x); top: var(--y); width: var(--r); height: var(--r); margin: calc(var(--r) / -2) 0 0 calc(var(--r) / -2);
-  border-radius: 50%;
-  background: radial-gradient(circle,
-    transparent 22%,
-    var(--sea-ripple-hi) 25%, var(--sea-ripple) 28.5%, transparent 31%,
-    transparent 36%,
-    var(--sea-ripple-hi) 39.5%, var(--sea-ripple) 44%, transparent 47.5%,
-    transparent 54%,
-    color-mix(in oklch, var(--sea-ripple-hi) 70%, transparent) 58%, color-mix(in oklch, var(--sea-ripple) 70%, transparent) 64%, transparent 69%,
-    transparent 77%,
-    color-mix(in oklch, var(--sea-ripple-hi) 40%, transparent) 82%, color-mix(in oklch, var(--sea-ripple) 40%, transparent) 90%, transparent 97%);
-  opacity: 0; transform: scale(.25);
-  animation: ripple var(--t) cubic-bezier(0.1, 0.55, 0.3, 1) infinite; animation-delay: var(--d);
-}
-.sea .ripples i:nth-child(1) { --x: 22%; --y: 28%; --r: 440px; --t: 11s; --d: -2s; }
-.sea .ripples i:nth-child(2) { --x: 76%; --y: 20%; --r: 560px; --t: 13s; --d: -8s; }
-.sea .ripples i:nth-child(3) { --x: 48%; --y: 72%; --r: 400px; --t: 12s; --d: -5s; }
-@keyframes ripple {
-  0%   { transform: scale(.25); opacity: 0; }
-  6%   { opacity: .85; }
-  55%  { opacity: .4; }
-  100% { transform: scale(1); opacity: 0; }
-}
+/* 波紋(ライト): src/scripts/surface.ts が高さ場を解いて描く canvas。上部は薄く、下へ行くほど見える */
+.sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .7; }
+@media (prefers-reduced-motion: reduce) { .sea .surface { display: none; } }
 
 /* 日差しのきらめき(ライト): 柔らかく光る点が息をするように明滅する */
 .sea .glints i {
@@ -378,7 +351,7 @@ ol .tag { background: var(--paper-2); }
   0%, 100% { transform: scale(.6); opacity: 0; }
   50%      { transform: scale(1);  opacity: 1; }
 }
-@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea :is(.bubbles, .ripples, .glints) i { display: none; } }
+@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea :is(.bubbles, .glints) i { display: none; } }
 
 
 /* 5b. スクロール連動(CSS のみ)。animation ショートハンドは timeline を初期化するので longhand で書く */

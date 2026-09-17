@@ -72,13 +72,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         </filter>
         <rect width="960" height="540" filter="url(#caustic-2)" />
       </svg>
-      <span class="ripples">{Array.from({ length: 3 }, () => <i></i>)}</span>
+      <canvas class="surface"></canvas>
       <span class="glints">{Array.from({ length: 5 }, () => <i></i>)}</span>
     </div>
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
+      import { startSurface, type SurfaceControl } from '../scripts/surface';
       installSmoothScroll();
+      // 水面の波紋(ライトの背景)。ページ遷移で canvas が差し替わるので、そのたびに付け直す
+      let surface: SurfaceControl | null = null;
+      const boot = () => {
+        surface?.dispose();
+        const c = document.querySelector<HTMLCanvasElement>('canvas.surface');
+        surface = c ? startSurface(c) : null;
+      };
+      boot();
+      document.addEventListener('astro:after-swap', boot);
     </script>
     <Header />
     <main id="content" tabindex="-1" transition:name="main" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
