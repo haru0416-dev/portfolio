@@ -53,5 +53,19 @@
     "status": "active",
     "order": 40,
     "icon": "wand-sparkles"
+  },
+  {
+    "id": "partial-aot",
+    "name": "partial-aot",
+    "summary": "TypeScript のうち静的に決まる関数だけを C 経由でネイティブ化し、残りは JS のまま bun:ffi で繋ぐ研究実装。JS と観測結果がビット一致することを不変条件にする。",
+    "stack": [
+      "Bun",
+      "TypeScript",
+      "C"
+    ],
+    "repo": "https://github.com/haru0416-dev/partial-aot",
+    "status": "soon",
+    "order": 15,
+    "icon": "cpu"
   }
 ]

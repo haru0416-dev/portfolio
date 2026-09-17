@@ -48,7 +48,7 @@ const lab = LAB.slice(0, 3);
         <ul class="space-y-4">
           {works.map((w) => (
             <li>
-              <a href={w.data.url ?? w.data.repo} class="group flex gap-4 items-start">
+              <a href={w.data.status === 'soon' ? '/works' : (w.data.url ?? w.data.repo)} class="group flex gap-4 items-start">
                 <Tile icon={w.data.icon as any} size={48} class="bg-paper-2" />
                 <div class="min-w-0">
                   <div class="text-base font-bold leading-6 group-hover:text-accent transition-colors">{w.data.name}</div>

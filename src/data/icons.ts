@@ -10,6 +10,7 @@ import FlaskConical from '@lucide/astro/icons/flask-conical';
 import Code from '@lucide/astro/icons/code';
 import ExternalLink from '@lucide/astro/icons/external-link';
 import Clock from '@lucide/astro/icons/clock';
+import Cpu from '@lucide/astro/icons/cpu';
 
 export const ICONS = {
   sprout: Sprout,
@@ -22,6 +23,7 @@ export const ICONS = {
   code: Code,
   'external-link': ExternalLink,
   clock: Clock,
+  cpu: Cpu,
 } as const;
 
 export type IconName = keyof typeof ICONS;
