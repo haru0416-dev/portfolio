@@ -44,12 +44,12 @@
   {
     "id": "fraxinus",
     "name": "Fraxinus",
-    "summary": "検索・画像生成・図表・PDF・スライドを 1 機能ずつ呼ぶ JSON CLI。Bot などの呼び出し元へ結果とローカル生成物を返す。",
+    "summary": "検索・画像生成・図表・PDF・スライドを 1 機能ずつ呼ぶ JSON CLI。Bot などの呼び出し元へ結果とローカル生成物を返す。ソースは非公開で、リリース物だけ公開。",
     "stack": [
       "Bun",
       "TypeScript"
     ],
-    "repo": "https://github.com/haru0416-dev/Fraxinus",
+    "repo": "https://github.com/haru0416-dev/fraxinus-release",
     "status": "active",
     "order": 40,
     "icon": "wand-sparkles"
