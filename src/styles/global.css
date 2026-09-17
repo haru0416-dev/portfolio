@@ -253,20 +253,29 @@ body {
   }
 }
 
-/* ---- ページ遷移: 本文がやわらかく溶けて入れ替わる。全画面のクロスフェードはしない ---- */
-::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-::view-transition-old(main) { animation: vt-out 260ms cubic-bezier(0.4, 0, 0.6, 1) both; }
-::view-transition-new(main) { animation: vt-in 480ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both; }
-@keyframes vt-out { to { opacity: 0; transform: translateY(-4px); filter: blur(3px); } }
-@keyframes vt-in { from { opacity: 0; transform: translateY(6px); filter: blur(3px); } }
+/* ---- ページ遷移: 本文が短く溶けて入れ替わる。全画面のクロスフェードはしない ---- */
+::view-transition-old(main) { animation: vt-out 180ms cubic-bezier(0.4, 0, 0.6, 1) both; }
+::view-transition-new(main) { animation: vt-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both; }
+@keyframes vt-out { to { opacity: 0; transform: translateY(-4px); filter: blur(2px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(6px); filter: blur(2px); } }
 /* 「戻る」では上下を逆にして、来た道を戻る感じにする(Astro が方向を属性で教えてくれる) */
 html[data-astro-transition="back"]::view-transition-old(main) { animation-name: vt-out-back; }
 html[data-astro-transition="back"]::view-transition-new(main) { animation-name: vt-in-back; }
-@keyframes vt-out-back { to { opacity: 0; transform: translateY(4px); filter: blur(3px); } }
-@keyframes vt-in-back { from { opacity: 0; transform: translateY(-6px); filter: blur(3px); } }
-/* 記事タイトルの移動はゆっくり、加速も減速もなだらかに */
-::view-transition-group(*) { animation-duration: 520ms; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+@keyframes vt-out-back { to { opacity: 0; transform: translateY(4px); filter: blur(2px); } }
+@keyframes vt-in-back { from { opacity: 0; transform: translateY(-6px); filter: blur(2px); } }
+/* 記事タイトルの移動: 位置の移動は 300ms。古い文字はすぐ消し、新しい文字だけが滑り込む
+   (大小 2 つの文字が重なって伸びて見えるのを防ぐ) */
+::view-transition-group(*) { animation-duration: 300ms; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+::view-transition-image-pair(*) { isolation: auto; }
+::view-transition-old(*) { animation: vt-title-out 100ms ease-out both; mix-blend-mode: normal; }
+::view-transition-new(*) { animation: vt-title-in 200ms ease-out 80ms both; mix-blend-mode: normal; }
+@keyframes vt-title-out { to { opacity: 0; } }
+@keyframes vt-title-in { from { opacity: 0; } }
 ::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
+/* ヘッダーとフッターは動かさない(一般則より名前付きが優先) */
+::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
+::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 /* タグ絞り込み(同一ページ内)では本文の出入りは動かさず、項目だけが詰まる */
 html:active-view-transition-type(filter)::view-transition-old(main),
 html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; }
