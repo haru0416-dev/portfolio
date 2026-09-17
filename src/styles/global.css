@@ -328,3 +328,19 @@ html[data-astro-transition="back"]::view-transition-new(main) { animation-name: 
 /* タグ絞り込み(同一ページ内)では本文の出入りは動かさず、項目だけが詰まる */
 html:active-view-transition-type(filter)::view-transition-old(main),
 html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; }
+
+/* =====================================================================
+   6. カーソル(ホバーできる端末だけ)。サイトの桃色で、小さく、邪魔をしない
+   ===================================================================== */
+@media (hover: hover) and (pointer: fine) {
+  :root {
+    --cursor-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M6 4.5c0-1 1.1-1.6 1.9-1L23 14.5c.9.7.4 2.1-.7 2.1h-7.4l-3.9 6.8c-.6 1-2 .6-2-.5z' fill='%23ea689f' stroke='%23fff' stroke-width='2.2' stroke-linejoin='round'/%3E%3Cpath d='M6 4.5c0-1 1.1-1.6 1.9-1L23 14.5c.9.7.4 2.1-.7 2.1h-7.4l-3.9 6.8c-.6 1-2 .6-2-.5z' fill='none' stroke='%233d3452' stroke-opacity='.35' stroke-width='.8' stroke-linejoin='round'/%3E%3C/svg%3E") 6 4, auto;
+    --cursor-hand:  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23fff' stroke='%233d3452' stroke-opacity='.25'/%3E%3Cg transform='translate(5.5 5.5) scale(.875)' fill='none' stroke='%23ea689f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3'/%3E%3Cpath d='M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4'/%3E%3Cpath d='M5 21h14'/%3E%3C/g%3E%3C/svg%3E") 16 16, pointer;
+    --cursor-text:  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cpath d='M8 3h3v22H8M16 3h-3v22h3M12 5v18' fill='none' stroke='%23fff' stroke-width='4.5' stroke-linecap='round'/%3E%3Cpath d='M8 3h3v22H8M16 3h-3v22h3M12 5v18' fill='none' stroke='%23ea689f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 12 14, text;
+  }
+  html, body { cursor: var(--cursor-arrow); }
+  a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn { cursor: var(--cursor-hand); }
+  :is(p, li, h1, h2, h3, dd, blockquote, .prose, time, pre, code, td, th):not(:has(a:hover)) { cursor: var(--cursor-text); }
+  a *, button * { cursor: inherit; }
+  canvas { cursor: var(--cursor-arrow); }
+}
