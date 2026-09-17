@@ -221,7 +221,6 @@ ol .tag { background: var(--paper-2); }
   --sea-bubble-hi: light-dark(transparent, oklch(98% 0.02 var(--sea-h) / 60%));
   /* ライト = 水面 */
   --sea-ripple:   light-dark(oklch(62% 0.10 var(--sea-h) / 11%), transparent);
-  --sea-caustic:  light-dark(oklch(70% 0.10 var(--sea-h) / 7%), transparent);  /* 水面のゆらめき */
   --sea-glint:    light-dark(oklch(85% 0.12 88 / 45%), transparent);           /* 日差しの淡い金 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
@@ -289,21 +288,19 @@ ol .tag { background: var(--paper-2); }
   80%  { transform: translate(12px, -80vh) scale(1.05); opacity: .9; }
   100% { transform: translate(0, -104vh) scale(1.1); opacity: 0; }
 }
-/* 水面のゆらめき(ライト): 網目状の光の模様を 2 層、逆向きにゆっくり流して重ねる。上部だけに出て下へ消える */
+/* 水面のゆらめき(ライト): SVG ノイズで一度だけ描いた有機的な模様を 2 層、逆向きにゆっくり流す。
+   タイルではないので整列して見えない。ライトだけ表示する */
 .sea .caustics {
-  inset: -30% -20%;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 52%, var(--sea-caustic) 60%, transparent 68%) 0 0 / 220px 220px,
-    radial-gradient(circle at 50% 50%, transparent 52%, var(--sea-caustic) 60%, transparent 68%) 110px 130px / 220px 220px;
-  mask-image: linear-gradient(to bottom, black 15%, transparent 50%);
-  animation: caustic-flow 38s ease-in-out infinite alternate;
+  position: absolute; inset: -25% -20%; width: 140%; height: 150%;
+  opacity: .22;
+  mask-image: linear-gradient(to bottom, black 12%, transparent 48%);
+  animation: caustic-flow 44s ease-in-out infinite alternate;
 }
-.sea .caustics-2 {
-  background-size: 300px 300px, 300px 300px; background-position: 70px 40px, 220px 190px;
-  opacity: .7; animation: caustic-flow-2 53s ease-in-out infinite alternate;
-}
+.sea .caustics-2 { opacity: .14; animation: caustic-flow-2 61s ease-in-out infinite alternate; }
 @keyframes caustic-flow   { from { transform: translate(0, 0) scale(1); }        to { transform: translate(3vw, 2vh) scale(1.06); } }
 @keyframes caustic-flow-2 { from { transform: translate(2vw, 1vh) scale(1.04); } to { transform: translate(-2vw, -1vh) scale(1); } }
+@media (prefers-color-scheme: dark) { :root:not(.light) .sea .caustics { display: none; } }
+:root.dark .sea .caustics { display: none; }
 
 /* 波紋(ライト): 輪郭線ではなく、内外へぼける濃淡の環が 3 重。ゆっくり広がって消える */
 .sea .ripples i {
