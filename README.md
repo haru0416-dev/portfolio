@@ -18,7 +18,7 @@
 | `src/layouts/Base.astro` | 共通の骨格。フォントの preload、テーマ判定、ページ遷移(ClientRouter)、スキップリンク |
 | `src/components/` | `Logo` `Header` `Footer` `Hero`(ページ冒頭)`PostList`(記事一覧)`Tile`(アイコンの座布団)`Wordmark`(名前の文字送り) |
 | `src/styles/global.css` | トークン → 土台 → 書体と部品 → 記事本文 → 動き、の順 |
-| `src/scripts/` | `smooth-scroll`(ホイールの慣性)`reading`(読了時間)`theme`(実効テーマの判定)`surface`(ライト背景の水面シミュレーション)`deep`(ダーク背景の深海)`petals`(Canvas 2D)`petals-gpu`(WebGPU) |
+| `src/scripts/` | `smooth-scroll`(ホイールの慣性)`reading`(読了時間)`theme`(実効テーマの判定)`background`(背景アニメーションの骨組み: テーマで起動・停止、リサイズ、非表示で停止)`surface`(ライトの水面)`deep`(ダークの深海)`petals`(Canvas 2D)`petals-gpu`(WebGPU) |
 | `src/data/icons.ts` | 使う lucide アイコンの登録。作品のアイコンはここに足す |
 
 ## 見た目の規則

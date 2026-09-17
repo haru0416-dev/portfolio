@@ -61,17 +61,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
-      import { startSurface, type SurfaceControl } from '../scripts/surface';
-      import { startDeep, type DeepControl } from '../scripts/deep';
+      import { startSurface } from '../scripts/surface';
+      import { startDeep } from '../scripts/deep';
+      import type { BackgroundControl } from '../scripts/background';
       installSmoothScroll();
-      // 背景(ライト: 水面の波紋 / ダーク: 深海)。ページ遷移で canvas が差し替わるので、そのたびに付け直す
-      let surface: SurfaceControl | null = null, deep: DeepControl | null = null;
+      // 背景(ライト: 水面 / ダーク: 深海)。ページ遷移で canvas が差し替わるので、そのたびに付け直す
+      let bg: BackgroundControl[] = [];
       const boot = () => {
-        surface?.dispose(); deep?.dispose();
-        const c = document.querySelector<HTMLCanvasElement>('canvas.surface');
+        bg.forEach((b) => b.dispose());
+        const s = document.querySelector<HTMLCanvasElement>('canvas.surface');
         const d = document.querySelector<HTMLCanvasElement>('canvas.deep');
-        surface = c ? startSurface(c) : null;
-        deep = d ? startDeep(d) : null;
+        bg = [s && startSurface(s), d && startDeep(d)].filter((x): x is BackgroundControl => !!x);
       };
       boot();
       document.addEventListener('astro:after-swap', boot);
