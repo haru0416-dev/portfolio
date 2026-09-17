@@ -28,10 +28,9 @@ def url(name, svg, hx, hy, fb):
 
 # 矢印: 28px に 24 格子を 1.0 倍で。先端(4,4)がホットスポット。中は淡い桃で薄く塗る
 arrow = lucide([ARROW], 28, 1.0, 2, 2, fill='#f9c9d8')
-# リンクの上: 形は矢印のまま(切り替わりで点滅しないように)。中を濃く塗り、右下に小さな芽を添える
-badge = f"<g transform='translate(15.5 15.5) scale(.4)' fill='none' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='14' fill='{WHITE}'/><g stroke='{PINK}' stroke-width='2.6'>" + ''.join(f"<path d='{d}'/>" for d in SPROUT) + "</g></g>"
-sprout = lucide([ARROW], 28, 1.0, 2, 2, fill='#f3a5c4', extra='') .replace('</svg>', badge + '</svg>')
-sprout_down = lucide([ARROW], 28, 0.92, 3, 3, fill=PINK).replace('</svg>', badge + '</svg>')
+# リンクの上: 形は矢印のまま、中を濃く塗るだけ(切り替わりで点滅しないように)
+sprout = lucide([ARROW], 28, 1.0, 2, 2, fill='#f3a5c4')
+sprout_down = lucide([ARROW], 28, 0.92, 3, 3, fill=PINK)
 # I ビーム(入力欄だけ): 中心がホットスポット
 ibeam = lucide(TEXT, 28, 1.0, 2, 2)
 
