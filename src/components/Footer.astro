@@ -3,12 +3,12 @@ import { SITE } from '../site';
 import { SITE_ICON as SiteIcon } from '../data/icons';
 ---
 <footer class="border-t border-line">
-  <div class="max-w-5xl mx-auto px-5 sm:px-8 py-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+  <div class="max-w-[64rem] mx-auto px-4 sm:px-8 py-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
     <div>
-      <div class="serif text-2xl flex items-center gap-2"><SiteIcon size={26} stroke-width={2.5} class="text-accent" aria-hidden="true" /><span>{SITE.name}<span class="text-accent">.</span></span></div>
+      <div class="serif text-xl leading-8 flex items-center gap-2"><SiteIcon size={26} stroke-width={2.5} class="text-accent" aria-hidden="true" /><span>{SITE.name}<span class="text-accent">.</span></span></div>
       <p class="text-xs text-muted mt-2">© {new Date().getFullYear()} {SITE.name}. Built with Astro ♡</p>
     </div>
-    <nav class="flex gap-6 text-[12px] tracking-[.12em] uppercase text-muted">
+    <nav class="flex gap-6 text-xs tracking-[.08em] uppercase text-muted">
       <a href={SITE.github} class="u-link hover:text-ink">GitHub</a>
       <a href="/rss.xml" class="u-link hover:text-ink">RSS</a>
     </nav>

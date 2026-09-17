@@ -1,5 +1,5 @@
 ---
-// ページ冒頭の見出し。小さなラベル、大きな題、一文。
+// ページ冒頭の見出し。小さなラベル、大きな題、一文。縦は 8px の倍数で積む
 interface Props {
   eyebrow?: string;
   title: string;
@@ -8,8 +8,8 @@ interface Props {
 }
 const { eyebrow, title, lead, serifJp = false } = Astro.props;
 ---
-<header class="pt-4 pb-10 mb-6">
-  {eyebrow && <p class="eyebrow eyebrow-plain mb-5"><span>{eyebrow}</span></p>}
-  <h1 class:list={[serifJp ? 'serif-jp' : 'serif', 'text-[2.4rem] sm:text-5xl leading-tight']}>{title}</h1>
-  {lead && <p class="text-ink-2 mt-4 max-w-[36rem] leading-relaxed">{lead}</p>}
+<header class="pt-4 pb-12 mb-4">
+  {eyebrow && <p class="eyebrow eyebrow-plain mb-4"><span>{eyebrow}</span></p>}
+  <h1 class:list={[serifJp ? 'serif-jp' : 'serif', 'text-3xl sm:text-4xl']}>{title}</h1>
+  {lead && <p class="text-base text-ink-2 mt-4 max-w-[36rem]">{lead}</p>}
 </header>

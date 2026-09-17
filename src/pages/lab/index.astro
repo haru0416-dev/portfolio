@@ -5,14 +5,14 @@ import { LAB } from '../../data/lab';
 ---
 <Base title="Lab">
   <Hero eyebrow="Lab" title="Experiments" lead="小さな実験置き場。1 ページ 1 個。" />
-  <ol class="divide-y divide-line">
+  <ol class="divide-line">
     {LAB.map((l) => (
       <li>
-        <a href={`/lab/${l.slug}/`} class="group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 py-5">
-          <span class="text-xs text-muted pt-1.5 tabular-nums">{l.date.replaceAll('-', '.')}</span>
+        <a href={`/lab/${l.slug}/`} class="group grid grid-cols-[6rem_1fr] gap-x-4 py-4">
+          <span class="text-xs leading-4 text-muted pt-1 tabular-nums">{l.date.replaceAll('-', '.')}</span>
           <div>
-            <h3 class="serif text-[1.35rem] leading-snug group-hover:text-accent transition-colors">{l.title}</h3>
-            <p class="text-[.92rem] text-ink-2 mt-1.5 leading-relaxed">{l.description}</p>
+            <h3 class="serif text-lg group-hover:text-accent transition-colors">{l.title}</h3>
+            <p class="text-sm text-ink-2 mt-1">{l.description}</p>
           </div>
         </a>
       </li>

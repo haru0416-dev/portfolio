@@ -25,6 +25,23 @@
   --mint: #6fcbb7;
 }
 
+@theme {
+  /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
+  --text-xs: 0.8rem;       --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;     --text-sm--line-height: 1.5rem;
+  --text-base: 1rem;       --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;      --text-lg--line-height: 2rem;
+  --text-xl: 1.5625rem;    --text-xl--line-height: 2rem;
+  --text-2xl: 1.953rem;    --text-2xl--line-height: 2.5rem;
+  --text-3xl: 2.441rem;    --text-3xl--line-height: 3rem;
+  --text-4xl: 3.052rem;    --text-4xl--line-height: 3.5rem;
+  --text-5xl: 3.815rem;    --text-5xl--line-height: 4rem;
+  --text-6xl: 4.768rem;    --text-6xl--line-height: 5rem;
+  --text-7xl: 5.96rem;     --text-7xl--line-height: 6rem;
+  /* 角丸は 8 / 16 / 24 */
+  --radius-lg: 0.5rem; --radius-2xl: 1rem; --radius-3xl: 1.5rem;
+}
+
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-2: var(--paper-2);
@@ -58,10 +75,10 @@ body {
 
 /* セクション見出し: 小さなラベル + 点線 */
 .eyebrow {
-  display: flex; align-items: center; gap: .75rem;
-  font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
+  display: flex; align-items: center; gap: 1rem; height: 1.5rem;
+  font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
 }
-.eyebrow > span { background: var(--paper-2); padding: .25rem .7rem; border-radius: 999px; }
+.eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: 999px; }
 .eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
 
 /* ヒーロー用: 点線なしのラベル */
@@ -69,8 +86,8 @@ body {
 
 /* 丸いボタン */
 .pill {
-  display: inline-flex; align-items: center; gap: .4rem;
-  padding: .55rem 1.1rem; border-radius: 999px; font-size: .9rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem;
+  padding: 0 1.25rem; border-radius: 999px; font-size: var(--text-sm); font-weight: 700;
   background: var(--paper-2); color: var(--ink);
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
@@ -87,7 +104,7 @@ body {
 .dotted { border-top: 2px dotted var(--line); }
 
 /* ふんわりしたカード */
-.card { background: var(--paper-2); border-radius: 1.25rem; padding: 1.25rem; }
+.card { background: var(--paper-2); border-radius: 1.5rem; padding: 1.5rem; }
 
 /* リンクの下線アニメーション(ホバーできる端末だけ) */
 .u-link { position: relative; text-decoration: none; }
@@ -105,7 +122,7 @@ body {
 .press:active { transform: scale(0.94); }
 
 /* 名前の文字を順に出す(読み込み時に一度だけ) */
-.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 45ms + 80ms); }
+.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); }
 .hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
 @keyframes wm-in { to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
@@ -114,28 +131,28 @@ body {
 
 
 /* 記事本文 */
-.prose { font-size: 1.02rem; line-height: 2; color: var(--ink); }
-.prose > * + * { margin-top: 1.25em; }
-.prose :is(h2, h3) { font-family: "Zen Maru Gothic", var(--font-serif); font-weight: 700; line-height: 1.4; color: var(--ink); }
-.prose h2 { font-size: 1.7rem; margin-top: 2.6em; letter-spacing: -0.01em; }
-.prose h3 { font-size: 1.3rem; margin-top: 2em; }
-.prose h2 + *, .prose h3 + * { margin-top: .6em; }
+.prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
+.prose > * + * { margin-top: 1.5rem; }
+.prose :is(h2, h3) { font-family: "Zen Maru Gothic", var(--font-serif); font-weight: 700; color: var(--ink); }
+.prose h2 { font-size: var(--text-xl); line-height: 2rem; margin-top: 4rem; }
+.prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
+.prose h2 + *, .prose h3 + * { margin-top: 1rem; }
 .prose ul { list-style: none; padding-left: 1.4em; }
 .prose ul li { position: relative; }
 .prose ul li::before { content: "•"; font-weight: 700; position: absolute; left: -1.4em; color: var(--accent); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
-.prose li + li { margin-top: .35em; }
+.prose li + li { margin-top: .5rem; }
 .prose a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .prose strong { font-weight: 600; }
 .prose code { font-size: .875em; background: var(--paper-2); padding: .15em .45em; border-radius: 6px; }
-.prose pre { padding: 1.1em 1.25em; border-radius: 1rem; overflow-x: auto; font-size: .85rem; line-height: 1.7; border: 1px solid var(--line); }
+.prose pre { padding: 1.5rem; border-radius: 1rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; border: 1px solid var(--line); }
 .prose pre code { background: none; padding: 0; }
-.prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1em 1.25em; color: var(--ink-2); }
+.prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
 .prose img { border-radius: 1rem; width: 100%; }
-.prose hr { border: 0; text-align: center; margin: 3em 0; }
+.prose hr { border: 0; text-align: center; margin: 3rem 0; line-height: 2rem; }
 .prose hr::before { content: "♡"; color: var(--muted); letter-spacing: .5em; }
 .prose table { width: 100%; font-size: .9em; border-collapse: collapse; }
-.prose th, .prose td { padding: .5em .75em; border-bottom: 1px solid var(--line); text-align: left; }
+.prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
 /* Petals の背景: 薄い空のグラデーション */
@@ -143,13 +160,13 @@ body {
 
 
 /* タグ */
-.tag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: .2rem .6rem; border-radius: 999px; }
+.tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .625rem; border-radius: 999px; }
 .card .tag { background: var(--paper); }
 :where(.card-cover, ol) .tag { background: var(--paper-2); }
 .card-cover .tag { background: color-mix(in srgb, var(--paper) 70%, transparent); }
 
 /* 絞り込みチップ */
-.chip { font-size: .78rem; font-weight: 700; padding: .35rem .8rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 @media (hover: hover) and (pointer: fine) { .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); } }
 

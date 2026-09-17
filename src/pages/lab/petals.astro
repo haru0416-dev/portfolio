@@ -7,7 +7,7 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
 <Base title={meta.title} description={meta.description} wide>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} />
   <canvas id="petals" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
-  <p id="renderer" class="mt-3 text-xs text-muted tracking-[.08em]"></p>
+  <p id="renderer" class="mt-4 text-xs text-muted tracking-[.08em]"></p>
 </Base>
 
 <script>

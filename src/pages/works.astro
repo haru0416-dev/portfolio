@@ -12,17 +12,17 @@ const Code = ICONS.code, Ext = ICONS['external-link'];
   <Hero eyebrow="Works" title="Selected works" lead="代表的なものだけ。ほかは GitHub に。" />
   <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {works.map((w, i) => (
-      <li class="card flex flex-col gap-3">
-        <div class="flex items-center gap-3">
-          <Tile icon={w.data.icon as any} size={44} class={`hue-${i % 3}`} />
+      <li class="card flex flex-col gap-4">
+        <div class="flex items-center gap-4">
+          <Tile icon={w.data.icon as any} size={48} class={`hue-${i % 3}`} />
           <div class="min-w-0 flex-1">
-            <h2 class="serif-jp text-[1.1rem] leading-snug">{w.data.name}</h2>
-            {badge[w.data.status] && <span class="text-[10px] font-bold tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}
+            <h2 class="serif-jp text-lg">{w.data.name}</h2>
+            {badge[w.data.status] && <span class="block text-xs leading-4 font-bold tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}
           </div>
         </div>
-        <p class="text-[.9rem] text-ink-2 leading-relaxed flex-1">{w.data.summary}</p>
-        <div class="flex items-center gap-1.5">
-          <div class="flex flex-wrap gap-1.5 flex-1">{w.data.stack.map((s) => <span class="tag">{s}</span>)}</div>
+        <p class="text-sm text-ink-2 flex-1">{w.data.summary}</p>
+        <div class="flex items-center gap-2">
+          <div class="flex flex-wrap gap-2 flex-1">{w.data.stack.map((s) => <span class="tag">{s}</span>)}</div>
           {w.data.url && <a href={w.data.url} class="icon-btn icon-btn-accent press" aria-label="サイトを開く" title="Site"><Ext size={14} stroke-width={2.5} /></a>}
           {w.data.repo && <a href={w.data.repo} class="icon-btn press" aria-label="リポジトリを開く" title="Repository"><Code size={14} stroke-width={2.5} /></a>}
         </div>
