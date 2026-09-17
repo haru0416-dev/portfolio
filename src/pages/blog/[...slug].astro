@@ -28,7 +28,7 @@ const { Content, remarkPluginFrontmatter } = await render(post);
     <div class="prose"><Content /></div>
   </article>
 
-  <nav class="mt-20 pt-8 dotted grid sm:grid-cols-2 gap-6 text-sm">
+  {(older || newer) && <nav class="mt-20 pt-8 dotted grid sm:grid-cols-2 gap-6 text-sm">
     <div>
       {older && (
         <a href={`/blog/${older.id}/`} class="group block">
@@ -45,5 +45,5 @@ const { Content, remarkPluginFrontmatter } = await render(post);
         </a>
       )}
     </div>
-  </nav>
+  </nav>}
 </Base>

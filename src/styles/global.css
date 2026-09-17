@@ -64,6 +64,24 @@ body {
 .eyebrow > span { background: var(--paper-2); padding: .25rem .7rem; border-radius: 999px; }
 .eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
 
+/* ヒーロー用: 点線なしのラベル */
+.eyebrow-plain::after { display: none; }
+
+/* 丸いボタン */
+.pill {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .55rem 1.1rem; border-radius: 999px; font-size: .9rem; font-weight: 700;
+  background: var(--paper-2); color: var(--ink);
+  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover { background: color-mix(in srgb, var(--paper-2) 70%, var(--accent-soft)); }
+}
+.pill-accent { background: var(--accent); color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+  .pill-accent:hover { background: color-mix(in srgb, var(--accent) 88%, black); }
+}
+
 /* 区切り線も点線に */
 .divide-line > :not(:first-child) { border-top: 2px dotted var(--line) !important; border-bottom: 0 !important; }
 .dotted { border-top: 2px dotted var(--line); }

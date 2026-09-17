@@ -9,16 +9,16 @@ const nav = [
 const path = Astro.url.pathname;
 ---
 <header class="sticky top-0 z-10 bg-paper/85 backdrop-blur border-b border-line">
-  <div class="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
     <a href="/" class="serif text-2xl leading-none flex items-center gap-2"><SiteIcon size={22} stroke-width={2.5} class="text-accent" aria-hidden="true" /><span>{SITE.name}<span class="text-accent">.</span></span></a>
-    <nav class="flex items-center gap-6 sm:gap-8 text-[12px] tracking-[.1em] uppercase">
+    <nav class="flex items-center gap-1 sm:gap-4 text-[12px] tracking-[.08em] sm:tracking-[.1em] uppercase">
       {nav.map((n) => (
         <a
           href={n.href}
-          class:list={['rounded-full px-3 py-1 transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
+          class:list={['rounded-full px-2.5 sm:px-3 py-1 transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
-      <button id="theme-toggle" type="button" aria-label="テーマ切替" class="press text-muted hover:text-ink transition-colors -mr-1">
+      <button id="theme-toggle" type="button" aria-label="テーマ切替" class="press text-muted hover:text-ink transition-colors ml-1 -mr-1">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>

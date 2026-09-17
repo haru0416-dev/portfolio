@@ -15,21 +15,27 @@ const lab = LAB.slice(0, 3);
 ---
 <Base wide>
   <!-- 顔: 名前と一文だけ。画面の大半を余白にする -->
-  <section class="min-h-[calc(100dvh-4rem-6rem)] flex items-center -mt-12">
-    <div class="w-full">
-      <div>
-        <p class="eyebrow mb-8"><span>Notes &amp; experiments</span></p>
-        <h1 class="serif text-[4.5rem] sm:text-[7rem] leading-[0.95] tracking-[-0.01em]">
-          <Wordmark text={SITE.name} /><span class="text-accent">.</span>
-        </h1>
-        <p class="serif-jp mt-8 text-[1.2rem] sm:text-[1.6rem] leading-[1.6] text-ink-2 max-w-[24em] hero-lead">
-          作ったものと、作りながら考えたこと。
-        </p>
+  <section class="min-h-[min(34rem,72dvh)] flex items-center -mt-4 sm:-mt-6">
+    <div class="w-full max-w-[44rem]">
+      <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
+      <h1 class="serif text-[4.2rem] sm:text-[6.5rem] leading-[0.95] tracking-[-0.01em]">
+        <Wordmark text={SITE.name} /><span class="text-accent">.</span>
+      </h1>
+      <p class="serif-jp mt-6 text-[1.1rem] sm:text-[1.5rem] leading-[1.6] text-ink hero-lead">
+        作ったものと、作りながら考えたこと。
+      </p>
+      <p class="mt-4 text-ink-2 leading-relaxed max-w-[32rem] hero-lead">
+        Rust や TypeScript で小さなツールや対話プログラムを作り、その過程で気づいたことを書き留めています。
+      </p>
+      <div class="mt-7 flex flex-wrap gap-2.5 hero-lead">
+        <a href="/works" class="pill pill-accent press">作品を見る</a>
+        <a href="/blog" class="pill press">記事を読む</a>
+        <a href={SITE.github} class="pill press">GitHub</a>
       </div>
     </div>
   </section>
 
-  <div class="grid gap-x-16 gap-y-20 lg:grid-cols-[1fr_20rem] pt-24 dotted">
+  <div class="grid gap-x-16 gap-y-20 lg:grid-cols-[1fr_20rem] pt-16 dotted">
     <section>
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} />

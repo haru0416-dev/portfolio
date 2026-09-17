@@ -13,17 +13,18 @@ const badge = { active: '', wip: 'Work in progress', archived: 'Archived' } as c
       <li class="card flex flex-col gap-3">
         <div class="flex items-center gap-3">
           <Tile icon={w.data.icon as any} size={48} />
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <h2 class="serif-jp text-[1.15rem] leading-snug">{w.data.name}</h2>
             {badge[w.data.status] && <span class="text-[10px] font-bold tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}
           </div>
+          <div class="flex gap-1.5 shrink-0 text-xs">
+            {w.data.url && <a href={w.data.url} class="rounded-full bg-accent text-white px-3 py-1 font-bold press">Site</a>}
+            {w.data.repo && <a href={w.data.repo} class="rounded-full bg-paper px-3 py-1 font-bold text-ink press">Repo</a>}
+          </div>
         </div>
         <p class="text-[.92rem] text-ink-2 leading-relaxed flex-1">{w.data.summary}</p>
-        <div class="flex flex-wrap items-center gap-2 text-xs">
+        <div class="flex flex-wrap gap-1.5 text-xs">
           {w.data.stack.map((s) => <span class="rounded-full bg-paper px-2.5 py-1 text-muted font-bold">{s}</span>)}
-          <span class="flex-1" />
-          {w.data.url && <a href={w.data.url} class="rounded-full bg-accent text-white px-3 py-1 font-bold press">Site</a>}
-          {w.data.repo && <a href={w.data.repo} class="rounded-full bg-paper px-3 py-1 font-bold text-ink press">Repo</a>}
         </div>
       </li>
     ))}

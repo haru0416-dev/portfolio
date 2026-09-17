@@ -9,7 +9,7 @@ interface Props {
 }
 const { eyebrow, title, lead, pattern = 'none', serifJp = false } = Astro.props;
 ---
-<header class:list={['hero', `hero-${pattern}`, 'relative -mx-5 sm:-mx-8 px-5 sm:px-8 pt-6 pb-14 mb-14']}>
+<header class:list={['hero', `hero-${pattern}`, 'relative -mx-5 sm:-mx-8 px-5 sm:px-8 pt-6 pb-10 mb-8']}>
   {eyebrow && <p class="eyebrow mb-5"><span>{eyebrow}</span></p>}
   <h1 class:list={[serifJp ? 'serif-jp' : 'serif', 'text-[2.4rem] sm:text-5xl leading-tight']}>{title}</h1>
   {lead && <p class="text-ink-2 mt-4 max-w-[36rem] leading-relaxed">{lead}</p>}
