@@ -22,6 +22,10 @@
   --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent))); /* ボタンの地 */
   --accent-soft: light-dark(oklch(92%   0.060 var(--h-accent)), oklch(36% 0.070 var(--h-accent)));
   --on-accent:   light-dark(white, var(--paper));
+  /* ガラス素材 */
+  --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
+  --glass-hi:    light-dark(oklch(100% 0 0 / 80%), oklch(100% 0 0 / 16%));  /* 縁と上辺の光 */
+  --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 10%), oklch(0% 0 0 / 35%)); /* 縁の影 */
   --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
 }
 :root.light { color-scheme: light; }
@@ -109,12 +113,34 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 .eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
 .eyebrow-plain::after { display: none; }
 
+/* ガラス素材(Liquid Glass の考え方を控えめに):
+   背後をぼかして彩度を上げ、縁に光のリング(左上が明るく右下が暗い)と上辺のハイライトを置く。
+   本物の屈折は SVG の変位が要るので、縁の光で「レンズの厚み」だけを暗示する */
+.glass {
+  position: relative; isolation: isolate;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 var(--glass-lo), 0 12px 32px -20px var(--glass-lo);
+}
+.glass::before { /* 1px の光のリング */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(135deg, var(--glass-hi), transparent 35%, transparent 65%, var(--glass-lo));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  transition: opacity 200ms ease;
+}
+@media (hover: hover) and (pointer: fine) { .glass:hover::before { opacity: 1.6; } }
+@supports not (backdrop-filter: blur(1px)) { .glass { background: var(--paper-2); } }
+
 /* 区切り線は点線 */
 .dotted { border-top: 2px dotted var(--line); }
 .divide-line > :not(:first-child) { border-top: 2px dotted var(--line) !important; border-bottom: 0 !important; }
 
 /* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
-.card { background: var(--paper-2); border-radius: 2.5rem; padding: 1.5rem; }
+.card { border-radius: 2.5rem; padding: 1.5rem; }
+.card:not(.glass) { background: var(--paper-2); }
 
 /* 座布団(アイコンの台)。寸法は --tile、Works では 3 色で回す */
 .tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
@@ -126,16 +152,19 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 .pill {
   display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem;
   padding: 0 1.25rem; border-radius: 999px; font-size: var(--text-sm); font-weight: 700;
-  background: var(--paper-2); color: var(--ink);
+  color: var(--ink);
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
-.pill-accent { background: var(--accent-btn); color: var(--on-accent); }
-.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--paper); color: var(--ink); }
+.pill:not(.glass) { background: var(--paper-2); }
+.pill-accent, .pill-accent.glass { background: var(--accent-btn); color: var(--on-accent); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; color: var(--ink); }
+.icon-btn:not(.glass) { background: var(--paper); }
 .icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
 
 /* 絞り込みチップ(押した状態は aria-pressed) */
-.chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.chip:not(.glass) { background: var(--paper-2); }
+.chip[aria-pressed="true"], .chip.glass[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
 /* タグ。カードの上では地の色、一覧の上では一段暗い色 */
@@ -144,7 +173,7 @@ ol .tag { background: var(--paper-2); }
 
 /* ホバーできる端末だけの反応 */
 @media (hover: hover) and (pointer: fine) {
-  .pill:hover { background: color-mix(in oklch, var(--paper-2) 70%, var(--accent-soft)); }
+  .pill:not(.pill-accent):hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
   .pill-accent:hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
   .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
   .u-link:hover::after { transform: scaleX(1); }

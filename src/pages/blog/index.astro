@@ -16,7 +16,7 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
   <Hero eyebrow="Blog" title="Writing" lead="作りながら考えたことの記録。" />
 
   {latest && (
-    <a href={`/blog/${latest.id}/`} class="card reveal block group mb-8">
+    <a href={`/blog/${latest.id}/`} class="card glass reveal block group mb-8">
       <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent-ink mb-2">
         <span>Latest</span><span class="text-muted">·</span>
         <FormattedDate date={latest.data.pubDate} class="text-muted" />
@@ -31,8 +31,8 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
   {tags.length > 1 && (
     <search aria-label="タグで絞り込む">
       <div id="tag-filter" class="flex flex-wrap gap-2 mb-8">
-        <button type="button" class="chip press" data-tag="" aria-pressed="true">すべて</button>
-        {tags.map((t) => <button type="button" class="chip press" data-tag={t} aria-pressed="false">#{t}</button>)}
+        <button type="button" class="chip glass press" data-tag="" aria-pressed="true">すべて</button>
+        {tags.map((t) => <button type="button" class="chip glass press" data-tag={t} aria-pressed="false">#{t}</button>)}
       </div>
       <p id="tag-status" class="sr-only" aria-live="polite"></p>
     </search>
