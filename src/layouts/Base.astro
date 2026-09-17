@@ -48,6 +48,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:url" content={canonical} />
     {preloads.map((p) => <link rel="preload" href={p.url} as="font" type={`font/${p.type}`} crossorigin />)}
     <link rel="stylesheet" href="/fonts.css" />
+    <link rel="preload" href="/cursors/arrow.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine)" />
+    <link rel="preload" href="/cursors/sprout.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine)" />
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">
