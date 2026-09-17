@@ -5,13 +5,13 @@ const CELL = 4;          // 1 セルが画面の何 px か(小さいほど精細
 const DAMP = 0.978;      // 減衰(1 に近いほど長く残る)。短命にして小さな環で消す
 const FPS = 30;          // 更新頻度。背景なので 30 で十分
 const LIGHT = [-0.7, -0.7]; // 光の向き(左上)
+import { isDark, onThemeChange } from './theme';
 
 export type SurfaceControl = { dispose(): void };
 
 export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
   const ctx = canvas.getContext('2d', { alpha: true })!;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mq = matchMedia('(prefers-color-scheme: dark)');
 
   let W = 0, H = 0, cw = 0, ch = 0;
   let cur = new Float32Array(0), prev = new Float32Array(0);
@@ -19,7 +19,7 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
   let off: HTMLCanvasElement | null = null, offCtx: CanvasRenderingContext2D | null = null;
   let raf = 0, timer = 0, running = false, last = 0, nextDrop = 0;
 
-  const isLight = () => getComputedStyle(document.documentElement).colorScheme !== 'dark';
+  const isLight = () => !isDark();
 
   const resize = () => {
     W = innerWidth; H = innerHeight;
@@ -105,9 +105,7 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
 
   const onResize = () => { clearTimeout(timer); timer = window.setTimeout(resize, 150); };
   const onVis = () => { document.hidden ? stop() : sync(); };
-  const mo = new MutationObserver(sync);
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  mq.addEventListener('change', sync);
+  const offTheme = onThemeChange(sync);
   addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', onVis);
   resize();
@@ -115,5 +113,5 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
   drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, 4, 3, 4);
   sync();
 
-  return { dispose() { stop(); mo.disconnect(); mq.removeEventListener('change', sync); removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); } };
+  return { dispose() { stop(); offTheme(); removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); } };
 }

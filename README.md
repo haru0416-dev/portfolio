@@ -18,14 +18,14 @@
 | `src/layouts/Base.astro` | 共通の骨格。フォントの preload、テーマ判定、ページ遷移(ClientRouter)、スキップリンク |
 | `src/components/` | `Logo` `Header` `Footer` `Hero`(ページ冒頭)`PostList`(記事一覧)`Tile`(アイコンの座布団)`Wordmark`(名前の文字送り) |
 | `src/styles/global.css` | トークン → 土台 → 書体と部品 → 記事本文 → 動き、の順 |
-| `src/scripts/` | `smooth-scroll`(ホイールの慣性)`reading`(読了時間)`surface`(ライト背景の水面シミュレーション)`petals`(Canvas 2D)`petals-gpu`(WebGPU) |
+| `src/scripts/` | `smooth-scroll`(ホイールの慣性)`reading`(読了時間)`theme`(実効テーマの判定)`surface`(ライト背景の水面シミュレーション)`deep`(ダーク背景の深海)`petals`(Canvas 2D)`petals-gpu`(WebGPU) |
 | `src/data/icons.ts` | 使う lucide アイコンの登録。作品のアイコンはここに足す |
 
 ## 見た目の規則
 
 - **配色**: OKLCH。色相 3 つ(`--h` 地、`--h-accent` 桃、`--h-mint` 薄荷)と明度・彩度の段階で全色を作り、`light-dark()` でライトとダークを 1 か所に書く。OS のテーマに追従し、ヘッダーのボタンで固定できる。
 - **書体**: 見出しは `.display`(Fredoka)と `.display-jp`(Zen Maru Gothic 700)。本文は Nunito と OS の日本語フォント。
-- **背景**(`.sea`): ダークは深海(光の帯 2 層、昇る泡、まばらなマリンスノー、下ほど深い青み)、ライトは水面(上部の光のゆらめき 2 層、`src/scripts/surface.ts` が 2D 波動方程式で解く雨粒の波紋、息をする光の点、上ほど空の水色)。出ない側は色を透明にして隠す。CSS のみで transform だけを動かし、reduced-motion では静止。
+- **背景**(`.sea`): ダークは深海(`src/scripts/deep.ts` が描く光の柱・沈むマリンスノー・海底から立ち上る泡の列、下ほど深い青み)、ライトは水面(上部の光のゆらめき 2 層、`src/scripts/surface.ts` が 2D 波動方程式で解く雨粒の波紋、息をする光の点、上ほど空の水色)。出ない側は色を透明にして隠す。CSS のみで transform だけを動かし、reduced-motion では静止。
 - **ガラス素材**(`.glass`): Liquid Glass の考え方を控えめに。背後をぼかして彩度を上げ、縁に光のリング(左上が明るく右下が暗い)と上辺のハイライト。ヘッダー・カード・ピル・チップ・アイコンボタンに使う。桃色のボタンと押下中のチップは不透明のまま。
 - **動き**: 頻繁に見る操作は動かさない。ホバーと押下は 150〜200ms、スクロール連動は CSS のみ、ページ遷移は本文だけ。すべて `prefers-reduced-motion` で無効になる。
 

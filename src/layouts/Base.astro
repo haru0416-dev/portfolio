@@ -54,9 +54,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <!-- 背景(装飾。本文の裏、CSS のみ)。ダークは深海(光の帯・泡・マリンスノー)、ライトは水面(波紋・日差しのきらめき)。
          出ない側は色を透明にして隠す -->
     <div class="sea" aria-hidden="true">
-      <i class="rays"></i><i class="rays rays-2"></i>
-      <i class="snow"></i><i class="snow far"></i>
-      <span class="bubbles">{Array.from({ length: 10 }, () => <i></i>)}</span>
+      <canvas class="deep"></canvas>
       <!-- 水面のゆらめき(ライト): ノイズで一度だけ描いた有機的な模様を 2 層、逆向きにゆっくり流す -->
       <svg class="caustics" viewBox="0 0 960 540" preserveAspectRatio="none">
         <filter id="caustic" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
@@ -79,13 +77,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
       import { startSurface, type SurfaceControl } from '../scripts/surface';
+      import { startDeep, type DeepControl } from '../scripts/deep';
       installSmoothScroll();
-      // 水面の波紋(ライトの背景)。ページ遷移で canvas が差し替わるので、そのたびに付け直す
-      let surface: SurfaceControl | null = null;
+      // 背景(ライト: 水面の波紋 / ダーク: 深海)。ページ遷移で canvas が差し替わるので、そのたびに付け直す
+      let surface: SurfaceControl | null = null, deep: DeepControl | null = null;
       const boot = () => {
-        surface?.dispose();
+        surface?.dispose(); deep?.dispose();
         const c = document.querySelector<HTMLCanvasElement>('canvas.surface');
+        const d = document.querySelector<HTMLCanvasElement>('canvas.deep');
         surface = c ? startSurface(c) : null;
+        deep = d ? startDeep(d) : null;
       };
       boot();
       document.addEventListener('astro:after-swap', boot);

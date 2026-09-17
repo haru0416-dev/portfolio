@@ -25,11 +25,11 @@ const path = Astro.url.pathname;
   </div>
 </header>
 <script>
+  import { isDark } from '../scripts/theme';
   // ページ遷移のたびに新しいボタンへ付け直す
   document.addEventListener('astro:page-load', () => {
     const btn = document.getElementById('theme-toggle');
     if (!btn) return;
-    const isDark = () => getComputedStyle(document.documentElement).colorScheme === 'dark';
     btn.setAttribute('aria-pressed', String(isDark()));
     btn.addEventListener('click', () => {
       const next = isDark() ? 'light' : 'dark'; // 今の実効テーマの反対を固定する

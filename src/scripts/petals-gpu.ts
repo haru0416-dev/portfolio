@@ -2,6 +2,8 @@
 // 物理はコンピュートシェーダ、描画はインスタンス化した四角形の上で花びらの形を SDF で計算する。
 // 背景(空のグラデーションとボケ光)もシェーダで描く。
 
+import { isDark, onThemeChange } from './theme';
+
 const MAX = 8000;
 const FLOATS = 12; // Particle の f32 数
 const UNIFORM_BYTES = 96;
@@ -247,7 +249,7 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
 
   const colors = () => {
     const bg0 = cssColor('--paper'), bg1 = cssColor('--paper-2'), tint = cssColor('--accent');
-    const dark = getComputedStyle(document.documentElement).colorScheme === 'dark' ? 1 : 0;
+    const dark = isDark() ? 1 : 0;
     uf.set([...bg0, 1], 8); uf.set([...bg1, 1], 12); uf.set([...tint, 1], 16); uf.set([dark, 0, 0, 0], 20);
   };
 
@@ -338,8 +340,7 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
   };
 
   let paused = false;
-  const mo = new MutationObserver(r.colors); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  const mq = matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener('change', r.colors);
+  const offTheme = onThemeChange(r.colors);
   const ro = new ResizeObserver(resize); ro.observe(canvas);
   const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible && !paused ? start() : cancelAnimationFrame(raf); }); io.observe(canvas);
   resize();
@@ -347,7 +348,7 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
   const control = {
     pause() { paused = true; cancelAnimationFrame(raf); },
     resume() { paused = false; if (visible) start(); },
-    dispose() { cancelAnimationFrame(raf); mo.disconnect(); mq.removeEventListener('change', r.colors); ro.disconnect(); io.disconnect(); device.destroy(); },
+    dispose() { cancelAnimationFrame(raf); offTheme(); ro.disconnect(); io.disconnect(); device.destroy(); },
   };
 
   // ?debug のときだけ: 別デバイスで同じ描画をオフスクリーンに行い、画素を PNG で返す(GPU のない検証環境用)
