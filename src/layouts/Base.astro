@@ -51,6 +51,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">
+    <!-- 背景: やわらかい光の玉がゆっくり漂う(装飾。本文の裏、CSS のみ) -->
+    <div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
