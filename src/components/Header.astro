@@ -8,37 +8,51 @@ const nav = [
 const path = Astro.url.pathname;
 ---
 <header transition:name="header" transition:animate="none" class="site glass sticky top-0 z-10 border-b border-line rounded-none">
-  <div class="max-w-[64rem] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+  <div class="max-w-[64rem] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
     <Logo href="/" />
-    <nav aria-label="メイン" class="flex items-center gap-1 sm:gap-2 text-xs tracking-[.08em] uppercase">
+    <nav aria-label="メイン" class="flex shrink-0 items-center gap-1 sm:gap-2 text-xs tracking-[.08em] uppercase">
       {nav.map((n) => (
         <a
           href={n.href}
           aria-current={path.startsWith(n.href) ? 'page' : undefined}
-          class:list={['inline-flex items-center h-8 rounded-full px-3 transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
+          class:list={['inline-flex shrink-0 items-center h-8 rounded-full px-1 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
-      <button id="theme-toggle" type="button" aria-label="ダークテーマ" aria-pressed="false" class="press inline-flex items-center justify-center w-8 h-8 rounded-full text-muted hover:text-ink transition-colors">
+      <button id="theme-toggle" type="button" aria-label="ダークテーマ" aria-pressed="false" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-muted hover:text-ink transition-colors">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>
   </div>
 </header>
 <script>
-  import { isDark } from '../scripts/theme';
+  import { isDark, onThemeChange } from '../scripts/theme';
+  let cleanup: (() => void) | undefined;
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
   // ページ遷移のたびに新しいボタンへ付け直す
   document.addEventListener('astro:page-load', () => {
+    cleanup?.();
+    cleanup = undefined;
     const btn = document.getElementById('theme-toggle');
     if (!btn) return;
-    btn.setAttribute('aria-pressed', String(isDark()));
-    btn.addEventListener('click', () => {
+    const sync = () => btn.setAttribute('aria-pressed', String(isDark()));
+    const toggle = () => {
       const next = isDark() ? 'light' : 'dark'; // 今の実効テーマの反対を固定する
       localStorage.setItem('theme', next);
       const h = document.documentElement;
       h.classList.toggle('dark', next === 'dark');
       h.classList.toggle('light', next === 'light');
       document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next);
-      btn.setAttribute('aria-pressed', String(next === 'dark'));
-    });
+      sync();
+    };
+    sync();
+    btn.addEventListener('click', toggle);
+    const offTheme = onThemeChange(sync);
+    cleanup = () => {
+      offTheme();
+      btn.removeEventListener('click', toggle);
+    };
   });
 </script>

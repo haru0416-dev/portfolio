@@ -314,18 +314,23 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
   const ctx = canvas.getContext('webgpu');
   if (!ctx) return null;
   const format = navigator.gpu.getPreferredCanvasFormat();
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const dpr = Math.min(devicePixelRatio || 1, 2);
   const r = createRenderer(device, module, format, dpr);
 
-  let raf = 0, visible = true, last = 0;
+  let raf = 0, visible = true, paused = false, last = 0;
+  const render = (dt: number) => {
+    if (!r.st.W || !r.st.H) return;
+    device.queue.submit([r.encodeFrame(dt, ctx.getCurrentTexture().createView()).finish()]);
+  };
   const frame = (now: number) => {
+    if (reduce.matches || paused || !visible || document.hidden) return;
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
     last = now;
-    device.queue.submit([r.encodeFrame(dt, ctx.getCurrentTexture().createView()).finish()]);
-    if (!reduce && visible) raf = requestAnimationFrame(frame);
+    render(dt);
+    raf = requestAnimationFrame(frame);
   };
-  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!reduce) raf = requestAnimationFrame(frame); };
+  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!reduce.matches && !paused && visible && !document.hidden) raf = requestAnimationFrame(frame); };
 
   const resize = () => {
     const b = canvas.getBoundingClientRect();
@@ -333,22 +338,28 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
     canvas.width = Math.round(b.width * dpr); canvas.height = Math.round(b.height * dpr);
     ctx.configure({ device, format, alphaMode: 'opaque' });
     r.seed(canvas.width, canvas.height);
-    if (reduce) {
+    if (reduce.matches) {
       for (let i = 0; i < 90; i++) device.queue.submit([r.encodeFrame(1 / 30).finish()]);
-      device.queue.submit([r.encodeFrame(1 / 30, ctx.getCurrentTexture().createView()).finish()]);
-    }
+      render(1 / 30);
+    } else render(0);
   };
 
-  let paused = false;
-  const offTheme = onThemeChange(r.colors);
+  const offTheme = onThemeChange(() => {
+    r.colors();
+    if (reduce.matches || paused || !visible || document.hidden) render(0);
+  });
   const ro = new ResizeObserver(resize); ro.observe(canvas);
-  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible && !paused ? start() : cancelAnimationFrame(raf); }); io.observe(canvas);
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }); io.observe(canvas);
+  const onVis = start;
+  const onMotion = () => { start(); if (reduce.matches) render(0); };
+  document.addEventListener('visibilitychange', onVis);
+  reduce.addEventListener('change', onMotion);
   resize();
   start();
   const control = {
     pause() { paused = true; cancelAnimationFrame(raf); },
-    resume() { paused = false; if (visible) start(); },
-    dispose() { cancelAnimationFrame(raf); offTheme(); ro.disconnect(); io.disconnect(); device.destroy(); },
+    resume() { paused = false; start(); },
+    dispose() { cancelAnimationFrame(raf); offTheme(); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', onVis); reduce.removeEventListener('change', onMotion); device.destroy(); },
   };
 
   // ?debug のときだけ: 別デバイスで同じ描画をオフスクリーンに行い、画素を PNG で返す(GPU のない検証環境用)

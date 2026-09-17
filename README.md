@@ -9,7 +9,7 @@
 - `/lab` — 1 ページ 1 実験。`src/pages/lab/<slug>.astro` を足して `src/data/lab.ts` に登録する。
 - `/rss.xml`, `/sitemap-index.xml` は自動生成。`/fonts.css` は自前配信するフォントの `@font-face` を 1 ファイルにまとめたもの。
 
-サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `astro.config.mjs` の `site`。
+サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `https://haru0416.dev` で、`astro.config.mjs` の `site` に設定している。
 
 ## ファイルの役割
 
@@ -25,10 +25,10 @@
 
 - **配色**: OKLCH。色相 3 つ(`--h` 地、`--h-accent` 桃、`--h-mint` 薄荷)と明度・彩度の段階で全色を作り、`light-dark()` でライトとダークを 1 か所に書く。OS のテーマに追従し、ヘッダーのボタンで固定できる。
 - **書体**: 見出しは `.display`(Fredoka)と `.display-jp`(Zen Maru Gothic 700)。本文は Nunito と OS の日本語フォント。
-- **背景**(`.sea`): ダークは深海(CSS の光の帯 2 層、`src/scripts/deep.ts` が描く沈むマリンスノーと海底から立ち上る泡の列、下ほど深い青み)、ライトは静かな水面(`src/scripts/surface.ts`: 2D 波動方程式で解く小さな雨粒の波紋と、上部だけに出る光の網目。上ほど空の水色)。出ない側は色を透明にして隠す。CSS のみで transform だけを動かし、reduced-motion では静止。
+- **背景**(`.sea`): ダークは深海(CSS の光の帯 2 層、`src/scripts/deep.ts` が描く沈むマリンスノーと海底から立ち上る泡の列、下ほど深い青み)、ライトは静かな水面(`src/scripts/surface.ts`: 2D 波動方程式で解く小さな雨粒の波紋と、上部だけに出る光の網目。上ほど空の水色)。光の帯は CSS の transform、粒子と波紋は Canvas 2D で動かす。reduced-motion では深海を静止画にし、水面の Canvas を隠す。
 - **ガラス素材**(`.glass`): Liquid Glass の考え方を控えめに。背後をぼかして彩度を上げ、縁に光のリング(左上が明るく右下が暗い)と上辺のハイライト。ヘッダー・カード・ピル・チップ・アイコンボタンに使う。桃色のボタンと押下中のチップは不透明のまま。
 - **カーソル**: lucide の線画に倣う(24 の格子、線幅 2、角丸)。矢印は mouse-pointer-2。リンクの上も同じ矢印のまま色を濃くするだけ(形が変わらないので切り替わりで点滅しない)。押している間はさらに濃く。I ビームは入力欄だけ。桃色の線に白い縁取り。画像は `public/cursors/*.svg`。SVG を CSS の `cursor` に埋め込み(JS なし)、ホバーできる端末だけ。形を変えるときは `tools/cursors.py` を編集して実行する。
-- **動き**: 頻繁に見る操作は動かさない。ホバーと押下は 150〜200ms、スクロール連動は CSS のみ、ページ遷移は本文だけ。すべて `prefers-reduced-motion` で無効になる。
+- **動き**: 頻繁に見る操作は動かさない。ホバーと押下は 150〜200ms、スクロール連動は CSS のみ、ページ遷移は本文だけ。背景・花びら・慣性スクロールは閲覧中の `prefers-reduced-motion` の変更にも追従する。花びらの一時停止は設定変更で解除しない。慣性スクロールはキー・ポインター・タッチ操作、細かいホイール入力、外部からのスクロール位置変更で中断する。
 
 ## 単位の規約
 
@@ -64,4 +64,4 @@ Git 連携で以下を設定する。
 | Build output directory | `dist` |
 | 環境変数 | `BUN_VERSION=1.4.2`(`bun.lock` があれば Bun が使われる) |
 
-デプロイ後、`astro.config.mjs` の `site` を独自ドメインの URL に変える。
+Cloudflare Pages のカスタムドメインに `haru0416.dev` を追加し、案内に従って DNS を設定する。サイト側の公開 URL は設定済み。DNS・カスタムドメインの接続は別途必要。

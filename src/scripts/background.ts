@@ -13,7 +13,7 @@ export type BackgroundControl = { dispose(): void };
 
 export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' | 'dark'; fps: number; dpr?: number; staticWhenReduced?: boolean }, make: (ctx: CanvasRenderingContext2D) => Scene): BackgroundControl {
   const ctx = canvas.getContext('2d', { alpha: true })!;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const dpr = opts.dpr ?? 1;
   const scene = make(ctx);
   const active = () => (opts.theme === 'dark') === isDark();
@@ -24,7 +24,7 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     scene.resize(W, H);
-    if (reduce && opts.staticWhenReduced) { scene.step(0); scene.render(); }
+    sync();
   };
   const frame = (now: number) => {
     if (!running) return;
@@ -34,15 +34,22 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     }
     raf = requestAnimationFrame(frame);
   };
-  const start = () => { if (running || reduce || !active() || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
-  const stop = () => { running = false; cancelAnimationFrame(raf); if (!(reduce && opts.staticWhenReduced && active())) ctx.clearRect(0, 0, W, H); };
-  const sync = () => { active() ? start() : stop(); };
+  const start = () => { if (running || reduce.matches || !active() || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
+  const stop = () => { running = false; cancelAnimationFrame(raf); ctx.clearRect(0, 0, W, H); };
+  const sync = () => {
+    if (reduce.matches || !active() || document.hidden) {
+      stop();
+      if (reduce.matches && opts.staticWhenReduced && active()) { scene.step(0); scene.render(); }
+    } else {
+      start();
+    }
+  };
   const onResize = () => { clearTimeout(timer); timer = window.setTimeout(resize, 150); };
-  const onVis = () => { document.hidden ? stop() : sync(); };
+  const onVis = sync;
   const offTheme = onThemeChange(sync);
   addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', onVis);
+  reduce.addEventListener('change', sync);
   resize();
-  sync();
-  return { dispose() { stop(); offTheme(); removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); clearTimeout(timer); } };
+  return { dispose() { stop(); offTheme(); removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); reduce.removeEventListener('change', sync); clearTimeout(timer); } };
 }

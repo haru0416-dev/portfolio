@@ -62,10 +62,10 @@ export type PetalsControl = { pause(): void; resume(): void; dispose(): void };
 
 export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
   const ctx = canvas.getContext('2d', { alpha: true })!;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const dpr = Math.min(devicePixelRatio || 1, 2);
 
-  let W = 0, H = 0, petals: Petal[] = [], raf = 0, visible = true, last = 0, t = 0;
+  let W = 0, H = 0, petals: Petal[] = [], raf = 0, visible = true, paused = false, last = 0, t = 0;
   const sprites = new Map<string, HTMLCanvasElement>();
   const sprite = (color: string, r: number, layer: (typeof LAYERS)[number]) => {
     const key = `${color}/${r}/${layer.depth}`;
@@ -112,13 +112,13 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
   };
 
   const frame = (now: number) => {
-    if (!visible) return;
+    if (reduce.matches || paused || !visible || document.hidden) return;
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016); // タブ復帰時の飛びを防ぐ
     last = now;
     step(dt);
     raf = requestAnimationFrame(frame);
   };
-  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!reduce) raf = requestAnimationFrame(frame); };
+  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!reduce.matches && !paused && visible && !document.hidden) raf = requestAnimationFrame(frame); };
 
   const resize = () => {
     const r = canvas.getBoundingClientRect();
@@ -135,19 +135,21 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
     } else {
       petals = Array.from({ length: n }, () => make(false));
     }
-    if (reduce) { for (let i = 0; i < 3; i++) step(0.5); }
+    if (reduce.matches && !oldW) { for (let i = 0; i < 3; i++) step(0.5); }
+    else step(0);
   };
 
-  let paused = false;
   const ro = new ResizeObserver(resize); ro.observe(canvas);
-  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible && !paused ? start() : cancelAnimationFrame(raf); }); io.observe(canvas);
-  const onVis = () => { if (!document.hidden) last = performance.now(); };
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }); io.observe(canvas);
+  const onVis = start;
+  const onMotion = () => { start(); if (reduce.matches) step(0); };
   document.addEventListener('visibilitychange', onVis);
+  reduce.addEventListener('change', onMotion);
   resize();
   start();
   return {
     pause() { paused = true; cancelAnimationFrame(raf); },
-    resume() { paused = false; if (visible) start(); },
-    dispose() { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', onVis); },
+    resume() { paused = false; start(); },
+    dispose() { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', onVis); reduce.removeEventListener('change', onMotion); },
   };
 }

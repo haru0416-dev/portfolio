@@ -7,8 +7,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  // TODO: Cloudflare のドメインに差し替える(sitemap / RSS / OGP の絶対URLに使う)
-  site: 'https://example.com',
+  // sitemap / RSS / OGP の絶対URLに使う公開ドメイン
+  site: 'https://haru0416.dev',
   vite: {
     plugins: [tailwindcss()],
     // Tailscale 経由で dev サーバーを見るため
