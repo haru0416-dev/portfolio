@@ -7,11 +7,13 @@ export type FlowOptions = {
   frames?: number;
   alpha?: number;
   circle?: boolean;
+  /** 1 フレームに描く回数(大きいほど早く描き上がる) */
+  speed?: number;
 };
 
 export function startFlow(canvas: HTMLCanvasElement, opts: FlowOptions = {}) {
   const ctx = canvas.getContext('2d')!;
-  const { particles = 1400, scale = 0.004, step = 1.6, frames = 0, alpha = 0.35, circle = false } = opts;
+  const { particles = 1400, scale = 0.004, step = 1.6, frames = 0, alpha = 0.35, circle = false, speed = 1 } = opts;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
@@ -80,7 +82,7 @@ export function startFlow(canvas: HTMLCanvasElement, opts: FlowOptions = {}) {
     if (reduce) { for (let i = 0; i < Math.max(frames, 240); i++) tick(); return; }
     const loop = () => {
       if (!visible) return;
-      tick();
+      for (let i = 0; i < speed; i++) tick();
       if (frames && drawn >= frames) return;
       raf = requestAnimationFrame(loop);
     };

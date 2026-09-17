@@ -7,6 +7,6 @@ const { class: cls } = Astro.props;
 <script>
   import { startFlow } from '../scripts/flow';
   startFlow(document.getElementById('flow-mark') as HTMLCanvasElement, {
-    particles: 700, scale: 0.006, step: 1.4, frames: 420, alpha: 0.45, circle: true,
+    particles: 700, scale: 0.006, step: 1.4, frames: 420, alpha: 0.45, circle: true, speed: 4,
   });
 </script>

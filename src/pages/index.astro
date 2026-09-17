@@ -20,7 +20,7 @@ const lab = LAB.slice(0, 3);
     <div class="w-full grid gap-12 sm:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)] items-center">
       <div>
         <p class="eyebrow mb-8"><span>Notes &amp; experiments</span></p>
-        <h1 class="serif text-[4.5rem] sm:text-[7rem] leading-[0.95] tracking-[-0.02em]">
+        <h1 class="serif text-[4.5rem] sm:text-[7rem] leading-[0.95] tracking-[-0.01em]">
           <Wordmark text={SITE.name} /><span class="text-accent">.</span>
         </h1>
         <p class="serif-jp mt-8 text-[1.2rem] sm:text-[1.6rem] leading-[1.6] text-ink-2 max-w-[24em] hero-lead">
@@ -31,7 +31,7 @@ const lab = LAB.slice(0, 3);
     </div>
   </section>
 
-  <div class="grid gap-x-16 gap-y-20 lg:grid-cols-[1fr_20rem] pt-24 border-t border-line">
+  <div class="grid gap-x-16 gap-y-20 lg:grid-cols-[1fr_20rem] pt-24 dotted">
     <section>
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} />
@@ -45,7 +45,7 @@ const lab = LAB.slice(0, 3);
           {works.map((w) => (
             <li>
               <a href={w.data.url ?? w.data.repo} class="group flex gap-4 items-start">
-                <Mark seed={w.id} size={44} class="shrink-0 rounded-sm" />
+                <Mark seed={w.id} size={44} class="shrink-0 rounded-xl" />
                 <div>
                   <div class="font-medium group-hover:text-accent transition-colors">{w.data.name}</div>
                   <p class="text-[.85rem] text-muted leading-relaxed line-clamp-2">{w.data.summary}</p>

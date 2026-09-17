@@ -1,5 +1,6 @@
 ---
 import { SITE } from '../site';
+import Mark from './Mark.astro';
 const nav = [
   { href: '/blog', label: 'Blog' },
   { href: '/works', label: 'Works' },
@@ -9,12 +10,12 @@ const path = Astro.url.pathname;
 ---
 <header class="sticky top-0 z-10 bg-paper/85 backdrop-blur border-b border-line">
   <div class="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-    <a href="/" class="serif text-2xl leading-none">{SITE.name}<span class="text-accent">.</span></a>
-    <nav class="flex items-center gap-6 sm:gap-8 text-[13px] tracking-[.12em] uppercase">
+    <a href="/" class="serif text-2xl leading-none flex items-center gap-2"><Mark seed={SITE.name} size={26} class="rounded-lg" /><span>{SITE.name}<span class="text-accent">.</span></span></a>
+    <nav class="flex items-center gap-6 sm:gap-8 text-[12px] tracking-[.1em] uppercase">
       {nav.map((n) => (
         <a
           href={n.href}
-          class:list={['u-link transition-colors', path.startsWith(n.href) ? 'text-ink' : 'text-muted hover:text-ink']}
+          class:list={['rounded-full px-3 py-1 transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
       <button id="theme-toggle" type="button" aria-label="テーマ切替" class="press text-muted hover:text-ink transition-colors -mr-1">

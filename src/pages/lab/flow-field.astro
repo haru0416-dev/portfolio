@@ -6,7 +6,7 @@ const meta = LAB.find((l) => l.slug === 'flow-field')!;
 ---
 <Base title={meta.title} description={meta.description} wide>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} pattern="graph" />
-  <canvas id="c" class="w-full aspect-[16/10] rounded-sm border border-line cursor-pointer"></canvas>
+  <canvas id="c" class="w-full aspect-[16/10] rounded-3xl border-4 border-paper-2 cursor-pointer"></canvas>
 </Base>
 
 <script>

@@ -8,24 +8,24 @@ const badge = { active: '', wip: 'Work in progress', archived: 'Archived' } as c
 ---
 <Base title="Works" wide>
   <Hero eyebrow="Works" title="Selected works" lead="代表的なものだけ。ほかは GitHub に。" pattern="dots" />
-  <ol class="border-t border-line">
-    {works.map((w, i) => (
-      <li class="border-b border-line py-8 grid gap-6 sm:grid-cols-[3rem_4.5rem_1fr] items-start">
-        <span class="hidden sm:block text-xs text-muted pt-1 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
-        <Mark seed={w.id} size={64} class="rounded-sm" />
-        <div>
-          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h2 class="serif-jp text-[1.45rem] leading-snug">{w.data.name}</h2>
-            {badge[w.data.status] && <span class="text-[11px] tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}
+  <ul class="grid gap-5 sm:grid-cols-2">
+    {works.map((w) => (
+      <li class="card flex flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <Mark seed={w.id} size={48} class="rounded-xl shrink-0" />
+          <div class="min-w-0">
+            <h2 class="serif-jp text-[1.15rem] leading-snug">{w.data.name}</h2>
+            {badge[w.data.status] && <span class="text-[10px] font-bold tracking-[.1em] uppercase text-accent">{badge[w.data.status]}</span>}
           </div>
-          <p class="mt-3 text-ink-2 leading-relaxed max-w-[40rem]">{w.data.summary}</p>
-          <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <span class="text-xs text-muted tracking-[.05em]">{w.data.stack.join(' · ')}</span>
-            {w.data.url && <a href={w.data.url} class="u-link text-accent">Site</a>}
-            {w.data.repo && <a href={w.data.repo} class="u-link text-accent">Repository</a>}
-          </div>
+        </div>
+        <p class="text-[.92rem] text-ink-2 leading-relaxed flex-1">{w.data.summary}</p>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          {w.data.stack.map((s) => <span class="rounded-full bg-paper px-2.5 py-1 text-muted font-bold">{s}</span>)}
+          <span class="flex-1" />
+          {w.data.url && <a href={w.data.url} class="rounded-full bg-accent text-white px-3 py-1 font-bold press">Site</a>}
+          {w.data.repo && <a href={w.data.repo} class="rounded-full bg-paper px-3 py-1 font-bold text-ink press">Repo</a>}
         </div>
       </li>
     ))}
-  </ol>
+  </ul>
 </Base>

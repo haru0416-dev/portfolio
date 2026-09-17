@@ -3,24 +3,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --paper: #f6f3ec;
-  --paper-2: #ede9df;
-  --ink: #1b1917;
-  --ink-2: #4a4641;
-  --muted: #7d776e;
-  --line: #d9d3c6;
-  --accent: #b23a2a;
-  --accent-soft: #e9c9c1;
+  --paper: #f8f5fd;
+  --paper-2: #efeaf9;
+  --ink: #3d3452;
+  --ink-2: #665c7d;
+  --muted: #9a92ad;
+  --line: #e2dbf1;
+  --accent: #f26d99;
+  --accent-soft: #fde1ea;
+  --mint: #79d3c0;
 }
 :root.dark {
-  --paper: #131211;
-  --paper-2: #1c1a18;
-  --ink: #ece7dc;
-  --ink-2: #c3bdb1;
-  --muted: #8b857a;
-  --line: #2c2926;
-  --accent: #e0765f;
-  --accent-soft: #4a2a23;
+  --paper: #1c1926;
+  --paper-2: #262133;
+  --ink: #efeaf8;
+  --ink-2: #c5bdd8;
+  --muted: #877ea0;
+  --line: #342d45;
+  --accent: #ff8fb4;
+  --accent-soft: #4a2a3a;
+  --mint: #6fcbb7;
 }
 
 @theme inline {
@@ -32,14 +34,16 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --font-serif: "Instrument Serif", "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --font-sans: "Inter", "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", system-ui, sans-serif;
+  --font-serif: "Fredoka", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif;
+  --font-sans: "Nunito", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic UI", sans-serif;
 }
 
 html { color-scheme: light dark; }
 body {
   background: var(--paper);
+  font-weight: 500;
   color: var(--ink);
   font-family: var(--font-sans);
   font-feature-settings: "palt", "ss01", "cv11";
@@ -48,16 +52,30 @@ body {
 }
 ::selection { background: var(--accent-soft); }
 
-/* 見出しはセリフ */
-.serif { font-family: var(--font-serif); font-weight: 400; letter-spacing: -0.01em; }
-.serif-jp { font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif; font-weight: 500; }
+/* 見出しは丸ゴシック(クラス名は以前のまま) */
+.serif { font-family: var(--font-serif); font-weight: 600; letter-spacing: 0; }
+.serif-jp { font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif; font-weight: 700; }
 
-/* セクション見出し: 小さな大文字 + 罫線 */
+/* セクション見出し: 小さなラベル + 点線 */
 .eyebrow {
   display: flex; align-items: center; gap: .75rem;
-  font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+  font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
 }
-.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.eyebrow > span { background: var(--paper-2); padding: .25rem .7rem; border-radius: 999px; }
+.eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
+
+/* 区切り線も点線に */
+.divide-line > :not(:first-child) { border-top: 2px dotted var(--line) !important; border-bottom: 0 !important; }
+.dotted { border-top: 2px dotted var(--line); }
+
+/* ふんわりしたカード */
+.card {
+  background: var(--paper-2); border-radius: 1.25rem; padding: 1.25rem;
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--ink) 25%, transparent); }
+}
 
 /* リンクの下線アニメーション(ホバーできる端末だけ) */
 .u-link { position: relative; text-decoration: none; }
@@ -84,14 +102,14 @@ body {
 }
 
 /* ページごとの背景罫線。下に向かって消える */
-.hero { --pat: color-mix(in srgb, var(--ink) 9%, transparent); }
+.hero { --pat: color-mix(in srgb, var(--accent) 22%, transparent); }
 .hero::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   mask-image: linear-gradient(to bottom, black 20%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent);
 }
-.hero-ruled::before { background: repeating-linear-gradient(to bottom, transparent 0 31px, var(--pat) 31px 32px); }
-.hero-dots::before { background: radial-gradient(var(--pat) 1px, transparent 1.2px) 0 0 / 24px 24px; }
+.hero-ruled::before { background: repeating-linear-gradient(to bottom, transparent 0 30px, var(--pat) 30px 32px); }
+.hero-dots::before { background: radial-gradient(var(--pat) 2px, transparent 2.5px) 0 0 / 22px 22px; }
 .hero-graph::before {
   background:
     linear-gradient(to right, var(--pat) 1px, transparent 1px) 0 0 / 32px 32px,
@@ -101,24 +119,24 @@ body {
 /* 記事本文 */
 .prose { font-size: 1.02rem; line-height: 2; color: var(--ink); }
 .prose > * + * { margin-top: 1.25em; }
-.prose :is(h2, h3) { font-family: var(--font-serif); font-weight: 400; line-height: 1.4; color: var(--ink); }
+.prose :is(h2, h3) { font-family: "Zen Maru Gothic", var(--font-serif); font-weight: 700; line-height: 1.4; color: var(--ink); }
 .prose h2 { font-size: 1.7rem; margin-top: 2.6em; letter-spacing: -0.01em; }
 .prose h3 { font-size: 1.3rem; margin-top: 2em; }
 .prose h2 + *, .prose h3 + * { margin-top: .6em; }
 .prose ul { list-style: none; padding-left: 1.4em; }
 .prose ul li { position: relative; }
-.prose ul li::before { content: "—"; position: absolute; left: -1.4em; color: var(--muted); }
+.prose ul li::before { content: "•"; font-weight: 700; position: absolute; left: -1.4em; color: var(--accent); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
 .prose li + li { margin-top: .35em; }
 .prose a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .prose strong { font-weight: 600; }
-.prose code { font-size: .875em; background: var(--paper-2); padding: .15em .4em; border-radius: 3px; }
-.prose pre { padding: 1.1em 1.25em; border-radius: 6px; overflow-x: auto; font-size: .85rem; line-height: 1.7; border: 1px solid var(--line); }
+.prose code { font-size: .875em; background: var(--paper-2); padding: .15em .45em; border-radius: 6px; }
+.prose pre { padding: 1.1em 1.25em; border-radius: 1rem; overflow-x: auto; font-size: .85rem; line-height: 1.7; border: 1px solid var(--line); }
 .prose pre code { background: none; padding: 0; }
-.prose blockquote { border-left: 2px solid var(--accent); padding-left: 1.2em; color: var(--ink-2); font-family: var(--font-serif); font-size: 1.1em; }
-.prose img { border-radius: 4px; width: 100%; }
+.prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1em 1.25em; color: var(--ink-2); }
+.prose img { border-radius: 1rem; width: 100%; }
 .prose hr { border: 0; text-align: center; margin: 3em 0; }
-.prose hr::before { content: "· · ·"; color: var(--muted); letter-spacing: .5em; }
+.prose hr::before { content: "♡"; color: var(--muted); letter-spacing: .5em; }
 .prose table { width: 100%; font-size: .9em; border-collapse: collapse; }
 .prose th, .prose td { padding: .5em .75em; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
