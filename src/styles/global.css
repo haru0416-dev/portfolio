@@ -24,8 +24,8 @@
   --on-accent:   light-dark(white, var(--paper));
   /* ガラス素材 */
   --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
-  --glass-hi:    light-dark(oklch(100% 0 0 / 80%), oklch(100% 0 0 / 16%));  /* 縁と上辺の光 */
-  --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 10%), oklch(0% 0 0 / 35%)); /* 縁の影 */
+  --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));   /* 縁と上辺の光 */
+  --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%)); /* 縁の影 */
   --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
 }
 :root.light { color-scheme: light; }
@@ -117,12 +117,13 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
    背後をぼかして彩度を上げ、縁に光のリング(左上が明るく右下が暗い)と上辺のハイライトを置く。
    本物の屈折は SVG の変位が要るので、縁の光で「レンズの厚み」だけを暗示する */
 .glass {
-  position: relative; isolation: isolate;
+  isolation: isolate;
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
-  box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 var(--glass-lo), 0 12px 32px -20px var(--glass-lo);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
 }
+.glass:not(.sticky, .fixed, .absolute) { position: relative; } /* sticky なヘッダーの位置指定は上書きしない */
 .glass::before { /* 1px の光のリング */
   content: ""; position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; padding: 1px; pointer-events: none;
   background: linear-gradient(135deg, var(--glass-hi), transparent 35%, transparent 65%, var(--glass-lo));
@@ -131,7 +132,7 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
   -webkit-mask-composite: xor; mask-composite: exclude;
   transition: opacity 200ms ease;
 }
-@media (hover: hover) and (pointer: fine) { .glass:hover::before { opacity: 1.6; } }
+@media (hover: hover) and (pointer: fine) { .glass:hover::before { opacity: 1.3; } }
 @supports not (backdrop-filter: blur(1px)) { .glass { background: var(--paper-2); } }
 
 /* 区切り線は点線 */
