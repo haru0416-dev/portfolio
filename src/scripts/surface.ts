@@ -31,12 +31,22 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
     img = offCtx.createImageData(cw, ch);
   };
 
-  /** 雨粒。中心を押し下げて周りを少し持ち上げると、環がきれいに立つ */
-  const drop = (x: number, y: number, r: number, amp: number) => {
-    for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) {
-      const d = Math.hypot(i, j); if (d > r) continue;
-      const xx = x + i, yy = y + j; if (xx < 1 || yy < 1 || xx >= cw - 1 || yy >= ch - 1) continue;
-      cur[yy * cw + xx] += amp * Math.cos((d / r) * Math.PI * 0.5);
+  /** 雨粒。一気に押し込むと濃い点が出るので、数フレームに分けてなだらかに。
+      形は中心がくぼみ、縁がわずかに盛り上がる(着水のクレーター) */
+  type Drop = { x: number; y: number; r: number; amp: number; left: number; total: number };
+  const drops: Drop[] = [];
+  const drop = (x: number, y: number, r: number, amp: number, frames = 4) => { drops.push({ x, y, r, amp, left: frames, total: frames }); };
+  const applyDrops = () => {
+    for (let k = drops.length - 1; k >= 0; k--) {
+      const p = drops[k]; const a = p.amp / p.total;
+      for (let j = -p.r; j <= p.r; j++) for (let i = -p.r; i <= p.r; i++) {
+        const d = Math.hypot(i, j) / p.r; if (d > 1) continue;
+        const xx = p.x + i, yy = p.y + j; if (xx < 1 || yy < 1 || xx >= cw - 1 || yy >= ch - 1) continue;
+        // 中心 -1、d=0.7 付近で +0.35 の縁、外で 0 に戻る
+        const profile = -Math.exp(-d * d * 4) + 0.5 * Math.exp(-((d - 0.72) * (d - 0.72)) * 14) * (1 - d);
+        cur[yy * cw + xx] += a * profile;
+      }
+      if (--p.left <= 0) drops.splice(k, 1);
     }
   };
 
@@ -81,10 +91,10 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
       if (now >= nextDrop) {
         // ときどき雨粒。大きいものは稀に
         const big = Math.random() < 0.18;
-        drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, big ? 4 : 3, big ? 3 : 1.6);
+        drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, big ? 5 : 4, big ? 5 : 3, big ? 6 : 4);
         nextDrop = now + 2200 + Math.random() * 3300;
       }
-      step(); render();
+      applyDrops(); step(); render();
     }
     raf = requestAnimationFrame(frame);
   };
@@ -102,7 +112,7 @@ export function startSurface(canvas: HTMLCanvasElement): SurfaceControl {
   document.addEventListener('visibilitychange', onVis);
   resize();
   // 最初に数滴落としておく
-  for (let k = 0; k < 1; k++) drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, 3, 2);
+  drop(2 + (Math.random() * (cw - 4)) | 0, 2 + (Math.random() * (ch - 4)) | 0, 4, 3, 4);
   sync();
 
   return { dispose() { stop(); mo.disconnect(); mq.removeEventListener('change', sync); removeEventListener('resize', onResize); document.removeEventListener('visibilitychange', onVis); } };
