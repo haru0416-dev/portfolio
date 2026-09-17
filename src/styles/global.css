@@ -68,6 +68,23 @@
 }
 
 html { color-scheme: light dark; }
+
+/* ---- 日本語の折り返し ----
+   見出しや短い文は文節で折り返し、段落は泣き別れを避ける。
+   和文と英数の間は四分アキ、連続する約物は詰める。非対応ブラウザでは既定の挙動に戻るだけ。 */
+body {
+  line-break: strict;                 /* 禁則を厳しめに(小書き仮名や長音を行頭に置かない) */
+  overflow-wrap: anywhere;            /* 長い URL や英単語で横にはみ出さない */
+  text-autospace: normal;             /* 和文と英数の間に四分アキ */
+  text-spacing-trim: space-first;     /* 「」や。、が連続したときのアキを詰める */
+  hanging-punctuation: allow-end;     /* 行末の句読点をぶら下げる(対応ブラウザのみ) */
+}
+:is(h1, h2, h3, .serif, .serif-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; text-wrap: balance; }
+:is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
+p.hero-lead, .card p, ol p { word-break: auto-phrase; }
+/* 数字と単位、日付は途中で切らない */
+time, .tabular-nums { white-space: nowrap; }
+
 body {
   background: var(--paper);
   font-weight: 500;
