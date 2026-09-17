@@ -160,3 +160,32 @@ body {
 
 /* Petals の背景: 薄い空のグラデーション */
 .petal-sky { background: linear-gradient(to bottom, color-mix(in srgb, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
+
+/* 一覧の行: ホバーで薄く浮く */
+@media (hover: hover) and (pointer: fine) {
+  .row { transition: background-color 150ms ease; }
+  .row:hover { background: color-mix(in srgb, var(--paper-2) 70%, transparent); }
+}
+
+/* タグ */
+.tag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: .2rem .6rem; border-radius: 999px; }
+.card .tag { background: var(--paper); }
+:where(.card-cover, ol) .tag { background: var(--paper-2); }
+.card-cover .tag { background: color-mix(in srgb, var(--paper) 70%, transparent); }
+
+/* 絞り込みチップ */
+.chip { font-size: .78rem; font-weight: 700; padding: .35rem .8rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (hover: hover) and (pointer: fine) { .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); } }
+
+/* 最新記事のカード: 淡いグラデーション */
+.card-cover { background: linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 55%, var(--paper-2)), var(--paper-2) 60%); }
+
+/* Works の座布団を 3 色で回す */
+.tile.hue-0 { background: color-mix(in srgb, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
+.tile.hue-1 { background: color-mix(in srgb, var(--mint) 22%, var(--paper)); color: color-mix(in srgb, var(--mint) 70%, var(--ink)); }
+.tile.hue-2 { background: color-mix(in srgb, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
+
+/* アイコンボタン */
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--paper); color: var(--ink); }
+.icon-btn-accent { background: var(--accent); color: #fff; }

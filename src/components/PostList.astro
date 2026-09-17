@@ -1,19 +1,23 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import FormattedDate from './FormattedDate.astro';
-interface Props { posts: CollectionEntry<'blog'>[] }
-const { posts } = Astro.props;
+import { readingMinutes } from '../scripts/reading';
+interface Props { posts: CollectionEntry<'blog'>[]; compact?: boolean }
+const { posts, compact = false } = Astro.props;
 ---
-<ol class="divide-y divide-line">
+<ol class="-mx-3">
   {posts.map((p) => (
-    <li>
-      <a href={`/blog/${p.id}/`} class="group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 py-5">
-        <FormattedDate date={p.data.pubDate} class="text-xs text-muted pt-1.5" />
-        <div>
-          <h3 class="serif-jp text-[1.2rem] leading-snug group-hover:text-accent transition-colors">{p.data.title}</h3>
-          {p.data.description && <p class="text-[.92rem] text-ink-2 mt-1.5 leading-relaxed">{p.data.description}</p>}
-          {p.data.tags.length > 0 && (
-            <div class="mt-2 flex gap-3 text-[11px] tracking-[.08em] text-muted">{p.data.tags.map((t) => <span>#{t}</span>)}</div>
+    <li data-tags={p.data.tags.join(' ')}>
+      <a href={`/blog/${p.id}/`} class="row group grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr] gap-x-4 px-3 py-4 rounded-2xl">
+        <div class="text-xs text-muted pt-1.5 leading-relaxed">
+          <FormattedDate date={p.data.pubDate} />
+          {!compact && <div class="mt-0.5">{readingMinutes(p.body)} min</div>}
+        </div>
+        <div class="min-w-0">
+          <h3 class="serif-jp text-[1.15rem] leading-snug group-hover:text-accent transition-colors">{p.data.title}</h3>
+          {p.data.description && <p class="text-[.9rem] text-ink-2 mt-1 leading-relaxed">{p.data.description}</p>}
+          {!compact && p.data.tags.length > 0 && (
+            <div class="mt-2.5 flex flex-wrap gap-1.5">{p.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
           )}
         </div>
       </a>

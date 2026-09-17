@@ -8,6 +8,9 @@ import WandSparkles from '@lucide/astro/icons/wand-sparkles';
 import Dices from '@lucide/astro/icons/dices';
 import Box from '@lucide/astro/icons/box';
 import FlaskConical from '@lucide/astro/icons/flask-conical';
+import Code from '@lucide/astro/icons/code';
+import ExternalLink from '@lucide/astro/icons/external-link';
+import Clock from '@lucide/astro/icons/clock';
 
 export const ICONS = {
   sprout: Sprout,
@@ -18,6 +21,9 @@ export const ICONS = {
   dices: Dices,
   box: Box,
   'flask-conical': FlaskConical,
+  code: Code,
+  'external-link': ExternalLink,
+  clock: Clock,
 } as const;
 
 export type IconName = keyof typeof ICONS;
