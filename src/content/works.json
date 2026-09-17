@@ -53,17 +53,5 @@
     "status": "active",
     "order": 40,
     "icon": "wand-sparkles"
-  },
-  {
-    "id": "dopacode",
-    "name": "DopaCode",
-    "summary": "vibe coding をソシャゲ化した風刺ダッシュボード。agent の diff が N / R / SR / SSR でドロップする Go 製 TUI。",
-    "stack": [
-      "Go",
-      "TUI"
-    ],
-    "status": "active",
-    "order": 50,
-    "icon": "dices"
   }
 ]

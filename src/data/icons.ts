@@ -5,7 +5,6 @@ import MessageCircle from '@lucide/astro/icons/message-circle';
 import Scale from '@lucide/astro/icons/scale';
 import Newspaper from '@lucide/astro/icons/newspaper';
 import WandSparkles from '@lucide/astro/icons/wand-sparkles';
-import Dices from '@lucide/astro/icons/dices';
 import Box from '@lucide/astro/icons/box';
 import FlaskConical from '@lucide/astro/icons/flask-conical';
 import Code from '@lucide/astro/icons/code';
@@ -18,7 +17,6 @@ export const ICONS = {
   scale: Scale,
   newspaper: Newspaper,
   'wand-sparkles': WandSparkles,
-  dices: Dices,
   box: Box,
   'flask-conical': FlaskConical,
   code: Code,
