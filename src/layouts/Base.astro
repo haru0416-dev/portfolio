@@ -54,6 +54,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <!-- 背景(装飾。本文の裏、CSS のみ)。ダークは深海(光の帯・泡・マリンスノー)、ライトは水面(波紋・日差しのきらめき)。
          出ない側は色を透明にして隠す -->
     <div class="sea" aria-hidden="true">
+      <i class="rays"></i><i class="rays rays-2"></i>
       <canvas class="deep"></canvas>
       <canvas class="surface"></canvas>
     </div>

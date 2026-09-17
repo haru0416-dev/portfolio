@@ -244,6 +244,7 @@ ol .tag { background: var(--paper-2); }
   --sea-h: 225;
   /* ダーク = 深海 */
   --sea-depth: light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
+  --sea-ray:   light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
   /* ライト = 水面 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
@@ -252,7 +253,20 @@ ol .tag { background: var(--paper-2); }
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%); }
 .sea i { position: absolute; display: block; }
 
-/* 深海(ダーク): src/scripts/deep.ts が描く canvas(光の柱・沈むマリンスノー・泡の列) */
+/* 光の帯(ダーク): 斜めの淡い縞を、下に向かって消しながら左右にゆっくり揺らす。2 層目は角度と速さを変えて厚みを出す */
+.sea .rays {
+  inset: -20% -30%;
+  background: repeating-linear-gradient(104deg, transparent 0 9%, var(--sea-ray) 11.5%, transparent 14% 23%);
+  mask-image: linear-gradient(to bottom, black, transparent 65%);
+  animation: rays-sway 46s ease-in-out infinite alternate;
+}
+.sea .rays-2 {
+  background: repeating-linear-gradient(98deg, transparent 0 13%, var(--sea-ray) 16%, transparent 19% 31%);
+  opacity: .6; animation-duration: 71s; animation-delay: -30s; animation-direction: alternate-reverse;
+}
+@keyframes rays-sway { from { transform: translateX(-2vw) skewX(0deg); } to { transform: translateX(2vw) skewX(1.5deg); } }
+
+/* 深海(ダーク): src/scripts/deep.ts が描く canvas(沈むマリンスノー・泡の列) */
 .sea .deep { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 /* 波紋(ライト): src/scripts/surface.ts が高さ場を解いて描く canvas。上部は薄く、下へ行くほど見える */

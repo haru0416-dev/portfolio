@@ -1,4 +1,4 @@
-// 深海(ダークの背景)。水面から差す光の柱、ゆっくり沈むマリンスノー、海底から立ち上る泡の列。
+// 深海(ダークの背景)。ゆっくり沈むマリンスノーと、海底から立ち上る泡の列。光の帯は CSS(global.css の .rays)。
 // Canvas 2D、30fps、ダークのときだけ動く。
 
 const FPS = 30;
@@ -17,7 +17,6 @@ export function startDeep(canvas: HTMLCanvasElement): DeepControl {
 
   let W = 0, H = 0, raf = 0, timer = 0, running = false, last = 0, t = 0;
   let flakes: Flake[] = [], bubbles: Bubble[] = [];
-  const rays = Array.from({ length: 5 }, (_, i) => ({ x: 0.12 + i * 0.19 + Math.random() * 0.06, w: 0.05 + Math.random() * 0.05, phase: Math.random() * 6.28, speed: 0.05 + Math.random() * 0.04 }));
   let vent: Vent = { x: 0.5, until: 0, next: 3 };
 
 
@@ -57,19 +56,6 @@ export function startDeep(canvas: HTMLCanvasElement): DeepControl {
 
   const render = () => {
     ctx.clearRect(0, 0, W, H);
-    // 光の柱: 上から広がる台形を、下へ向けて消えるグラデーションで
-    for (const r of rays) {
-      const sway = Math.sin(t * r.speed + r.phase);
-      const x0 = (r.x + sway * 0.02) * W, w0 = r.w * W * (0.9 + 0.2 * Math.sin(t * 0.13 + r.phase));
-      const a = 0.05 + 0.03 * Math.sin(t * 0.21 + r.phase * 2);
-      const g = ctx.createLinearGradient(0, 0, 0, H * 0.85);
-      g.addColorStop(0, `rgba(150,180,240,${a})`); g.addColorStop(0.55, `rgba(150,180,240,${a * 0.35})`); g.addColorStop(1, 'rgba(150,180,240,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.moveTo(x0 - w0 * 0.5, -10); ctx.lineTo(x0 + w0 * 0.5, -10);
-      ctx.lineTo(x0 + w0 * 1.4 + H * 0.28, H * 0.85); ctx.lineTo(x0 - w0 * 1.4 + H * 0.28, H * 0.85);
-      ctx.closePath(); ctx.fill();
-    }
     // マリンスノー: 奥は小さくぼけて薄く、手前は明るく
     for (const f of flakes) {
       const a = 0.12 + f.depth * 0.45;
