@@ -7,9 +7,25 @@
 - `/blog` — `src/content/blog/*.md` を記事として出す。frontmatter は `title / description / pubDate / tags / draft`。
 - `/works` — `src/content/works.json` に代表作を並べる。
 - `/lab` — 1 ページ 1 実験。`src/pages/lab/<slug>.astro` を足して `src/data/lab.ts` に登録する。
-- `/rss.xml`, `/sitemap-index.xml` は自動生成。
+- `/rss.xml`, `/sitemap-index.xml` は自動生成。`/fonts.css` は自前配信するフォントの `@font-face` を 1 ファイルにまとめたもの。
 
 サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `astro.config.mjs` の `site`。
+
+## ファイルの役割
+
+| 場所 | 役割 |
+|---|---|
+| `src/layouts/Base.astro` | 共通の骨格。フォントの preload、テーマ判定、ページ遷移(ClientRouter)、スキップリンク |
+| `src/components/` | `Logo` `Header` `Footer` `Hero`(ページ冒頭)`PostList`(記事一覧)`Tile`(アイコンの座布団)`Wordmark`(名前の文字送り) |
+| `src/styles/global.css` | トークン → 土台 → 書体と部品 → 記事本文 → 動き、の順 |
+| `src/scripts/` | `smooth-scroll`(ホイールの慣性)`reading`(読了時間)`petals`(Canvas 2D)`petals-gpu`(WebGPU) |
+| `src/data/icons.ts` | 使う lucide アイコンの登録。作品のアイコンはここに足す |
+
+## 見た目の規則
+
+- **配色**: OKLCH。色相 3 つ(`--h` 地、`--h-accent` 桃、`--h-mint` 薄荷)と明度・彩度の段階で全色を作り、`light-dark()` でライトとダークを 1 か所に書く。OS のテーマに追従し、ヘッダーのボタンで固定できる。
+- **書体**: 見出しは `.display`(Fredoka)と `.display-jp`(Zen Maru Gothic 700)。本文は Nunito と OS の日本語フォント。
+- **動き**: 頻繁に見る操作は動かさない。ホバーと押下は 150〜200ms、スクロール連動は CSS のみ、ページ遷移は本文だけ。すべて `prefers-reduced-motion` で無効になる。
 
 ## 単位の規約
 

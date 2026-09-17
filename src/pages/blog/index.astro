@@ -16,13 +16,13 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
   <Hero eyebrow="Blog" title="Writing" lead="作りながら考えたことの記録。" />
 
   {latest && (
-    <a href={`/blog/${latest.id}/`} class="card card-cover reveal block group mb-8">
+    <a href={`/blog/${latest.id}/`} class="card reveal block group mb-8">
       <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent-ink mb-2">
         <span>Latest</span><span class="text-muted">·</span>
         <FormattedDate date={latest.data.pubDate} class="text-muted" />
         <span class="text-muted">· {readingMinutes(latest.body)} min</span>
       </div>
-      <h2 transition:name={`post-${latest.id}`} class="serif-jp text-xl sm:text-2xl w-fit group-hover:text-accent transition-colors">{latest.data.title}</h2>
+      <h2 transition:name={`post-${latest.id}`} class="display-jp text-xl sm:text-2xl w-fit group-hover:text-accent transition-colors">{latest.data.title}</h2>
       {latest.data.description && <p class="mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}
       <div class="mt-4 flex flex-wrap gap-2">{latest.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
     </a>

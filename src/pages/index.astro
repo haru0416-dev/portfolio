@@ -18,10 +18,10 @@ const lab = LAB.slice(0, 3);
   <section class="min-h-[min(32rem,72dvh)] flex items-center">
     <div class="w-full max-w-[44rem] parallax">
       <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
-      <h1 class="serif text-6xl sm:text-7xl tracking-[-0.01em]">
+      <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
         <Wordmark text={SITE.name} /><span class="text-accent">.</span>
       </h1>
-      <p class="serif-jp mt-6 text-base sm:text-xl text-ink hero-lead">
+      <p class="display-jp mt-6 text-base sm:text-xl text-ink hero-lead">
         作ったものと、作りながら考えたこと。
       </p>
       <p class="mt-4 text-base text-ink-2 max-w-[32rem] hero-lead">
@@ -67,7 +67,7 @@ const lab = LAB.slice(0, 3);
           {lab.map((l) => (
             <li>
               <a href={`/lab/${l.slug}/`} class="group block">
-                <div class="serif text-lg group-hover:text-accent transition-colors">{l.title}</div>
+                <div class="display text-lg group-hover:text-accent transition-colors">{l.title}</div>
                 <p class="text-sm text-muted">{l.description}</p>
               </a>
             </li>

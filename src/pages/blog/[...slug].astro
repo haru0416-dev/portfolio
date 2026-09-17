@@ -22,7 +22,7 @@ const { Content, remarkPluginFrontmatter } = await render(post);
         {post.data.updatedDate && <span>updated <FormattedDate date={post.data.updatedDate} /></span>}
         {post.data.tags.map((t) => <span>#{t}</span>)}
       </div>
-      <h1 transition:name={`post-${post.id}`} class="serif-jp text-2xl sm:text-3xl w-fit">{post.data.title}</h1>
+      <h1 transition:name={`post-${post.id}`} class="display-jp text-2xl sm:text-3xl w-fit">{post.data.title}</h1>
       {post.data.description && <p class="mt-4 text-base text-ink-2">{post.data.description}</p>}
     </header>
     <div class="prose"><Content /></div>
@@ -33,7 +33,7 @@ const { Content, remarkPluginFrontmatter } = await render(post);
       {older && (
         <a href={`/blog/${older.id}/`} class="group block">
           <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">← Older</div>
-          <div class="serif-jp text-base group-hover:text-accent transition-colors">{older.data.title}</div>
+          <div class="display-jp text-base group-hover:text-accent transition-colors">{older.data.title}</div>
         </a>
       )}
     </div>
@@ -41,7 +41,7 @@ const { Content, remarkPluginFrontmatter } = await render(post);
       {newer && (
         <a href={`/blog/${newer.id}/`} class="group block">
           <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">Newer →</div>
-          <div class="serif-jp text-base group-hover:text-accent transition-colors">{newer.data.title}</div>
+          <div class="display-jp text-base group-hover:text-accent transition-colors">{newer.data.title}</div>
         </a>
       )}
     </div>

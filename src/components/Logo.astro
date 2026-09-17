@@ -1,0 +1,12 @@
+---
+// サイト名とアイコン。ヘッダーとフッターで共用
+import { SITE } from '../site';
+import { SITE_ICON as SiteIcon } from '../data/icons';
+interface Props { href?: string; iconSize?: number }
+const { href, iconSize = 22 } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+<Tag href={href} class="display text-xl leading-8 flex items-center gap-2">
+  <SiteIcon size={iconSize} stroke-width={2.5} class="text-accent" aria-hidden="true" />
+  <span>{SITE.name}<span class="text-accent">.</span></span>
+</Tag>

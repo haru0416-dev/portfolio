@@ -4,12 +4,12 @@ interface Props {
   eyebrow?: string;
   title: string;
   lead?: string;
-  serifJp?: boolean;
+  displayJp?: boolean;
 }
-const { eyebrow, title, lead, serifJp = false } = Astro.props;
+const { eyebrow, title, lead, displayJp = false } = Astro.props;
 ---
 <header class="pt-4 pb-12 mb-4">
   {eyebrow && <p class="eyebrow eyebrow-plain mb-4"><span>{eyebrow}</span></p>}
-  <h1 class:list={[serifJp ? 'serif-jp' : 'serif', 'text-3xl sm:text-4xl']}>{title}</h1>
+  <h1 class:list={[displayJp ? 'display-jp' : 'display', 'text-3xl sm:text-4xl']}>{title}</h1>
   {lead && <p class="text-base text-ink-2 mt-4 max-w-[36rem]">{lead}</p>}
 </header>

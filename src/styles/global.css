@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* 配色は OKLCH。色相を 3 つ決め、明度と彩度の段階で全色を作る */
-/* light-dark() で両テーマを 1 か所に。.light / .dark は color-scheme を固定するだけ */
+/* =====================================================================
+   1. トークン
+   配色は OKLCH。色相を 3 つ決め、明度と彩度の段階で全色を作る。
+   light-dark() で両テーマを 1 か所に書き、.light / .dark は color-scheme を固定するだけ。
+   ===================================================================== */
 :root {
   --h: 300;        /* 地と文字: 薄紫 */
   --h-accent: 356; /* 差し色: 桃 */
@@ -17,9 +18,9 @@
   --muted:       light-dark(oklch(50%   0.035 var(--h)),        oklch(66% 0.030 var(--h)));
   --line:        light-dark(oklch(91%   0.030 var(--h)),        oklch(32% 0.030 var(--h)));
   --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
-  --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
+  --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent))); /* 小さな文字用 */
+  --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent))); /* ボタンの地 */
   --accent-soft: light-dark(oklch(92%   0.060 var(--h-accent)), oklch(36% 0.070 var(--h-accent)));
-  --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent))); /* ボタンの地。白文字で 4.5 以上 */
   --on-accent:   light-dark(white, var(--paper));
   --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
 }
@@ -55,54 +56,71 @@
   --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --font-serif: var(--font-fredoka);
-  --font-sans: var(--font-nunito);
+  --font-display: var(--font-fredoka);  /* 見出し(ラテン) */
+  --font-sans: var(--font-nunito);      /* 本文。日本語は OS のフォントに任せる */
 }
 
-html { }
-
-/* ---- 日本語の折り返し ----
-   見出しや短い文は文節で折り返し、段落は泣き別れを避ける。
-   和文と英数の間は四分アキ、連続する約物は詰める。非対応ブラウザでは既定の挙動に戻るだけ。 */
-body {
-  line-break: strict;                 /* 禁則を厳しめに(小書き仮名や長音を行頭に置かない) */
-  overflow-wrap: anywhere;            /* 長い URL や英単語で横にはみ出さない */
-  text-autospace: normal;             /* 和文と英数の間に四分アキ */
-  text-spacing-trim: space-first;     /* 「」や。、が連続したときのアキを詰める */
-  hanging-punctuation: allow-end;     /* 行末の句読点をぶら下げる(対応ブラウザのみ) */
-}
-:is(h1, h2, h3, .serif, .serif-jp) { text-wrap: balance; }
-:is(h1, h2, h3, .serif, .serif-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; }
-:is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
-p.hero-lead, .card p, ol p, .prose :is(p, li, blockquote) { word-break: auto-phrase; }
-/* 数字と単位、日付は途中で切らない */
-time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
-
+/* =====================================================================
+   2. 土台
+   ===================================================================== */
 body {
   background: var(--paper);
-  font-weight: 500;
   color: var(--ink);
   font-family: var(--font-sans);
+  font-weight: 500;
   font-feature-settings: "palt", "ss01", "cv11";
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
+  /* 日本語の折り返し。非対応ブラウザでは既定の挙動に戻るだけ */
+  line-break: strict;              /* 禁則を厳しめに */
+  overflow-wrap: anywhere;         /* 長い URL や英単語ではみ出さない */
+  text-autospace: normal;          /* 和文と英数の間に四分アキ */
+  text-spacing-trim: space-first;  /* 連続する約物のアキを詰める */
+  hanging-punctuation: allow-end;  /* 行末の句読点をぶら下げる */
 }
 ::selection { background: var(--accent-soft); }
 
-/* 見出しは丸ゴシック(クラス名は以前のまま) */
-.serif { font-family: var(--font-serif); font-weight: 600; letter-spacing: 0; }
-.serif-jp { font-family: var(--font-zen-maru); font-weight: 700; }
+/* 見出しは文節で折り返して行長を揃え、段落は泣き別れを避ける */
+:is(h1, h2, h3, .display, .display-jp) { text-wrap: balance; }
+:is(h1, h2, h3, .display, .display-jp, .eyebrow, .tag, .chip, .pill, .card p, ol p, .prose :is(p, li, blockquote)) { word-break: auto-phrase; }
+:is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
+time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数値は途中で切らない */
 
-/* セクション見出し: 小さなラベル + 点線 */
+/* キーボード操作時のフォーカス輪郭 */
+:where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: inherit; }
+
+/* 支援技術にだけ読ませる */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
+.skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* =====================================================================
+   3. 書体と部品
+   ===================================================================== */
+.display { font-family: var(--font-display); font-weight: 600; }
+.display-jp { font-family: var(--font-zen-maru); font-weight: 700; }
+
+/* セクション見出し: 小さなラベル + 点線(.eyebrow-plain は点線なし) */
 .eyebrow {
   display: flex; align-items: center; gap: 1rem; height: 1.5rem;
   font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
 }
 .eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: 999px; }
 .eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
-
-/* ヒーロー用: 点線なしのラベル */
 .eyebrow-plain::after { display: none; }
+
+/* 区切り線は点線 */
+.dotted { border-top: 2px dotted var(--line); }
+.divide-line > :not(:first-child) { border-top: 2px dotted var(--line) !important; border-bottom: 0 !important; }
+
+/* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
+.card { background: var(--paper-2); border-radius: 2.5rem; padding: 1.5rem; }
+
+/* 座布団(アイコンの台)。寸法は --tile、Works では 3 色で回す */
+.tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
+.tile.hue-0 { background: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
+.tile.hue-1 { background: color-mix(in oklch, var(--mint) 22%, var(--paper)); color: color-mix(in oklch, var(--mint) 70%, var(--ink)); }
+.tile.hue-2 { background: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
 
 /* 丸いボタン */
 .pill {
@@ -111,59 +129,50 @@ body {
   background: var(--paper-2); color: var(--ink);
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
+.pill-accent { background: var(--accent-btn); color: var(--on-accent); }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--paper); color: var(--ink); }
+.icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
+
+/* 絞り込みチップ(押した状態は aria-pressed) */
+.chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
+
+/* タグ。カードの上では地の色、一覧の上では一段暗い色 */
+.tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .625rem; border-radius: 999px; }
+ol .tag { background: var(--paper-2); }
+
+/* ホバーできる端末だけの反応 */
 @media (hover: hover) and (pointer: fine) {
   .pill:hover { background: color-mix(in oklch, var(--paper-2) 70%, var(--accent-soft)); }
-}
-.pill-accent { background: var(--accent-btn); color: var(--on-accent); }
-@media (hover: hover) and (pointer: fine) {
   .pill-accent:hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
+  .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
+  .u-link:hover::after { transform: scaleX(1); }
 }
 
-/* 区切り線も点線に */
-.divide-line > :not(:first-child) { border-top: 2px dotted var(--line) !important; border-bottom: 0 !important; }
-.dotted { border-top: 2px dotted var(--line); }
-
-/* ふんわりしたカード */
-/* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
-.card { background: var(--paper-2); border-radius: 2.5rem; padding: 1.5rem; }
-
-/* 角の曲線は円弧ではなくスクワークル(対応ブラウザのみ。他は円弧のまま) */
-@supports (corner-shape: squircle) {
-  .card, .tile, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
-}
-
-/* リンクの下線アニメーション(ホバーできる端末だけ) */
+/* リンクの下線がホバーで伸びる */
 .u-link { position: relative; text-decoration: none; }
 .u-link::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -.1em; height: 1px;
   background: currentColor; transform: scaleX(0); transform-origin: left;
   transition: transform 200ms var(--ease-out);
 }
-@media (hover: hover) and (pointer: fine) {
-  .u-link:hover::after { transform: scaleX(1); }
-}
-
-/* キーボード操作時のフォーカス輪郭 */
-:where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: inherit; }
-/* 画面外に置くが AT には読ませる */
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
-.skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 /* 押せるものは押した瞬間に応える */
 .press { transition: transform 160ms var(--ease-out); }
 .press:active { transform: scale(0.94); }
 
-/* 名前の文字を順に出す(読み込み時に一度だけ) */
-.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
-.hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
-@keyframes wm-in { to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
+/* 角の曲線はスクワークル(対応ブラウザのみ。他は円弧のまま) */
+@supports (corner-shape: squircle) {
+  .card, .tile, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
 }
 
+/* Petals の背景: 薄い空のグラデーション */
+.petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
-/* 記事本文 */
+/* =====================================================================
+   4. 記事本文(Markdown の出力)
+   ===================================================================== */
 .prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
 .prose > * + * { margin-top: 1.5rem; }
 .prose :is(h2, h3) { font-family: var(--font-zen-maru); font-weight: 700; color: var(--ink); }
@@ -187,95 +196,67 @@ body {
 .prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
-/* Petals の背景: 薄い空のグラデーション */
-.petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
+/* =====================================================================
+   5. 動き
+   ===================================================================== */
 
+/* 5a. 読み込み時: 名前の文字が順に出て、一文が続く(一度きり) */
+.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
+.hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
+@keyframes wm-in { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
+}
 
-/* タグ */
-.tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .625rem; border-radius: 999px; }
-.card .tag { background: var(--paper); }
-:where(.card-cover, ol) .tag { background: var(--paper-2); }
-.card-cover .tag { background: color-mix(in oklch, var(--paper) 70%, transparent); }
-
-/* 絞り込みチップ */
-.chip { height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-@media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
-@media (hover: hover) and (pointer: fine) { .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); } }
-
-/* 最新記事のカード */
-.card-cover { background: var(--paper-2); }
-
-/* 座布団の寸法は変数で(インライン style を減らす) */
-.tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
-
-/* Works の座布団を 3 色で回す */
-.tile.hue-0 { background: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
-.tile.hue-1 { background: color-mix(in oklch, var(--mint) 22%, var(--paper)); color: color-mix(in oklch, var(--mint) 70%, var(--ink)); }
-.tile.hue-2 { background: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
-
-/* アイコンボタン */
-.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--paper); color: var(--ink); }
-.icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
-
-/* ---- スクロールの遊び(CSS のスクロール連動。JS は使わない) ---- */
+/* 5b. スクロール連動(CSS のみ)。animation ショートハンドは timeline を初期化するので longhand で書く */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {
   @media (prefers-reduced-motion: no-preference) {
-    /* 画面に入るとき、少し下から浮かぶ。一度きり */
-    /* ショートハンドの animation は timeline を初期化するので、必ず longhand で書く */
+    /* 画面に入るとき、少し下から浮かぶ */
     .reveal {
       animation-name: reveal; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: view();
       animation-range: entry 0% entry 40%;
     }
-    @keyframes reveal {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: none; }
-    }
+    @keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
     /* トップの名前は、スクロールより少しゆっくり上へずれて薄くなる */
     .parallax {
       animation-name: drift; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: scroll(root);
       animation-range: 0 480px;
     }
-    @keyframes drift {
-      to { transform: translateY(-24px); opacity: 0.6; }
-    }
+    @keyframes drift { to { transform: translateY(-24px); opacity: 0.6; } }
     /* ヘッダーはスクロールし始めると線が濃くなる */
     header.site {
       animation-name: header-line; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: scroll(root);
       animation-range: 0 64px;
     }
-    @keyframes header-line {
-      to { border-color: color-mix(in oklch, var(--line) 60%, var(--ink)); }
-    }
+    @keyframes header-line { to { border-color: color-mix(in oklch, var(--line) 60%, var(--ink)); } }
   }
 }
 
-/* ---- ページ遷移: 本文が短く溶けて入れ替わる。全画面のクロスフェードはしない ---- */
+/* 5c. ページ遷移(Astro の ClientRouter)。本文だけが短く溶けて入れ替わり、全画面のクロスフェードはしない */
 ::view-transition-old(main) { animation: vt-out 180ms cubic-bezier(0.4, 0, 0.6, 1) both; }
 ::view-transition-new(main) { animation: vt-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both; }
+::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
 @keyframes vt-out { to { opacity: 0; transform: translateY(-4px); filter: blur(2px); } }
 @keyframes vt-in { from { opacity: 0; transform: translateY(6px); filter: blur(2px); } }
-/* 「戻る」では上下を逆にして、来た道を戻る感じにする(Astro が方向を属性で教えてくれる) */
+/* 「戻る」では上下を逆にする(Astro が方向を属性で教えてくれる) */
 html[data-astro-transition="back"]::view-transition-old(main) { animation-name: vt-out-back; }
 html[data-astro-transition="back"]::view-transition-new(main) { animation-name: vt-in-back; }
 @keyframes vt-out-back { to { opacity: 0; transform: translateY(4px); filter: blur(2px); } }
 @keyframes vt-in-back { from { opacity: 0; transform: translateY(-6px); filter: blur(2px); } }
-/* 記事タイトルの移動: 位置の移動は 300ms。古い文字はすぐ消し、新しい文字だけが滑り込む
-   (大小 2 つの文字が重なって伸びて見えるのを防ぐ) */
+/* 共有要素(記事タイトル): 位置は 300ms で移動。古い文字はすぐ消し、新しい文字だけが滑り込む */
 ::view-transition-group(*) { animation-duration: 300ms; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
 ::view-transition-image-pair(*) { isolation: auto; }
 ::view-transition-old(*) { animation: vt-title-out 100ms ease-out both; mix-blend-mode: normal; }
 ::view-transition-new(*) { animation: vt-title-in 200ms ease-out 80ms both; mix-blend-mode: normal; }
 @keyframes vt-title-out { to { opacity: 0; } }
 @keyframes vt-title-in { from { opacity: 0; } }
-::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
-/* ヘッダーとフッターは動かさない(一般則より名前付きが優先) */
+/* 動かさないもの(名前付きは一般則より優先) */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
 ::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
-::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 /* タグ絞り込み(同一ページ内)では本文の出入りは動かさず、項目だけが詰まる */
 html:active-view-transition-type(filter)::view-transition-old(main),
 html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; }
