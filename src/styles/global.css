@@ -220,7 +220,8 @@ ol .tag { background: var(--paper-2); }
   --sea-bubble: light-dark(transparent, oklch(90% 0.05 var(--sea-h) / 40%));
   --sea-bubble-hi: light-dark(transparent, oklch(98% 0.02 var(--sea-h) / 60%));
   /* ライト = 水面 */
-  --sea-ripple:   light-dark(oklch(62% 0.10 var(--sea-h) / 11%), transparent);
+  --sea-ripple:    light-dark(oklch(58% 0.11 var(--sea-h) / 14%), transparent); /* 環の暗い側(屈折の影) */
+  --sea-ripple-hi: light-dark(oklch(99% 0.01 var(--sea-h) / 55%), transparent); /* 環の明るい側(屈折の光) */
   --sea-glint:    light-dark(oklch(85% 0.12 88 / 45%), transparent);           /* 日差しの淡い金 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
@@ -302,24 +303,32 @@ ol .tag { background: var(--paper-2); }
 @media (prefers-color-scheme: dark) { :root:not(.light) .sea .caustics { display: none; } }
 :root.dark .sea .caustics { display: none; }
 
-/* 波紋(ライト): 輪郭線ではなく、内外へぼける濃淡の環が 3 重。ゆっくり広がって消える */
+/* 波紋(ライト): 本物の見え方に寄せる。
+   - 環は「明るい帯 + 暗い帯」の対(水面の傾きで光が屈折して見える明暗)
+   - 間隔は内側が狭く外側が広い(短い波ほど速く外へ出る分散)。外ほど薄く幅広く
+   - 数秒で薄れて消える */
 .sea .ripples i {
   left: var(--x); top: var(--y); width: var(--r); height: var(--r); margin: calc(var(--r) / -2) 0 0 calc(var(--r) / -2);
   border-radius: 50%;
   background: radial-gradient(circle,
-    transparent 30%, var(--sea-ripple) 36%, transparent 42%,
-    transparent 52%, var(--sea-ripple) 57%, transparent 62%,
-    transparent 71%, var(--sea-ripple) 75%, transparent 79%);
-  opacity: 0; transform: scale(.3);
-  animation: ripple var(--t) cubic-bezier(0.15, 0.5, 0.35, 1) infinite; animation-delay: var(--d);
+    transparent 22%,
+    var(--sea-ripple-hi) 25%, var(--sea-ripple) 28.5%, transparent 31%,
+    transparent 36%,
+    var(--sea-ripple-hi) 39.5%, var(--sea-ripple) 44%, transparent 47.5%,
+    transparent 54%,
+    color-mix(in oklch, var(--sea-ripple-hi) 70%, transparent) 58%, color-mix(in oklch, var(--sea-ripple) 70%, transparent) 64%, transparent 69%,
+    transparent 77%,
+    color-mix(in oklch, var(--sea-ripple-hi) 40%, transparent) 82%, color-mix(in oklch, var(--sea-ripple) 40%, transparent) 90%, transparent 97%);
+  opacity: 0; transform: scale(.25);
+  animation: ripple var(--t) cubic-bezier(0.1, 0.55, 0.3, 1) infinite; animation-delay: var(--d);
 }
-.sea .ripples i:nth-child(1) { --x: 22%; --y: 28%; --r: 420px; --t: 22s; --d: -4s; }
-.sea .ripples i:nth-child(2) { --x: 76%; --y: 20%; --r: 520px; --t: 27s; --d: -15s; }
-.sea .ripples i:nth-child(3) { --x: 48%; --y: 72%; --r: 380px; --t: 24s; --d: -9s; }
+.sea .ripples i:nth-child(1) { --x: 22%; --y: 28%; --r: 440px; --t: 11s; --d: -2s; }
+.sea .ripples i:nth-child(2) { --x: 76%; --y: 20%; --r: 560px; --t: 13s; --d: -8s; }
+.sea .ripples i:nth-child(3) { --x: 48%; --y: 72%; --r: 400px; --t: 12s; --d: -5s; }
 @keyframes ripple {
-  0%   { transform: scale(.3); opacity: 0; }
-  12%  { opacity: .7; }
-  75%  { opacity: .2; }
+  0%   { transform: scale(.25); opacity: 0; }
+  6%   { opacity: .85; }
+  55%  { opacity: .4; }
   100% { transform: scale(1); opacity: 0; }
 }
 
