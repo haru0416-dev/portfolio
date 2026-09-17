@@ -208,7 +208,7 @@ ol .tag { background: var(--paper-2); }
   .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
 }
 
-/* 5a'. 背景: 深海の気配。上から差す光の帯と、ゆっくり昇るマリンスノー、下ほど深く。transform だけを動かす。
+/* 5a'. 背景: 深海の気配。上から差す光の帯、昇る泡とマリンスノー、下ほど深く。transform だけを動かす。
    light-dark() は色しか受け付けないので、濃さは色の不透明度に含める */
 :root {
   --sea-h: 225;
@@ -216,38 +216,73 @@ ol .tag { background: var(--paper-2); }
   --sea-ray:   light-dark(oklch(78% 0.09 var(--sea-h) / 9%),   oklch(75% 0.10 var(--sea-h) / 18%));
   --sea-dot:   light-dark(oklch(55% 0.10 var(--sea-h) / 24%),  oklch(90% 0.05 var(--sea-h) / 50%));
   --sea-dot-2: light-dark(oklch(55% 0.10 var(--sea-h) / 14%),  oklch(90% 0.05 var(--sea-h) / 32%));
+  --sea-bubble: light-dark(oklch(60% 0.08 var(--sea-h) / 30%), oklch(90% 0.05 var(--sea-h) / 40%));
+  --sea-bubble-hi: light-dark(oklch(98% 0.02 var(--sea-h) / 70%), oklch(98% 0.02 var(--sea-h) / 60%));
 }
 .sea { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)); }
 .sea i { position: absolute; display: block; }
-/* 光の帯: 斜めの淡い縞を、下に向かって消しながら左右にゆっくり揺らす */
+
+/* 光の帯: 斜めの淡い縞を、下に向かって消しながら左右にゆっくり揺らす。2 層目は角度と速さを変えて厚みを出す */
 .sea .rays {
   inset: -20% -30%;
   background: repeating-linear-gradient(104deg, transparent 0 9%, var(--sea-ray) 11.5%, transparent 14% 23%);
   mask-image: linear-gradient(to bottom, black, transparent 65%);
   animation: rays-sway 46s ease-in-out infinite alternate;
 }
+.sea .rays-2 {
+  background: repeating-linear-gradient(98deg, transparent 0 13%, var(--sea-ray) 16%, transparent 19% 31%);
+  opacity: .6; animation-duration: 71s; animation-delay: -30s; animation-direction: alternate-reverse;
+}
 @keyframes rays-sway { from { transform: translateX(-2vw) skewX(0deg); } to { transform: translateX(2vw) skewX(1.5deg); } }
+
 /* マリンスノー: 粒の模様を敷いた背の高い層を上へ流して繰り返す。
-   2 つの模様の周期(160/208、120/184)は公約数が小さく、重ねると格子に見えにくい。
-   流す距離は両周期の公倍数にして継ぎ目を出さない(近景 2080、遠景 2760) */
+   2 つの模様の周期(240/312、200/296)は公約数が小さく、重ねると格子に見えにくい。
+   流す距離は両周期の公倍数にして継ぎ目を出さない(近景 3120、遠景 7400) */
 .sea .snow {
-  left: 0; right: 0; top: 0; height: 4160px;
+  left: 0; right: 0; top: 0; height: 6240px;
   background-image:
     radial-gradient(circle, var(--sea-dot) 1.2px, transparent 2px),
     radial-gradient(circle, var(--sea-dot-2) 1px, transparent 1.6px);
-  background-size: 160px 160px, 208px 208px;
-  background-position: 0 0, 73px 117px;
-  animation: snow-rise-near 96s linear infinite;
+  background-size: 240px 240px, 312px 312px;
+  background-position: 0 0, 109px 171px;
+  animation: snow-rise-near 140s linear infinite;
 }
 .sea .snow.far {
-  height: 5520px; opacity: .6;
-  background-size: 120px 120px, 184px 184px; background-position: 41px 23px, 97px 61px;
-  animation: snow-rise-far 170s linear infinite; animation-delay: -60s;
+  height: 14800px; opacity: .55;
+  background-size: 200px 200px, 296px 296px; background-position: 61px 37px, 151px 89px;
+  animation: snow-rise-far 420s linear infinite; animation-delay: -100s;
 }
-@keyframes snow-rise-near { to { transform: translateY(-2080px); } }
-@keyframes snow-rise-far  { to { transform: translateY(-2760px); } }
-@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } }
+@keyframes snow-rise-near { to { transform: translateY(-3120px); } }
+@keyframes snow-rise-far  { to { transform: translateY(-7400px); } }
+
+/* 泡: 小さな輪が下から昇り、左右にわずかに揺れ、上に着くころ消える。個体差は nth-child で */
+.sea .bubbles i {
+  left: var(--x); bottom: -4rem; width: var(--r); height: var(--r); border-radius: 50%;
+  border: 1px solid var(--sea-bubble);
+  background: radial-gradient(circle at 32% 28%, var(--sea-bubble-hi) 0 12%, transparent 22%);
+  opacity: 0;
+  animation: bubble-rise var(--t) linear infinite; animation-delay: var(--d);
+}
+.sea .bubbles i:nth-child(1)  { --x: 8%;  --r: 10px; --t: 22s; --d: -3s; }
+.sea .bubbles i:nth-child(2)  { --x: 19%; --r: 6px;  --t: 17s; --d: -11s; }
+.sea .bubbles i:nth-child(3)  { --x: 31%; --r: 14px; --t: 28s; --d: -19s; }
+.sea .bubbles i:nth-child(4)  { --x: 42%; --r: 8px;  --t: 19s; --d: -6s; }
+.sea .bubbles i:nth-child(5)  { --x: 55%; --r: 5px;  --t: 15s; --d: -13s; }
+.sea .bubbles i:nth-child(6)  { --x: 63%; --r: 12px; --t: 25s; --d: -1s; }
+.sea .bubbles i:nth-child(7)  { --x: 72%; --r: 7px;  --t: 18s; --d: -9s; }
+.sea .bubbles i:nth-child(8)  { --x: 81%; --r: 16px; --t: 31s; --d: -24s; }
+.sea .bubbles i:nth-child(9)  { --x: 90%; --r: 9px;  --t: 21s; --d: -16s; }
+.sea .bubbles i:nth-child(10) { --x: 96%; --r: 6px;  --t: 16s; --d: -4s; }
+@keyframes bubble-rise {
+  0%   { transform: translate(0, 0) scale(.8); opacity: 0; }
+  8%   { opacity: 1; }
+  30%  { transform: translate(10px, -30vh) scale(.9); }
+  55%  { transform: translate(-8px, -55vh) scale(1); }
+  80%  { transform: translate(12px, -80vh) scale(1.05); opacity: .9; }
+  100% { transform: translate(0, -104vh) scale(1.1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } .sea .bubbles i { display: none; } }
 
 /* 5b. スクロール連動(CSS のみ)。animation ショートハンドは timeline を初期化するので longhand で書く */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {

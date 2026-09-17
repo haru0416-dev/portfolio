@@ -52,7 +52,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body class="min-h-dvh flex flex-col">
     <!-- 背景: 深海の気配。水面から差す光と、ゆっくり昇るマリンスノー(装飾。本文の裏、CSS のみ) -->
-    <div class="sea" aria-hidden="true"><i class="rays"></i><i class="snow"></i><i class="snow far"></i></div>
+    <div class="sea" aria-hidden="true">
+      <i class="rays"></i><i class="rays rays-2"></i>
+      <i class="snow"></i><i class="snow far"></i>
+      <span class="bubbles">{Array.from({ length: 10 }, () => <i></i>)}</span>
+    </div>
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
