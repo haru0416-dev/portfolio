@@ -12,6 +12,8 @@
 import { Renderer } from '@takumi-rs/core';
 import { fromHtml } from '@takumi-rs/helpers/html';
 import { googleFonts, subsetFonts, type FontSubset } from '@takumi-rs/helpers';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { SITE } from './site';
 
 const W = 1200, H = 630;
@@ -56,8 +58,15 @@ const renderer = new Renderer();
 let fontList: Promise<FontSubset[]> | undefined;
 const registered = new Map<string, Promise<unknown>>();
 
+// かなと約物を詰めた見出し用の書体(サイトと同じ。scripts/zen-maru-kana.py で生成)
+let kana: Promise<unknown> | undefined;
+
 async function prepare(html: string) {
   const { node, css } = fromHtml(html);
+  // ビルド後のコードは dist/ の下で動くので、import.meta.url ではなくプロジェクトのルート(作業ディレクトリ)から読む
+  kana ??= readFile(join(process.cwd(), 'public/fonts/zen-maru-kana-700.woff2'))
+    .then((data) => renderer.registerFont({ name: 'Zen Maru Kana', weight: 700, data }));
+  await kana;
   fontList ??= googleFonts([
     { name: 'Zen Maru Gothic', weight: 700 },
     { name: 'Fredoka', weight: 600 },
@@ -204,7 +213,7 @@ export async function layoutPost({ title, date, tags, icon = sprout }: PostImage
   const content = esc(phrases(title));
   let chosen: { e: El; o: Box } | undefined;
   for (const size of L.titleSizes) {
-    const style = `display:block;font-family:'Zen Maru Gothic';font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
+    const style = `display:block;font-family:'Zen Maru Kana','Zen Maru Gothic';font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
     const at = (w: number) => lineWidths(`<div style="width:${w}px;${style}">${content}</div>`);
     const lines = (await at(cw)).length;
     let lo = Math.floor(cw / lines), hi = cw;

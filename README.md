@@ -29,7 +29,7 @@
 
 配色は OKLCH で指定する。地の色、桃色、薄荷色の色相を `--h`、`--h-accent`、`--h-mint` にまとめ、明度と彩度を変えて使っている。ライトとダークの色は `light-dark()` で指定する。ヘッダーのテーマ設定で「端末の設定に合わせる」「ライト」「ダーク」を選ぶ。端末の設定に戻すと保存済みの固定テーマを解除する。
 
-見出しは `.display` が Fredoka、`.display-jp` が Zen Maru Gothic 700。本文には Nunito と OS の日本語フォントを使う。
+見出しは `.display` が Fredoka、`.display-jp` が Zen Maru Gothic 700。Zen Maru Gothic は palt(かなと約物を詰める機能)を持たないので、かなと約物だけ詰めた `public/fonts/zen-maru-kana-700.woff2` を先に当てている。`uv run scripts/zen-maru-kana.py` で作り直せる(元フォントと同じ OFL。ライセンスは同じ場所の `zen-maru-kana-OFL.txt`)。和文の見出しが無いページは `Base` に `jpHeadings={false}` を渡し、このフォントを先読みしない。本文には Nunito と OS の日本語フォントを使う。
 
 背景の `.sea` はテーマによって変わる。ダークでは CSS で 2 層の光の帯を動かし、`src/scripts/deep.ts` がマリンスノーと下から上がる泡を描く。下へ行くほど青みが濃くなる。ライトでは `src/scripts/surface.ts` が 2D 波動方程式で雨粒の波紋を計算する。画面の上部には光の網目を重ね、空の水色を付けている。
 

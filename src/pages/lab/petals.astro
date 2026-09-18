@@ -4,7 +4,7 @@ import Hero from '../../components/Hero.astro';
 import { LAB } from '../../data/lab';
 const meta = LAB.find((l) => l.slug === 'petals')!;
 ---
-<Base title={meta.title} description={meta.description} wide>
+<Base title={meta.title} description={meta.description} wide jpHeadings={false}>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} />
   <canvas id="petals" role="img" aria-label="桜の花びらが風に乗って舞うアニメーション" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
   <div class="mt-4 flex items-center justify-between gap-4">
@@ -12,7 +12,7 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
     <button type="button" id="petals-pause" class="chip glass press" aria-pressed="false">一時停止</button>
   </div>
   <p class="mt-8 text-sm text-muted">
-    <a href="/blog/petals-webgpu/" class="u-link hover:text-ink">制作記事「桜の花びらを WebGPU で描く」を読む →</a>
+    <a href="/blog/petals-webgpu/" class="u-link hover:text-ink inline-flex items-center min-h-6">制作記事「桜の花びらを WebGPU で描く」を読む →</a>
   </p>
 </Base>
 
