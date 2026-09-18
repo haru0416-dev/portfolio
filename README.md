@@ -7,7 +7,7 @@
 - `/blog`: `src/content/blog/*.md` を記事として出す。frontmatter は `title / description / pubDate / tags / draft`。タグの絞り込みには最新カードも含め、表示件数と0件時の案内を出す。
 - `/works`: `src/content/works.json` に代表作を登録する。`#munou-example` に公開 README から引用した会話例、`#feedback` に感想・不具合の報告先を載せる。`issues` は受付が有効な公開 GitHub Issues の URL がある作品だけ指定する。
 - `/lab`: 実験を 1 ページに 1 つずつ置く。追加するときは `src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。
-- `/rss.xml`, `/sitemap-index.xml` は自動生成。`/fonts.css` には自前配信するフォントの `@font-face` をまとめている。
+- `/rss.xml`, `/sitemap-index.xml` は自動生成。`public/robots.txt` でサイトマップの場所を伝える。`/fonts.css` には自前配信するフォントの `@font-face` をまとめている。
 
 サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `https://haru0416.dev` で、`astro.config.mjs` の `site` に設定している。
 
@@ -71,6 +71,8 @@ curl / wget / HTTPie でトップページを取得すると、HTML の代わり
 紹介文やリンクはビルド時に生成する `/meta.json` から読む。ローカルで試すには `bun run build && bunx wrangler pages dev dist` を実行する。
 
 ## デプロイ (Cloudflare Pages)
+
+応答ヘッダーは `public/_headers` で指定する。全ページにセキュリティ用のヘッダー(HSTS、`nosniff`、他サイトへの埋め込み禁止など)を付け、ファイル名にハッシュが入る `/_astro/*` は1年キャッシュする。`*.pages.dev` の配信先とプレビューには `X-Robots-Tag: noindex` を付け、検索には本番ドメインだけを載せる。
 
 Pages プロジェクトは `haru0416-portfolio`。現在は Git 連携ではなく、CLI から直接アップロードしている。
 本番URLは https://haru0416.dev/ 。Pages の配信先 https://haru0416-portfolio.pages.dev/ でも開ける。

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://haru0416.dev/sitemap-index.xml

@@ -31,8 +31,12 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
     <meta name="color-scheme" content="light dark" />
+    <!-- --paper の地の色(OKLCH を sRGB に変換した値) -->
+    <meta name="theme-color" content="#f8f5fd" media="(prefers-color-scheme: light)" data-light="#f8f5fd" data-dark="#15121c" />
+    <meta name="theme-color" content="#15121c" media="(prefers-color-scheme: dark)" data-light="#f8f5fd" data-dark="#15121c" />
     <script is:inline>
       // 保存したテーマがあれば color-scheme を固定、無ければ OS に追従。遷移で <html> が差し替わるたびに再適用
       (() => {
@@ -42,6 +46,10 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
           h.classList.toggle('dark', t === 'dark');
           h.classList.toggle('light', t === 'light');
           document.querySelector('meta[name="color-scheme"]').content = t ?? 'light dark';
+          // テーマを固定したときは OS の設定によらずその色、固定していなければ OS に合わせた色
+          document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+            m.content = t === 'light' || t === 'dark' ? m.dataset[t] : m.media.includes('dark') ? m.dataset.dark : m.dataset.light;
+          });
         };
         apply();
         document.addEventListener('astro:after-swap', apply);
@@ -61,6 +69,7 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={socialImage} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
+    <slot name="head" />
     {preloads.map((p) => <link rel="preload" href={p.url} as="font" type={`font/${p.type}`} crossorigin />)}
     <link rel="stylesheet" href="/fonts.css" />
     <link rel="preload" href="/cursors/arrow.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine)" />
