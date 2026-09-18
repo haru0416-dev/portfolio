@@ -31,10 +31,16 @@
 :root.light { color-scheme: light; }
 :root.dark  { color-scheme: dark; }
 
+/* 寸法の規則(全ページ共通。scripts ではなく、この規則に合わない値を書かないことで守る)
+   - 単位 u = 8px。行送りは u の倍数(縦のリズム)。余白・間隔・角丸は 4px(u/2)の倍数
+   - 文字サイズは 16px × 1.25^n。text-sm だけは半段(16 ÷ √1.25 = 14.31px)
+   - カプセル(.pill / .chip / .tag)は高さを u の倍数(40 / 32 / 24)にし、左右の余白 = 高さの半分(= 角の半径)
+   - 入れ子の角丸は同心(内側 = 外側 − 余白)。アイコンの台(.tile)は角丸 = 一辺の 1/3 なので、一辺は 12 の倍数
+   - 行内の要素(コード・リンク)の余白は 4px。行送りは変えない */
 @theme {
   /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
   --text-xs: 0.8rem;       --text-xs--line-height: 1rem;
-  --text-sm: 0.875rem;     --text-sm--line-height: 1.5rem;
+  --text-sm: 0.8944rem;    --text-sm--line-height: 1.5rem;   /* 16 ÷ √1.25 */
   --text-base: 1rem;       --text-base--line-height: 1.5rem;
   --text-lg: 1.25rem;      --text-lg--line-height: 2rem;
   --text-xl: 1.5625rem;    --text-xl--line-height: 2rem;
@@ -145,8 +151,12 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッダーは下の線だけにする(光のリングが画面の端に線として出る) */
 
 /* 区切り線は点線 */
-.dotted { border-top: 2px dotted var(--line); }
-.divide-line > :not(:first-child) { border-top: 2px dotted var(--line) !important; border-bottom: 0 !important; }
+/* 線は重ねて描き、箱の大きさを変えない(border だと中身が 2px 下がり、4px の格子から外れる) */
+:is(.dotted, .divide-line > :not(:first-child)) { position: relative; }
+:is(.dotted, .divide-line > :not(:first-child))::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--line); pointer-events: none; }
+/* ヘッダーとフッターの境の実線も同じく重ねて描く(ヘッダーの高さを 64px = 8u のままにする) */
+.line-bottom::after { content: ""; position: absolute; inset: auto 0 0; border-bottom: 1px solid var(--line); pointer-events: none; }
+.line-top::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 1px solid var(--line); pointer-events: none; }
 
 /* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
 .card { border-radius: 2.5rem; padding: 1.5rem; }
@@ -161,7 +171,7 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 /* 丸いボタン */
 .pill {
   display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem;
-  padding: 0 1.25rem; border-radius: 999px; font-size: var(--text-sm); font-weight: 700;
+  padding: 0 1.25rem; border-radius: 999px; font-size: var(--text-sm); line-height: 1.5rem; font-weight: 700;
   color: var(--ink);
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
@@ -175,7 +185,7 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 :is(.pill, .chip, .icon-btn).glass:not(.pill-accent, [aria-pressed="true"]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line); }
 
 /* 絞り込みチップ(押した状態は aria-pressed) */
-.chip { display: inline-flex; align-items: center; height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 .875rem; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.chip { display: inline-flex; align-items: center; height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 1rem; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
 .chip:where(:not(.glass)) { background: var(--paper-2); }
 .chip[aria-pressed="true"], .chip.glass[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
@@ -184,7 +194,7 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 .card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 
 /* タグ。カードの上では地の色、一覧の上では一段暗い色 */
-.tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .625rem; border-radius: 999px; }
+.tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .75rem; border-radius: 999px; }
 :is(ol, .on-paper) .tag { background: var(--paper-2); } /* .on-paper: 地の上に直接タグを並べるとき */
 .tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); } /* 作品の状態(開発中など) */
 
@@ -229,9 +239,9 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 .prose ul li::marker { color: var(--accent); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
 .prose li + li { margin-top: .5rem; }
-.prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .125em; } /* 上下の余白は押せる範囲を 24px 以上にするため(行の高さは変わらない) */
+.prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 上下の余白は押せる範囲を 24px 以上にするため(行の高さは変わらない) */
 .prose strong { font-weight: 600; }
-.prose code { font-size: .875em; background: var(--paper-2); padding: .15em .45em; border-radius: 6px; }
+.prose code { font-size: .8944em; line-height: 1; background: var(--paper-2); padding: 0 .25rem; border-radius: .25rem; } /* line-height: 1 で行送りを押し広げない(等幅書体は基準線の位置が違い、行が 1px 伸びる) */
 .prose pre { padding: 1.5rem; border-radius: 1rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; border: 1px solid var(--line); }
 .prose pre code { background: none; padding: 0; }
 .prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }

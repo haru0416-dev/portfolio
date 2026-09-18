@@ -42,9 +42,9 @@ const jsonLd = {
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   <article>
     <header class="mb-12">
-      <a href="/works/" class="u-link inline-flex items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
+      <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
       <div class="flex items-center gap-4">
-        <Tile icon={d.icon as any} size={64} class="hue-0" />
+        <Tile icon={d.icon as any} size={48} class="hue-0" />
         <h1 class="display-jp text-2xl sm:text-3xl min-w-0">{d.name}</h1>
       </div>
       <p class="mt-6 text-base text-ink-2">{d.summary}</p>

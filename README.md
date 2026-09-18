@@ -27,6 +27,8 @@
 
 ## 見た目の規則
 
+寸法は単位 u = 8px で組む。行送りは u の倍数、余白・間隔・角丸は 4px の倍数、文字サイズは 16px × 1.25^n(text-sm だけ半段)。カプセル形の部品は左右の余白を高さの半分にする。線(区切りの点線、ヘッダー・フッターの境)は重ねて描き、箱の大きさを変えない。詳しい規則は `src/styles/global.css` の冒頭にある。
+
 配色は OKLCH で指定する。地の色、桃色、薄荷色の色相を `--h`、`--h-accent`、`--h-mint` にまとめ、明度と彩度を変えて使っている。ライトとダークの色は `light-dark()` で指定する。ヘッダーのテーマ設定で「端末の設定に合わせる」「ライト」「ダーク」を選ぶ。端末の設定に戻すと保存済みの固定テーマを解除する。
 
 見出しは `.display` が Fredoka、`.display-jp` が Zen Maru Gothic 700。Zen Maru Gothic は palt(かなと約物を詰める機能)を持たないので、かなと約物だけ詰めた `public/fonts/zen-maru-kana-700.woff2` を先に当てている。`uv run scripts/zen-maru-kana.py` で作り直せる(元フォントと同じ OFL。ライセンスは同じ場所の `zen-maru-kana-OFL.txt`)。和文の見出しが無いページは `Base` に `jpHeadings={false}` を渡し、このフォントを先読みしない。本文には Nunito と OS の日本語フォントを使う。
