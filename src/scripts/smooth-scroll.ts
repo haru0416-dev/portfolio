@@ -42,9 +42,31 @@ const onKey = (e: KeyboardEvent) => {
   if (SCROLL_KEYS.includes(e.key)) stop();
 };
 
+// 履歴の書き換えを間引く。滑らかスクロール中は 1 フレームごとの scrollTo がそれぞれ scrollend を起こし、
+// Astro のルーターがそのたびに history.replaceState でスクロール位置を保存する。Chrome は履歴の書き換えを
+// 10 秒に 200 回までに制限し、超えると「Throttling navigation」の警告を出す(実測: 25 秒で 289 回 → 間引き後 57 回)。
+// 同じ履歴項目への replaceState は最後の 1 回だけ意味があるので、直前の実行から 150ms 以内なら保留して最後の分だけ流す。
+// pushState と popstate の前には保留分を先に流し、Astro の履歴の順番を崩さない。
+const HISTORY_INTERVAL = 150;
+function throttleHistory() {
+  const replace = history.replaceState.bind(history), push = history.pushState.bind(history);
+  let last = 0, pending: Parameters<History['replaceState']> | undefined, timer = 0;
+  const flush = () => { clearTimeout(timer); if (pending) { const args = pending; pending = undefined; last = performance.now(); replace(...args); } };
+  history.replaceState = (...args) => {
+    if (performance.now() - last >= HISTORY_INTERVAL) { pending = undefined; clearTimeout(timer); last = performance.now(); replace(...args); return; }
+    pending = args;
+    clearTimeout(timer);
+    timer = window.setTimeout(flush, HISTORY_INTERVAL);
+  };
+  history.pushState = (...args) => { flush(); push(...args); };
+  addEventListener('popstate', flush, { capture: true });
+  addEventListener('pagehide', flush);
+}
+
 export function installSmoothScroll() {
   if (installed) return;
   installed = true;
+  throttleHistory();
   addEventListener('wheel', onWheel, { passive: false });
   addEventListener('scroll', sync, { passive: true });
   addEventListener('keydown', onKey, { capture: true });
