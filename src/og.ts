@@ -258,6 +258,50 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   return { html: (only?: string) => page(els, only) };
 }
 
+/** サイト共通の画像(/og.png)。ページ固有の画像が無いページで使う。
+    大きな「haru.」のロゴマーク(左に芽)、一言、下段にドメインと主な入口 */
+export async function layoutSite() {
+  const M = L.margin, R = W - M, B = H - M;
+  const els: El[] = [];
+  const place = async (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => {
+    const o = await probe({ ...e, x: 0, y: 0 });
+    const [x, y] = at(o);
+    els.push({ ...e, x, y });
+    return o;
+  };
+  const eb = await place(
+    { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: 'NOTES &amp; EXPERIMENTS', color: C.muted },
+    (o) => [M - o.left, M - o.top],
+  );
+  const eyebrowBottom = M + (eb.bottom - eb.top);
+
+  // 下段: 左にドメイン、右に主な入口。ベースラインを下余白の線に
+  const dom = await place({ key: 'domain', style: `font-size:${L.logo}px;white-space:nowrap`, content: 'haru0416.dev', color: C.ink2 }, (o) => [M - o.left, B - o.bottom]);
+  await place({ key: 'nav', style: `font-size:${L.small}px;white-space:nowrap`, content: 'Blog · Works · Lab', color: C.muted }, (o) => [R - o.right, B - o.bottom]);
+  const ruleY = B - (dom.bottom - dom.top) - L.gap.footer - 2;
+  await place({ key: 'rule', kind: 'rule', w: R - M }, (o) => [M - o.left, ruleY - o.top]);
+
+  // 中段: ロゴマーク(160px)と一言(36px)の塊を、空きの上下が等しくなる位置に。芽はロゴの字の高さに合わせて左に
+  const mid = (eyebrowBottom + ruleY) / 2;
+  const markEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:160px;line-height:1;letter-spacing:-4px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
+  const mark = await probe({ ...markEl, x: 0, y: 0 });
+  const leadEl = { key: 'lead', style: `font-size:36px;white-space:nowrap`, content: 'Rust / TypeScript', color: C.ink2 };
+  const lead = await probe({ ...leadEl, x: 0, y: 0 });
+  const markH = mark.bottom - mark.top, leadH = lead.bottom - lead.top;
+  const top = mid - (markH + U + leadH) / 2;
+  const s0 = await probe({ key: 'sprout', kind: 'img', src: sprout, size: 100, x: 0, y: 0 });
+  const sp = await place({ key: 'sprout', kind: 'img', src: sprout, size: Math.round(100 * markH / (s0.bottom - s0.top)) }, (o) => [M - o.left, top - o.top]);
+  els.push({ ...markEl, x: M + (sp.right - sp.left) + U - mark.left, y: top - mark.top });
+  els.push({ ...leadEl, x: M - lead.left, y: top + markH + U - lead.top });
+  return { html: (only?: string) => page(els, only) };
+}
+
+export async function renderSiteImage(): Promise<Buffer> {
+  const { html } = await layoutSite();
+  const { node, css } = await prepare(html());
+  return renderer.render(node, { ...OG_SIZE, css, lang: 'ja' });
+}
+
 export async function renderCardImage(card: CardImage): Promise<Buffer> {
   const { html } = await layoutCard(card);
   const { node, css } = await prepare(html());

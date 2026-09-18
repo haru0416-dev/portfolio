@@ -11,7 +11,7 @@
 
 サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `https://haru0416.dev` で、`astro.config.mjs` の `site` に設定している。
 
-共有用画像は `public/og.png`(1200×630px)。編集用の `public/og.svg` にはサイトで使うフォントを埋め込んでいる。SVGを変更したらブラウザで描画し、同じ寸法・倍率1でPNGも書き出す。共通レイアウトから公開ドメインの絶対URLをOGP・Twitterカードに指定する。
+サイト共通の共有用画像は `/og.png` で、ビルド時に `src/og.ts` の `renderSiteImage` が描く(`src/pages/og.png.ts`)。共通レイアウトから公開ドメインの絶対URLをOGP・Twitterカードに指定する。
 
 記事ページの共有用画像は、ビルド時に `src/og.ts` が Takumi で記事ごとに描き、`/og/blog/<slug>.png` に書き出す(`src/pages/og/blog/[...slug].png.ts`)。フォントはビルド時に Google Fonts から、題名に使う文字を含む分割ファイルだけ取得するので、ビルドにはネットワーク接続が要る。Takumi は `word-break: auto-phrase` に未対応のため、題名は `Intl.Segmenter` で区切った文節の切れ目だけで改行させている。配置は `src/og.ts` 冒頭に書いた規則(余白・左右の端・ベースライン・題名の縦位置)を満たすように、各要素のインクの位置を測ってから計算する。右側の円は記事ごとのアイコンを置く枠で、`renderPostImage` の `icon` に画像を渡すと差し替わる(省略時はサイトの芽のアイコン)。
 
