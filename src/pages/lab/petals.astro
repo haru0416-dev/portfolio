@@ -6,7 +6,9 @@ const meta = LAB.find((l) => l.slug === 'petals')!;
 ---
 <Base title={meta.title} description={meta.description} wide jpHeadings={false}>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} />
-  <canvas id="petals" role="img" aria-label="桜の花びらが風に乗って舞うアニメーション" class="w-full aspect-[16/10] rounded-3xl petal-sky"></canvas>
+  <div class="@container">
+    <canvas id="petals" role="img" aria-label="桜の花びらが風に乗って舞うアニメーション" class="w-full rounded-3xl petal-sky golden"></canvas>
+  </div>
   <div class="mt-4 flex items-center justify-between gap-4">
     <p id="renderer" class="text-xs text-muted tracking-[.08em]"></p>
     <button type="button" id="petals-pause" class="chip glass press" aria-pressed="false">一時停止</button>

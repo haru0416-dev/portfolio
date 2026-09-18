@@ -106,7 +106,8 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
       document.addEventListener('astro:after-swap', boot);
     </script>
     <Header />
-    <main id="content" tabindex="-1" transition:name="main" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[42rem]']}>
+    <!-- 本文だけのページの幅は、広いページの中身の幅(960px)を黄金比で割ったもの(960 ÷ φ ≒ 592px。左右の余白を足して 41rem) -->
+    <main id="content" tabindex="-1" transition:name="main" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[41rem]']}>
       <slot />
     </main>
     <Footer />

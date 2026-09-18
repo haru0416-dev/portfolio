@@ -36,7 +36,11 @@
    - 文字サイズは 16px × 1.25^n。text-sm だけは半段(16 ÷ √1.25 = 14.31px)
    - カプセル(.pill / .chip / .tag)は高さを u の倍数(40 / 32 / 24)にし、左右の余白 = 高さの半分(= 角の半径)
    - 入れ子の角丸は同心(内側 = 外側 − 余白)。アイコンの台(.tile)は角丸 = 一辺の 1/3 なので、一辺は 12 の倍数
-   - 行内の要素(コード・リンク)の余白は 4px。行送りは変えない */
+   - 行内の要素(コード・リンク)の余白は 4px。行送りは変えない
+   - 比は黄金比 φ と三分割を使い、寸法は u に丸める。
+     本文だけのページの幅 = 広いページの中身の幅 ÷ φ(960 → 592)。トップの 2 列は φ : 1(552 : 344)。
+     トップの顔は最初の画面の 61.8% で終わり(下の余白 64px を優先)、横は左 2/3 に言葉、右 1/3 の中央に芽の円。
+     Lab の canvas は黄金長方形(.golden) */
 @theme {
   /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
   --text-xs: 0.8rem;       --text-xs--line-height: 1rem;
@@ -224,6 +228,9 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 }
 
 /* Petals の背景: 薄い空のグラデーション */
+/* 黄金長方形(横 : 縦 = φ : 1)。高さは 8px の格子に丸める。round() が無ければ縦横比だけ合わせる */
+.golden { aspect-ratio: 1.618; }
+@supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
 .petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
 /* =====================================================================
