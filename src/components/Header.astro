@@ -18,12 +18,59 @@ const path = Astro.url.pathname;
           class:list={['inline-flex shrink-0 items-center h-8 rounded-full px-1 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
-      <button id="theme-toggle" type="button" aria-label="ダークテーマ" aria-pressed="false" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-muted hover:text-ink transition-colors">
+      <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-muted hover:text-ink transition-colors">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>
   </div>
 </header>
+<div id="theme-options" popover="auto" class="theme-options">
+  <fieldset>
+    <legend class="mb-2 text-sm font-bold">テーマ</legend>
+    <label>
+      <input type="radio" name="site-theme" value="system" checked />
+      <span>端末の設定に合わせる</span>
+    </label>
+    <label>
+      <input type="radio" name="site-theme" value="light" />
+      <span>ライト</span>
+    </label>
+    <label>
+      <input type="radio" name="site-theme" value="dark" />
+      <span>ダーク</span>
+    </label>
+  </fieldset>
+</div>
+<style>
+  .theme-options {
+    position: fixed;
+    inset: 4.5rem max(1rem, env(safe-area-inset-right), calc((100vw - 64rem) / 2 + 2rem)) auto auto;
+    margin: 0;
+    width: 16rem;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100dvh - 5.5rem);
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 1.5rem;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 8px 24px var(--glass-lo);
+  }
+  .theme-options fieldset { min-width: 0; }
+  .theme-options label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.5rem;
+    padding: .5rem;
+    border-radius: .5rem;
+    font-size: var(--text-sm);
+  }
+  .theme-options label:has(:checked) { background: var(--paper-2); }
+  .theme-options label:has(:focus-visible) { outline: 3px solid var(--ink); outline-offset: 0; }
+  .theme-options input { flex-shrink: 0; accent-color: var(--accent-ink); cursor: inherit; }
+</style>
 <script>
   import { isDark, onThemeChange } from '../scripts/theme';
   let cleanup: (() => void) | undefined;
@@ -31,28 +78,53 @@ const path = Astro.url.pathname;
     cleanup?.();
     cleanup = undefined;
   });
-  // ページ遷移のたびに新しいボタンへ付け直す
+  // ページ遷移のたびに新しい選択欄へ付け直す
   document.addEventListener('astro:page-load', () => {
     cleanup?.();
     cleanup = undefined;
-    const btn = document.getElementById('theme-toggle');
-    if (!btn) return;
-    const sync = () => btn.setAttribute('aria-pressed', String(isDark()));
-    const toggle = () => {
-      const next = isDark() ? 'light' : 'dark'; // 今の実効テーマの反対を固定する
-      localStorage.setItem('theme', next);
+    const btn = document.getElementById('theme-settings');
+    const popover = document.getElementById('theme-options');
+    if (!(btn instanceof HTMLButtonElement) || !popover) return;
+    if (!('commandForElement' in HTMLButtonElement.prototype)) {
+      btn.removeAttribute('commandfor');
+      btn.removeAttribute('command');
+      btn.setAttribute('popovertarget', popover.id);
+    }
+    const choices = popover.querySelectorAll<HTMLInputElement>('input[name="site-theme"]');
+    const sync = () => {
+      const saved = localStorage.getItem('theme');
+      const mode = saved === 'light' || saved === 'dark' ? saved : 'system';
+      choices.forEach((choice) => { choice.checked = choice.value === mode; });
+      const effective = isDark() ? 'ダーク' : 'ライト';
+      const label = mode === 'system' ? `端末の設定に合わせる、現在は${effective}` : effective;
+      btn.setAttribute('aria-label', `テーマを選ぶ（${label}）`);
+    };
+    const select = (event: Event) => {
+      const choice = event.target;
+      if (!(choice instanceof HTMLInputElement) || !choice.checked) return;
+      const next = choice.value;
+      if (next !== 'system' && next !== 'light' && next !== 'dark') return;
+      if (next === 'system') localStorage.removeItem('theme');
+      else localStorage.setItem('theme', next);
       const h = document.documentElement;
       h.classList.toggle('dark', next === 'dark');
       h.classList.toggle('light', next === 'light');
-      document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next);
+      document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next === 'system' ? 'light dark' : next);
       sync();
     };
+    const syncOpen = () => {
+      const open = popover.matches(':popover-open');
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) popover.querySelector<HTMLInputElement>('input:checked')?.focus();
+    };
     sync();
-    btn.addEventListener('click', toggle);
+    popover.addEventListener('change', select);
+    popover.addEventListener('toggle', syncOpen);
     const offTheme = onThemeChange(sync);
     cleanup = () => {
       offTheme();
-      btn.removeEventListener('click', toggle);
+      popover.removeEventListener('change', select);
+      popover.removeEventListener('toggle', syncOpen);
     };
   });
 </script>

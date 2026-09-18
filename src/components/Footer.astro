@@ -3,15 +3,16 @@ import { SITE } from '../site';
 import Logo from './Logo.astro';
 ---
 <footer transition:name="footer" transition:animate="none" class="border-t border-line">
-  <div class="max-w-[64rem] mx-auto px-4 sm:px-8 py-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+  <div class="max-w-[64rem] mx-auto px-4 sm:px-8 py-12 flex flex-col sm:flex-row sm:flex-wrap sm:items-end justify-between gap-6">
     <div>
       <Logo iconSize={26} />
       <p class="text-xs text-muted mt-2">© {new Date().getFullYear()} {SITE.name}. Built with Astro ♡</p>
     </div>
     <nav aria-label="サイト" class="text-xs tracking-[.08em] uppercase text-muted">
-      <ul role="list" class="flex gap-6">
+      <ul role="list" class="flex flex-wrap gap-x-6 gap-y-2">
         <li><a href={SITE.github} class="u-link hover:text-ink inline-flex items-center min-h-6">GitHub</a></li>
         <li><a href="/rss.xml" class="u-link hover:text-ink inline-flex items-center min-h-6">RSS</a></li>
+        <li><a href="/works/#feedback" class="u-link hover:text-ink inline-flex items-center min-h-6">感想・不具合の報告</a></li>
       </ul>
     </nav>
   </div>

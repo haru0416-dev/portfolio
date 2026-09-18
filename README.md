@@ -4,12 +4,14 @@
 
 ## 構成
 
-- `/blog`: `src/content/blog/*.md` を記事として出す。frontmatter は `title / description / pubDate / tags / draft`。
-- `/works`: `src/content/works.json` に代表作を登録する。
+- `/blog`: `src/content/blog/*.md` を記事として出す。frontmatter は `title / description / pubDate / tags / draft`。タグの絞り込みには最新カードも含め、表示件数と0件時の案内を出す。
+- `/works`: `src/content/works.json` に代表作を登録する。`#munou-example` に公開 README から引用した会話例、`#feedback` に感想・不具合の報告先を載せる。`issues` は受付が有効な公開 GitHub Issues の URL がある作品だけ指定する。
 - `/lab`: 実験を 1 ページに 1 つずつ置く。追加するときは `src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。
 - `/rss.xml`, `/sitemap-index.xml` は自動生成。`/fonts.css` には自前配信するフォントの `@font-face` をまとめている。
 
 サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `https://haru0416.dev` で、`astro.config.mjs` の `site` に設定している。
+
+共有用画像は `public/og.png`(1200×630px)。編集用の `public/og.svg` にはサイトで使うフォントを埋め込んでいる。SVGを変更したらブラウザで描画し、同じ寸法・倍率1でPNGも書き出す。共通レイアウトから公開ドメインの絶対URLをOGP・Twitterカードに指定する。
 
 ## ファイルの役割
 
@@ -23,7 +25,7 @@
 
 ## 見た目の規則
 
-配色は OKLCH で指定する。地の色、桃色、薄荷色の色相を `--h`、`--h-accent`、`--h-mint` にまとめ、明度と彩度を変えて使っている。ライトとダークの色は `light-dark()` で指定する。通常は OS のテーマに合わせ、ヘッダーのボタンで固定できる。
+配色は OKLCH で指定する。地の色、桃色、薄荷色の色相を `--h`、`--h-accent`、`--h-mint` にまとめ、明度と彩度を変えて使っている。ライトとダークの色は `light-dark()` で指定する。ヘッダーのテーマ設定で「端末の設定に合わせる」「ライト」「ダーク」を選ぶ。端末の設定に戻すと保存済みの固定テーマを解除する。
 
 見出しは `.display` が Fredoka、`.display-jp` が Zen Maru Gothic 700。本文には Nunito と OS の日本語フォントを使う。
 
@@ -68,12 +70,22 @@ curl / wget / HTTPie でトップページを取得すると、HTML の代わり
 
 ## デプロイ (Cloudflare Pages)
 
-Git 連携で以下を設定する。
+Pages プロジェクトは `haru0416-portfolio`。現在は Git 連携ではなく、CLI から直接アップロードしている。
+本番URLは https://haru0416.dev/ 。Pages の配信先 https://haru0416-portfolio.pages.dev/ でも開ける。
 
-| 項目 | 値 |
-|---|---|
-| Build command | `bun run build` |
-| Build output directory | `dist` |
-| 環境変数 | `BUN_VERSION=1.4.2`(`bun.lock` があれば Bun が使われる) |
+```sh
+bun run build
+bunx wrangler pages deploy dist --project-name haru0416-portfolio --branch main
+```
 
-Cloudflare Pages に `haru0416.dev` をカスタムドメインとして追加し、案内に従って DNS を設定する。`astro.config.mjs` の公開 URL は設定済み。
+`main` は本番ブランチ。上のコマンドは作業ツリーから生成した `dist` を公開するので、未コミットの変更も含まれる。`functions/` も Wrangler が一緒に配信する。
+
+初回は `bunx wrangler login` で認証する。SSH先などでブラウザのlocalhostへ戻れない場合は `bunx wrangler login --device --browser=false` を使い、表示されたURLとコードで承認する。
+
+独自ドメインは Pages に登録し、DNSも設定済み。現在のレコードは以下。接続先を変更するときも、メール用の MX・TXT は変更しない。
+
+| 種類 | 名前 | 接続先 | プロキシ | TTL |
+|---|---|---|---|---|
+| CNAME | `@` | `haru0416-portfolio.pages.dev` | 有効 | 自動 |
+
+Wrangler の OAuth 認証には DNS の編集権限がないため、DNS の変更はダッシュボードか、このゾーンに限定した DNS 編集権限の API トークンで行う。Pages のカスタムドメインは `Active` で、`https://haru0416.dev/` のHTTPS表示を確認済み。

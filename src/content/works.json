@@ -9,6 +9,7 @@
     ],
     "repo": "https://github.com/haru0416-dev/munou",
     "url": "https://haru0416-dev.github.io/munou/",
+    "issues": "https://github.com/haru0416-dev/munou/issues",
     "status": "active",
     "order": 10,
     "icon": "message-circle"
@@ -22,6 +23,7 @@
       "Z3"
     ],
     "repo": "https://github.com/haru0416-dev/dubito",
+    "issues": "https://github.com/haru0416-dev/dubito/issues",
     "status": "wip",
     "order": 20,
     "icon": "scale"
@@ -50,6 +52,7 @@
       "TypeScript"
     ],
     "repo": "https://github.com/haru0416-dev/fraxinus-release",
+    "issues": "https://github.com/haru0416-dev/fraxinus-release/issues",
     "status": "active",
     "order": 40,
     "icon": "wand-sparkles"
