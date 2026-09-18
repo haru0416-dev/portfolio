@@ -29,8 +29,42 @@ const L = {
 };
 // global.css のダークの値を sRGB にしたもの(paper / ink / ink-2 / muted / line / accent)
 const C = { ink: '#ece9f2', ink2: '#c0bbca', muted: '#958ea2', accent: '#fe89b7', line: '#352f40' };
-// 深海の背景: 地の色に、下へ行くほど濃くなる青(--sea-depth)と、左上からの淡い光の帯
-const BG = 'background-color:#15121c;background-image:linear-gradient(to bottom, rgba(0,94,125,0) 25%, rgba(0,94,125,.18)),linear-gradient(104deg, rgba(101,186,225,0) 30%, rgba(101,186,225,.06) 36%, rgba(101,186,225,0) 42%)';
+// 深海の背景(global.css の .sea と deep.ts に合わせる): 地の色に、下へ行くほど濃くなる青(--sea-depth)、
+// 上から差す斜めの光の帯(--sea-ray。下へ行くほど消える)、漂うマリンスノー、海底から上る泡
+const PAPER = '#15121c';
+const BG = [
+  `background-color:${PAPER}`,
+  'background-image:' + [
+    'linear-gradient(to bottom, rgba(0,94,125,0) 25%, rgba(0,94,125,.18))',                    // 深さ
+    `linear-gradient(to bottom, rgba(21,18,28,0), ${PAPER} 65%)`,                                // 光の帯を下で消す
+    'repeating-linear-gradient(104deg, transparent 0 9%, rgba(101,186,225,.16) 11.5%, transparent 14% 23%)',
+    'repeating-linear-gradient(98deg, transparent 0 13%, rgba(101,186,225,.10) 16%, transparent 19% 31%)',
+  ].join(','),
+].join(';');
+
+// 決まった並びの乱数(ビルドのたびに絵が変わらないように)
+function rng(seed: number) {
+  return () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+/** マリンスノー(奥は小さく薄く、手前は明るく光暈つき)と泡。deep.ts と同じ配色 */
+function sea() {
+  const r = rng(20260917);
+  const parts: string[] = [];
+  for (let i = 0; i < 90; i++) {
+    const depth = r(), x = r() * W, y = r() * H, rad = (0.6 + depth * 1.6) * 1.6, a = 0.12 + depth * 0.45;
+    parts.push(`<div style="position:absolute;left:${(x - rad).toFixed(1)}px;top:${(y - rad).toFixed(1)}px;width:${(rad * 2).toFixed(1)}px;height:${(rad * 2).toFixed(1)}px;border-radius:50%;background-color:rgba(220,230,255,${a.toFixed(2)})"></div>`);
+    if (depth > 0.6) { const h = rad * 2.4; parts.push(`<div style="position:absolute;left:${(x - h).toFixed(1)}px;top:${(y - h).toFixed(1)}px;width:${(h * 2).toFixed(1)}px;height:${(h * 2).toFixed(1)}px;border-radius:50%;background-color:rgba(220,230,255,${(a * 0.18).toFixed(3)})"></div>`); }
+  }
+  // 泡: 右寄りの 1 か所から上る列。上ほど薄い
+  const vx = W * 0.82;
+  for (let i = 0; i < 7; i++) {
+    const rad = 3 + r() * r() * 9, y = H - 40 - i * 62 - r() * 30, x = vx + Math.sin(i * 1.7) * 14, life = Math.min(1, (y - H * 0.08) / (H * 0.25)), a = 0.55 * life;
+    parts.push(`<div style="position:absolute;left:${(x - rad).toFixed(1)}px;top:${(y - rad).toFixed(1)}px;width:${(rad * 2).toFixed(1)}px;height:${(rad * 2).toFixed(1)}px;border-radius:50%;border:${Math.max(0.8, rad * 0.12).toFixed(1)}px solid rgba(200,220,255,${(a * 0.7).toFixed(2)})"></div>`);
+    const hr = Math.max(0.8, rad * 0.22);
+    parts.push(`<div style="position:absolute;left:${(x - rad * 0.35 - hr).toFixed(1)}px;top:${(y - rad * 0.35 - hr).toFixed(1)}px;width:${(hr * 2).toFixed(1)}px;height:${(hr * 2).toFixed(1)}px;border-radius:50%;background-color:rgba(255,255,255,${a.toFixed(2)})"></div>`);
+  }
+  return parts.join('');
+}
 
 // サイトの Sprout アイコン(lucide)。記事ごとのアイコンが無いときに円の中に置く
 const sprout = `data:image/svg+xml,${encodeURIComponent(
@@ -146,7 +180,7 @@ function page(els: El[], only?: string) {
     }
   }).join('');
   const card = `<div style="position:absolute;left:${L.card}px;top:${L.card}px;width:${W - 2 * L.card}px;height:${H - 2 * L.card}px;border:2px solid ${hide('card') ? 'transparent' : only ? '#000' : C.line};border-radius:${L.radius}px"></div>`;
-  return `<div style="display:flex;position:relative;width:${W}px;height:${H}px;${only ? 'background-color:#fff' : BG};font-family:Nunito,'Zen Maru Gothic';font-weight:700">${card}${body}</div>`;
+  return `<div style="display:flex;position:relative;width:${W}px;height:${H}px;${only ? 'background-color:#fff' : BG};font-family:Nunito,'Zen Maru Gothic';font-weight:700">${only ? '' : sea()}${card}${body}</div>`;
 }
 
 // 箱の原点からインクまでのずれ。題名以外は記事が変わっても同じなので覚えておく
