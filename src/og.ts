@@ -1,4 +1,4 @@
-// 記事ごとの共有用画像(1200×630 PNG)をビルド時に Takumi で描く。色は public/og.svg に合わせている
+// 記事・作品ごとの共有用画像(1200×630 PNG)をビルド時に Takumi で描く。色は public/og.svg に合わせている
 //
 // 配置は「整っている」を次の規則で定義し、それを満たすように計算する。
 // 各要素を一度単独で描いてインク(実際に塗られる画素)の外接矩形を測り、インクが目標の線に来るよう箱をずらす。
@@ -163,16 +163,26 @@ function probe(e: El): Promise<Box> {
   return probes.get(key)!;
 }
 
-export interface PostImage {
+export interface CardImage {
+  /** 左上の小さな見出し(例: BLOG · 2026.09.17、WORKS) */
+  eyebrow: string;
   title: string;
-  date: Date;
   tags: string[];
   /** 円の中に置く画像(URL か data URI)。省略するとサイトの芽のアイコン */
   icon?: string;
 }
 
+/** 記事の小見出し。BLOG · 2026.09.17 */
+export const postEyebrow = (date: Date) => `BLOG · ${date.toISOString().slice(0, 10).replaceAll('-', '.')}`;
+
+/** lucide のアイコン名から、差し色で描いた SVG の data URI を作る(作品のアイコン用) */
+export async function lucideIcon(name: string) {
+  const svg = await readFile(join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`), 'utf8');
+  return `data:image/svg+xml,${encodeURIComponent(svg.replace(/<!--.*?-->/s, '').replaceAll('currentColor', C.accent))}`;
+}
+
 /** 規則から各要素の位置を解く。返す html(only) は計測にも使う */
-export async function layoutPost({ title, date, tags, icon = sprout }: PostImage) {
+export async function layoutCard({ eyebrow, title, tags, icon = sprout }: CardImage) {
   const M = L.margin, R = W - M, B = H - M;
   const els: El[] = [];
   const place = async (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => {
@@ -183,9 +193,8 @@ export async function layoutPost({ title, date, tags, icon = sprout }: PostImage
   };
 
   // 上: 小見出しのインクの左上を余白の角に
-  const day = date.toISOString().slice(0, 10).replaceAll('-', '.');
   const eb = await place(
-    { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: `BLOG · ${day}`, color: C.muted },
+    { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: esc(eyebrow), color: C.muted },
     (o) => [M - o.left, M - o.top],
   );
   const eyebrowBottom = M + (eb.bottom - eb.top);
@@ -242,8 +251,8 @@ export async function layoutPost({ title, date, tags, icon = sprout }: PostImage
   return { html: (only?: string) => page(els, only) };
 }
 
-export async function renderPostImage(post: PostImage): Promise<Buffer> {
-  const { html } = await layoutPost(post);
+export async function renderCardImage(card: CardImage): Promise<Buffer> {
+  const { html } = await layoutCard(card);
   const { node, css } = await prepare(html());
   return renderer.render(node, { ...OG_SIZE, css, lang: 'ja' });
 }

@@ -5,7 +5,7 @@
 ## 構成
 
 - `/blog`: `src/content/blog/*.md` を記事として出す。frontmatter は `title / description / pubDate / tags / draft`。タグの絞り込みには最新カードも含め、表示件数と0件時の案内を出す。
-- `/works`: `src/content/works.json` に代表作を登録する。`#munou-example` に公開 README から引用した会話例、`#feedback` に感想・不具合の報告先を載せる。`issues` は受付が有効な公開 GitHub Issues の URL がある作品だけ指定する。
+- `/works`: `src/content/works/<id>.md` に 1 作品 1 ファイルで登録する。frontmatter は `name / summary / stack / icon / repo / url / issues / status / order`。一覧のカードから `/works/<id>/` の作品ページに飛ぶ。本文を書くと作品ページに載る。`#feedback` に感想・不具合の報告先を載せる。`issues` は受付が有効な公開 GitHub Issues の URL がある作品だけ指定する。作品ページの共有用画像は `/og/works/<id>.png`(円の中は `icon` の lucide アイコン)。
 - `/lab`: 実験を 1 ページに 1 つずつ置く。追加するときは `src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。
 - `/rss.xml`, `/sitemap-index.xml` は自動生成。`public/robots.txt` でサイトマップの場所を伝える。`/fonts.css` には自前配信するフォントの `@font-face` をまとめている。
 

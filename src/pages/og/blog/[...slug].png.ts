@@ -1,7 +1,7 @@
 // 記事ごとの共有用画像。ビルド時に /og/blog/<slug>.png として書き出す
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { renderPostImage } from '../../../og';
+import { postEyebrow, renderCardImage } from '../../../og';
 
 export const getStaticPaths = (async () => {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -9,6 +9,6 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute<{ post: CollectionEntry<'blog'> }> = async ({ props: { post } }) => {
-  const png = await renderPostImage({ title: post.data.title, date: post.data.pubDate, tags: post.data.tags });
+  const png = await renderCardImage({ eyebrow: postEyebrow(post.data.pubDate), title: post.data.title, tags: post.data.tags });
   return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
 };

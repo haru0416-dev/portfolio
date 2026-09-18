@@ -180,9 +180,12 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 .chip[aria-pressed="true"], .chip.glass[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
+/* カード全体を押せるようにする(題名のリンクを枠いっぱいに広げる)。カード内のほかのボタンは z-1 で上に出す */
+.card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+
 /* タグ。カードの上では地の色、一覧の上では一段暗い色 */
 .tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .625rem; border-radius: 999px; }
-ol .tag { background: var(--paper-2); }
+:is(ol, .on-paper) .tag { background: var(--paper-2); } /* .on-paper: 地の上に直接タグを並べるとき */
 .tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); } /* 作品の状態(開発中など) */
 
 /* ホバーできる端末だけの反応 */
