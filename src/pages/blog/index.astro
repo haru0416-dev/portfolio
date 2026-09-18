@@ -13,7 +13,7 @@ const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
 const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
 ---
 <Base title="Blog">
-  <Hero eyebrow="Blog" title="Writing" lead="作りながら考えたことの記録。" />
+  <Hero eyebrow="Blog" title="Writing" lead="開発中に試したことを書いています。" />
 
   {latest && (
     <a href={`/blog/${latest.id}/`} class="card glass reveal block group mb-8">

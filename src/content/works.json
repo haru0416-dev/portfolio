@@ -2,7 +2,7 @@
   {
     "id": "munou",
     "name": "人工無脳君 (munou)",
-    "summary": "既製の LLM や配布重みを使わず、理解せずに会話が成立する対話プログラム。育つ様子を観察するのが本線。v0.2 から純 Rust の自作小型言語モデルも候補源に足せる。",
+    "summary": "既製の LLM や配布された重みを使わない対話プログラム。会話を理解せずに応答する仕組みを作り、育つ様子を観察している。v0.2 からは、Rust で自作した小型言語モデルも応答候補の生成に使える。",
     "stack": [
       "Rust",
       "WebAssembly"
@@ -16,7 +16,7 @@
   {
     "id": "dubito",
     "name": "dubito",
-    "summary": "解答を疑うツール。数学の問題を複数のソルバで独立に定式化し、解を交換して Z3 で照合し、決定的なスコアベクトルを出す。LLM 不要の適応度関数として使える。",
+    "summary": "数学の解答を検証するツール。複数のソルバが問題を別々に定式化し、解を交換して Z3 で照合する。結果を決定的なスコアベクトルで返し、LLM なしの適応度関数として使える。",
     "stack": [
       "Python",
       "Z3"
@@ -29,7 +29,7 @@
   {
     "id": "famulus",
     "name": "famulus",
-    "summary": "AI の動向を追い、外に出す文を書く常駐エージェント。Effect と SQLite で組んだ Bun 製。",
+    "summary": "AI 関連の情報を集め、公開用の文章を書く常駐エージェント。Bun 上で動き、Effect と SQLite を使っている。",
     "stack": [
       "Bun",
       "TypeScript",
@@ -44,7 +44,7 @@
   {
     "id": "fraxinus",
     "name": "Fraxinus",
-    "summary": "検索・画像生成・図表・PDF・スライドを 1 機能ずつ呼ぶ JSON CLI。Bot などの呼び出し元へ結果とローカル生成物を返す。ソースは非公開で、リリース物だけ公開。",
+    "summary": "検索、画像生成、図表、PDF、スライドの各機能を個別に JSON で呼び出せる CLI。Bot などに処理結果とローカルの生成ファイルを返す。ソースコードは非公開で、リリース物だけ公開している。",
     "stack": [
       "Bun",
       "TypeScript"
@@ -57,7 +57,7 @@
   {
     "id": "partial-aot",
     "name": "partial-aot",
-    "summary": "TypeScript のうち静的に決まる関数だけを C 経由でネイティブ化し、残りは JS のまま bun:ffi で繋ぐ研究実装。JS と観測結果がビット一致することを不変条件にする。",
+    "summary": "TypeScript のうち静的に決まる関数だけを C に変換し、ネイティブコードにする研究実装。残りの JavaScript とは bun:ffi でつなぐ。元の JavaScript と実行結果がビット単位で一致することを条件にしている。",
     "stack": [
       "Bun",
       "TypeScript",
