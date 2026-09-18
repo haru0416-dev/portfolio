@@ -65,7 +65,7 @@ const jsonLd = {
     {hasBody && <div class="prose"><Content /></div>}
   </article>
 
-  {(prev || next) && <nav aria-label="前後の作品" class="mt-16 pt-8 dotted grid sm:grid-cols-2 gap-8 text-sm">
+  {(prev || next) && <nav aria-label="前後の作品" class="mt-16 pt-8 dotted grid grid-cols-2 gap-4 sm:gap-8 text-sm">
     <div>
       {prev && (
         <a href={`/works/${prev.id}/`} class="group block">
@@ -74,7 +74,7 @@ const jsonLd = {
         </a>
       )}
     </div>
-    <div class="sm:text-right">
+    <div class="text-right">
       {next && (
         <a href={`/works/${next.id}/`} class="group block">
           <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">Next →</div>

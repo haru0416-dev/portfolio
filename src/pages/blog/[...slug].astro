@@ -60,7 +60,7 @@ const jsonLd = {
     <div class="prose"><Content /></div>
   </article>
 
-  {(older || newer) && <nav aria-label="前後の記事" class="mt-16 pt-8 dotted grid sm:grid-cols-2 gap-8 text-sm">
+  {(older || newer) && <nav aria-label="前後の記事" class="mt-16 pt-8 dotted grid grid-cols-2 gap-4 sm:gap-8 text-sm">
     <div>
       {older && (
         <a href={`/blog/${older.id}/`} class="group block">
@@ -69,7 +69,7 @@ const jsonLd = {
         </a>
       )}
     </div>
-    <div class="sm:text-right">
+    <div class="text-right">
       {newer && (
         <a href={`/blog/${newer.id}/`} class="group block">
           <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">Newer →</div>
