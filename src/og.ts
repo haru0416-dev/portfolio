@@ -3,7 +3,7 @@
 // 配置は「整っている」を次の規則で定義し、それを満たすように計算する。
 // 各要素を一度単独で描いてインク(実際に塗られる画素)の外接矩形を測り、インクが目標の線に来るよう箱をずらす。
 // - 単位 u = 24px。キャンバス端からインクまでの余白は四辺とも 4u、枠線はキャンバス端から 1.5u
-// - 左寄せの要素(小見出し・題名・タグ・ロゴ)はインクの左端を一本の線に揃える。右端(ドメイン・区切り線・円)も同様
+// - 横は中央揃え。正方形に切り抜かれても残る中央の 25u(600px)に題名・ロゴ・ドメインを収める(SNS によっては中央の正方形だけを見せる)
 // - フッターの文字はベースラインを下余白の線に揃える
 // - 文字サイズは 24 から比 1.5 で伸ばす(24・36・54・81)。題名はその中間(×√1.5)も候補にし、収まる最大のものを選ぶ。行送りは 4/3
 // - 題名とタグの塊は、小見出しと区切り線の間の空きの上下が等しくなる位置に置く
@@ -24,6 +24,7 @@ const U = 24;
 const L = {
   margin: 4 * U, card: 1.5 * U, radius: 1.5 * U,
   small: U, logo: 1.5 * U, titleSizes: [81, 66, 54, 44], lineHeight: 4 / 3, maxLines: 3,
+  safe: 25 * U, // 正方形に切り抜かれても残る幅
   gap: { band: 2 * U, tags: 1.5 * U, footer: U, icon: U },
   titleIcon: 0.8, // 題名の横のアイコンのインクの高さ(文字サイズ比)
 };
@@ -37,8 +38,7 @@ const BG = [
   'background-image:' + [
     'linear-gradient(to bottom, rgba(0,94,125,0) 25%, rgba(0,94,125,.18))',                    // 深さ
     `linear-gradient(to bottom, rgba(21,18,28,0), ${PAPER} 65%)`,                                // 光の帯を下で消す
-    'repeating-linear-gradient(104deg, transparent 0 9%, rgba(101,186,225,.16) 11.5%, transparent 14% 23%)',
-    'repeating-linear-gradient(98deg, transparent 0 13%, rgba(101,186,225,.10) 16%, transparent 19% 31%)',
+    'repeating-linear-gradient(104deg, transparent 0 16%, rgba(101,186,225,.16) 20%, transparent 24% 40%)', // 帯は 3 本ほど
   ].join(','),
 ].join(';');
 
@@ -225,32 +225,38 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
     return o;
   };
 
-  // 上: 小見出しのインクの左上を余白の角に
+  const cx = W / 2;
+  // 上: 小見出しのインクを上余白の線に、横は中央
   const eb = await place(
     { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: esc(eyebrow), color: C.muted },
-    (o) => [M - o.left, M - o.top],
+    (o) => [cx - (o.left + o.right) / 2, M - o.top],
   );
   const eyebrowBottom = M + (eb.bottom - eb.top);
 
-  // 下: ロゴとドメインのベースライン(インクの下端)を下余白の線に
+  // 下: 芽・ロゴ・ドメインを 1 列に中央揃え。ベースライン(インクの下端)を下余白の線に
   const logoEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${L.logo}px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
   const logo = await probe({ ...logoEl, x: 0, y: 0 });
-  // 芽: インクの高さを「haru」の字の高さに合わせ、ベースラインを揃えて左に置く
+  const domEl = { key: 'domain', style: `font-size:${L.small}px;white-space:nowrap`, content: 'haru0416.dev', color: C.muted };
+  const dom = await probe({ ...domEl, x: 0, y: 0 });
   const s0 = await probe({ key: 'sprout', kind: 'img', src: sprout, size: 100, x: 0, y: 0 });
-  const sp = await place({ key: 'sprout', kind: 'img', src: sprout, size: Math.round(100 * (logo.bottom - logo.top) / (s0.bottom - s0.top)) }, (o) => [M - o.left, B - o.bottom]);
-  els.push({ ...logoEl, x: M + (sp.right - sp.left) + L.gap.icon - logo.left, y: B - logo.bottom });
-  await place({ key: 'domain', style: `font-size:${L.small}px;white-space:nowrap`, content: 'haru0416.dev', color: C.ink2 }, (o) => [R - o.right, B - o.bottom]);
+  const spEl = { key: 'sprout', kind: 'img' as const, src: sprout, size: Math.round(100 * (logo.bottom - logo.top) / (s0.bottom - s0.top)) };
+  const sp = await probe({ ...spEl, x: 0, y: 0 });
+  const wSp = sp.right - sp.left, wLogo = logo.right - logo.left, wDom = dom.right - dom.left;
+  let x = cx - (wSp + L.gap.icon + wLogo + 2 * U + wDom) / 2;
+  els.push({ ...spEl, x: x - sp.left, y: B - sp.bottom }); x += wSp + L.gap.icon;
+  els.push({ ...logoEl, x: x - logo.left, y: B - logo.bottom }); x += wLogo + 2 * U;
+  els.push({ ...domEl, x: x - dom.left, y: B - dom.bottom });
   // 区切り線: 線の下端からフッターの字の上端までを 1u(2 は線の太さ)
   const ruleY = B - (logo.bottom - logo.top) - L.gap.footer - 2;
   await place({ key: 'rule', kind: 'rule', w: R - M }, (o) => [M - o.left, ruleY - o.top]);
 
   // 中段: 小見出しの下端〜区切り線の上端の空き。題名+タグの塊の中心をこの空きの中央に
   const mid = (eyebrowBottom + ruleY) / 2;
-  const fullW = R - M;
+  const fullW = L.safe;
   const i0 = icon ? await probe({ key: 'icon', kind: 'img', src: icon, size: 100, x: 0, y: 0 }) : null;
   const cw = fullW; // タグの幅
   const bandH = ruleY - eyebrowBottom - 2 * L.gap.band;
-  const tagsEl = { key: 'tags', style: `font-size:${L.small}px;gap:${L.small / 2}px;flex-wrap:wrap`, content: tags.map((t) => `<span>#${esc(t)}</span>`).join(''), color: C.muted, w: cw };
+  const tagsEl = { key: 'tags', style: `font-size:${L.small}px;gap:${L.small / 2}px;flex-wrap:wrap;justify-content:center`, content: tags.map((t) => `<span>#${esc(t)}</span>`).join(''), color: C.muted, w: cw };
   const tg = tags.length ? await probe({ ...tagsEl, x: 0, y: 0 }) : null;
   const tagsH = tg ? L.gap.tags + (tg.bottom - tg.top) : 0;
 
@@ -259,7 +265,7 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   let chosen: { e: El; o: Box } | undefined;
   let iconW = 0;
   for (const size of L.titleSizes) {
-    const style = `display:block;font-family:'Zen Maru Kana','Zen Maru Gothic';font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
+    const style = `display:block;text-align:center;font-family:'Zen Maru Kana','Zen Maru Gothic';font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
     // 題名の幅は、左に置くアイコン(インクの高さ = 文字サイズ × 0.8)のぶん狭くなる
     iconW = i0 ? Math.round(size * L.titleIcon * (i0.right - i0.left) / (i0.bottom - i0.top)) + L.gap.icon : 0;
     const tw = fullW - iconW;
@@ -278,15 +284,17 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   }
   const { e: te, o: to } = chosen!;
   const top = mid - (to.bottom - to.top + tagsH) / 2;
-  els.push({ ...te, x: M + iconW - to.left, y: top - to.top });
-  if (tg) els.push({ ...tagsEl, x: M - tg.left, y: top + (to.bottom - to.top) + L.gap.tags - tg.top });
+  // 題名(と左のアイコン)をまとめて中央に。タグも中央
+  const groupLeft = cx - (iconW + (to.right - to.left)) / 2;
+  els.push({ ...te, x: groupLeft + iconW - to.left, y: top - to.top });
+  if (tg) els.push({ ...tagsEl, x: cx - (tg.left + tg.right) / 2, y: top + (to.bottom - to.top) + L.gap.tags - tg.top });
 
   // 作品のアイコン: 題名の 1 行目の左。インクの中心を 1 行目の行の中心に揃える
   if (icon && i0) {
     const size = parseInt(te.style!.match(/font-size:(\d+)/)![1]);
     const lh = Math.round(size * L.lineHeight);
     const cy = top - to.top + lh / 2;
-    await place({ key: 'icon', kind: 'img', src: icon, size: Math.round(100 * size * L.titleIcon / (i0.bottom - i0.top)) }, (o) => [M - o.left, cy - (o.top + o.bottom) / 2]);
+    await place({ key: 'icon', kind: 'img', src: icon, size: Math.round(100 * size * L.titleIcon / (i0.bottom - i0.top)) }, (o) => [groupLeft - o.left, cy - (o.top + o.bottom) / 2]);
   }
 
   return { html: (only?: string) => page(els, only) };
@@ -303,15 +311,15 @@ export async function layoutSite() {
     els.push({ ...e, x, y });
     return o;
   };
+  const cx = W / 2;
   const eb = await place(
     { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: 'NOTES &amp; EXPERIMENTS', color: C.muted },
-    (o) => [M - o.left, M - o.top],
+    (o) => [cx - (o.left + o.right) / 2, M - o.top],
   );
   const eyebrowBottom = M + (eb.bottom - eb.top);
 
-  // 下段: 左にドメイン、右に主な入口。ベースラインを下余白の線に
-  const dom = await place({ key: 'domain', style: `font-size:${L.logo}px;white-space:nowrap`, content: 'haru0416.dev', color: C.ink2 }, (o) => [M - o.left, B - o.bottom]);
-  await place({ key: 'nav', style: `font-size:${L.small}px;white-space:nowrap`, content: 'Blog · Works · Lab', color: C.muted }, (o) => [R - o.right, B - o.bottom]);
+  // 下段: ドメインと主な入口を 1 列に中央揃え。ベースラインを下余白の線に
+  const dom = await place({ key: 'domain', style: `font-size:${L.small}px;white-space:nowrap`, content: 'haru0416.dev &nbsp;·&nbsp; Blog · Works · Lab', color: C.muted }, (o) => [cx - (o.left + o.right) / 2, B - o.bottom]);
   const ruleY = B - (dom.bottom - dom.top) - L.gap.footer - 2;
   await place({ key: 'rule', kind: 'rule', w: R - M }, (o) => [M - o.left, ruleY - o.top]);
 
@@ -324,9 +332,12 @@ export async function layoutSite() {
   const markH = mark.bottom - mark.top, leadH = lead.bottom - lead.top;
   const top = mid - (markH + U + leadH) / 2;
   const s0 = await probe({ key: 'sprout', kind: 'img', src: sprout, size: 100, x: 0, y: 0 });
-  const sp = await place({ key: 'sprout', kind: 'img', src: sprout, size: Math.round(100 * markH / (s0.bottom - s0.top)) }, (o) => [M - o.left, top - o.top]);
-  els.push({ ...markEl, x: M + (sp.right - sp.left) + U - mark.left, y: top - mark.top });
-  els.push({ ...leadEl, x: M - lead.left, y: top + markH + U - lead.top });
+  const spEl = { key: 'sprout', kind: 'img' as const, src: sprout, size: Math.round(100 * markH / (s0.bottom - s0.top)) };
+  const sp = await probe({ ...spEl, x: 0, y: 0 });
+  const groupLeft = cx - ((sp.right - sp.left) + U + (mark.right - mark.left)) / 2;
+  els.push({ ...spEl, x: groupLeft - sp.left, y: top - sp.top });
+  els.push({ ...markEl, x: groupLeft + (sp.right - sp.left) + U - mark.left, y: top - mark.top });
+  els.push({ ...leadEl, x: cx - (lead.left + lead.right) / 2, y: top + markH + U - lead.top });
   return { html: (only?: string) => page(els, only) };
 }
 
