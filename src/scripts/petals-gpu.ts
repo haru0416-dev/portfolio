@@ -1,7 +1,3 @@
-// WebGPU 版 Petals。
-// 物理はコンピュートシェーダ、描画はインスタンス化した四角形の上で花びらの形を SDF で計算する。
-// 背景(空のグラデーションとボケ光)もシェーダで描く。
-
 import { isDark, onThemeChange } from './theme';
 
 const MAX = 8000;
@@ -23,9 +19,8 @@ struct U {
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var<storage, read_write> particles: array<Particle>;
-@group(0) @binding(2) var<storage, read> particlesRO: array<Particle>; // 頂点段は読み取り専用で参照する
+@group(0) @binding(2) var<storage, read> particlesRO: array<Particle>;
 
-// ---------- ノイズ ----------
 fn hash3(p: vec3f) -> f32 {
   var q = fract(p * vec3f(0.1031, 0.1030, 0.0973));
   q += dot(q, q.yxz + 33.33);
@@ -40,14 +35,12 @@ fn noise3(p: vec3f) -> f32 {
 }
 fn hash1(x: f32) -> f32 { return fract(sin(x * 12.9898 + 78.233) * 43758.5453); }
 
-// ---------- 物理 ----------
 @compute @workgroup_size(64)
 fn simulate(@builtin(global_invocation_id) id: vec3u) {
   let i = id.x;
   if (i >= u.count) { return; }
   var p = particles[i];
   let d = p.depth;
-  // 風の場: 2 つのノイズで渦を作る。奥ほどゆっくり
   let s = 0.0025;
   let n1 = noise3(vec3f(p.pos * s, u.time * 0.18)) - 0.5;
   let n2 = noise3(vec3f(p.pos.yx * s * 1.3 + 17.0, u.time * 0.14 + 3.0)) - 0.5;
@@ -67,7 +60,6 @@ fn simulate(@builtin(global_invocation_id) id: vec3u) {
   particles[i] = p;
 }
 
-// ---------- 背景 ----------
 struct BgOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
 @vertex fn bgVert(@builtin(vertex_index) vi: u32) -> BgOut {
   var pts = array<vec2f, 3>(vec2f(-1, -1), vec2f(3, -1), vec2f(-1, 3));
@@ -79,14 +71,11 @@ struct BgOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
 @fragment fn bgFrag(i: BgOut) -> @location(0) vec4f {
   let uv = vec2f(i.uv.x, 1.0 - i.uv.y);
   var col = mix(u.bg0.rgb, u.bg1.rgb, smoothstep(0.0, 1.0, uv.y));
-  // 左上からの柔らかい光
   let light = exp(-length((uv - vec2f(0.15, 0.05)) * vec2f(1.0, 1.4)) * 1.6);
   col = mix(col, mix(col, u.tint.rgb, 0.22), light * 0.35);
-  // 左上から差す淡い光条(ゆっくり揺れる)
   let ray = uv.x * 0.8 + uv.y * 0.6;
   let rays = pow(0.5 + 0.5 * sin(ray * 22.0 + noise3(vec3f(ray * 6.0, uv.y * 2.0, u.time * 0.1)) * 3.0 - u.time * 0.15), 3.0);
   col += (u.tint.rgb * 0.35 + 0.65) * rays * 0.045 * light * (1.0 - 0.6 * u.dark.x) * (1.0 - uv.y);
-  // ボケ光: ゆっくり漂う丸い光
   let asp = u.res.x / u.res.y;
   for (var k = 0; k < 9; k++) {
     let fk = f32(k);
@@ -96,15 +85,12 @@ struct BgOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
     let b = smoothstep(r, r * 0.55, dist) * (0.025 + 0.03 * hash1(fk + 31.0));
     col += u.tint.rgb * b * (0.6 + 0.4 * sin(u.time * 0.3 + fk));
   }
-  // 周辺減光
   let v = smoothstep(1.35, 0.35, length((uv - 0.5) * vec2f(1.15, 1.0)));
   col = mix(col * (1.0 - 0.12 * u.dark.x) , col, v);
-  // ディザで縞を消す
   col += (hash3(vec3f(i.pos.xy, u.time)) - 0.5) / 255.0;
   return vec4f(col, 1.0);
 }
 
-// ---------- 花びら ----------
 struct POut {
   @builtin(position) pos: vec4f,
   @location(0) uv: vec2f,
@@ -117,12 +103,11 @@ struct POut {
   let p = particlesRO[ii];
   var corners = array<vec2f, 6>(vec2f(-1,-1), vec2f(1,-1), vec2f(-1,1), vec2f(-1,1), vec2f(1,-1), vec2f(1,1));
   let c = corners[vi];
-  // 縦軸回り(横幅が縮む)と横軸回り(縦幅が縮む)の 2 軸で裏返る
   let face = cos(p.tilt);
   let face2 = cos(p.tilt * 0.63 + p.phase);
   let sx = 0.22 + 0.78 * abs(face);
   let sy = 0.55 + 0.45 * abs(face2);
-  let margin = 1.35; // ボケと影がはみ出さないよう四角形に余白を取る
+  let margin = 1.35;
   let half = p.size * 1.25 * margin;
   let local = vec2f(c.x * sx, c.y * sy) * half;
   let cs = cos(p.rot); let sn = sin(p.rot);
@@ -133,16 +118,15 @@ struct POut {
   o.uv = c * margin;
   o.depth = p.depth;
   o.color = p.color;
-  o.face = face * face2; // 表向き +1 / 裏向き -1
+  o.face = face * face2;
   o.px = half * sx; // 1 uv 単位あたりの画素数(横)
   return o;
 }
-// 幅プロファイルで作る倒卵形の花びら。肩が上寄りで、付け根がすっと細くなり、先端に浅い切れ込み
 fn petalWidth(y: f32) -> f32 {
-  let r = select(1.2, 0.8, y > 0.2); // 肩(y=0.2)より上は短く、下は長く
+  let r = select(1.2, 0.8, y > 0.2);
   let k = max(0.0, 1.0 - pow((y - 0.2) / r, 2.0));
   let w = 0.66 * pow(k, 0.6);
-  return w * pow(smoothstep(-1.0, -0.45, y), 0.8); // 付け根を滑らかに尖らせる(柄を作らない)
+  return w * pow(smoothstep(-1.0, -0.45, y), 0.8);
 }
 fn petalSdf(uv: vec2f) -> f32 {
   // 幅が 0 の区間で中心線が残らないよう、縦の境界も距離に入れる
@@ -158,36 +142,28 @@ fn palette(k: f32) -> vec3f {
 }
 @fragment fn petalFrag(i: POut) -> @location(0) vec4f {
   let sdf = petalSdf(i.uv);
-  // 奥ほどぼける
-  let blur = mix(0.22, 0.0, smoothstep(0.35, 0.9, i.depth)) + 0.05 * smoothstep(0.93, 1.0, i.depth); // 遠景と近景のボケ
+  let blur = mix(0.22, 0.0, smoothstep(0.35, 0.9, i.depth)) + 0.05 * smoothstep(0.93, 1.0, i.depth);
   let aa = fwidth(sdf) * 1.2 + blur;
   var a = 1.0 - smoothstep(-aa * 0.5, aa * 0.5, sdf);
 
-  // 色: 先端は白に近く、付け根に向かって桃色が濃くなる(桜の「爪」)
   var base = palette(i.color);
-  base = mix(base, vec3f(1.0), 0.08 * sin(i.color * 7.0 + i.depth * 31.0)); // 個体差
+  base = mix(base, vec3f(1.0), 0.08 * sin(i.color * 7.0 + i.depth * 31.0));
   base = mix(mix(base, u.tint.rgb, 0.26) * 0.97, mix(base, u.tint.rgb, 0.35), u.dark.x);
   let tip = mix(base, vec3f(1.0, 0.985, 0.99), mix(0.40, 0.30, u.dark.x));
   let root = mix(base, u.tint.rgb, 0.65);
   let ty = smoothstep(-1.0, 0.7, i.uv.y);
   var col = mix(root, tip, ty);
 
-  // 曲面: 横方向にゆるく丸まっているとして、傾きで明暗が流れる
   let curl = 0.92 + 0.10 * cos(i.uv.x * 2.2 + i.face * 1.6);
   col *= curl;
-  // 表と裏: 表は少し明るく、裏は透けて白っぽく
   let front = smoothstep(-0.2, 0.6, i.face);
   col = mix(mix(col, vec3f(1.0, 0.95, 0.96), 0.22), col * 1.03, front);
-  // 縁は薄く透ける(厚みが無いので)
   let edge = smoothstep(-0.02, -0.22, sdf);
   a *= mix(0.78, 1.0, edge);
-  // 葉脈: 中央 1 本と、付け根から扇状に広がる細い筋
   let vein = exp(-i.uv.x * i.uv.x * 60.0) * (1.0 - abs(i.uv.y)) * 0.10
            + exp(-pow(abs(i.uv.x) - 0.38 * (i.uv.y + 1.0), 2.0) * 90.0) * smoothstep(-1.0, 0.0, i.uv.y) * (1.0 - ty) * 0.06;
   col = mix(col, vec3f(1.0), vein * (1.0 - 0.5 * u.dark.x));
-  // 裏返る瞬間は細く薄い
   a *= mix(0.55, 1.0, abs(i.face));
-  // 奥行きで薄く
   a *= mix(0.6, 1.0, i.depth);
 
   let halo = exp(-max(sdf, 0.0) * 5.0) * 0.08 * i.depth * u.dark.x;
@@ -198,8 +174,7 @@ fn palette(k: f32) -> vec3f {
 `;
 
 function cssColor(name: string): [number, number, number] {
-  // CSS 変数(oklch / light-dark など)を要素に当てて算出値を得る。算出値は oklch(...) 文字列で返るので、
-  // Canvas 2D に塗って sRGB の数値に落とす
+  // CSS の算出色は oklch などでも返るため、Canvas 2D 経由で sRGB の数値に変換する。
   const el = document.createElement('span');
   el.style.color = `var(${name})`;
   document.body.append(el);
@@ -212,12 +187,10 @@ function cssColor(name: string): [number, number, number] {
   return [r / 255, g / 255, b / 255];
 }
 
-/** デバイスに対してパイプラインとバッファを組み立てる。Canvas でもオフスクリーンでも同じ */
 function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUTextureFormat, dpr: number) {
   const uniform = device.createBuffer({ size: UNIFORM_BYTES, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const storage = device.createBuffer({ size: MAX * FLOATS * 4, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
-  // 計算用(読み書き)と描画用(読み取り専用)でバインドグループを分ける。
-  // 同じバッファを 1 つのパス内で両方の用途に束ねると検証エラーになる。
+  // 同一パスで storage と read-only-storage を併用できないため、用途別に束ねる。
   const cLayout = device.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } },
     { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } },
@@ -253,7 +226,7 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
     uf.set([...bg0, 1], 8); uf.set([...bg1, 1], 12); uf.set([...tint, 1], 16); uf.set([dark, 0, 0, 0], 20);
   };
 
-  /** 画面サイズを決めて花びらを撒く。奥から手前の順に並べる(半透明の重なりが自然になる) */
+  // 半透明の合成順を保つため、奥から手前に並べる。
   const seed = (W: number, H: number, sizeMul = 1) => {
     st.W = W; st.H = H;
     st.count = Math.min(MAX, Math.round((W * H) / (1000 * dpr * dpr * sizeMul * sizeMul)));
@@ -271,7 +244,7 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
     device.queue.writeBuffer(storage, 0, data);
   };
 
-  /** 1 ステップ進めて view に描く。view が無ければ物理だけ進める。コマンドはまだ送信しない */
+  /** dt は秒。 */
   const encodeFrame = (dt: number, view?: GPUTextureView) => {
     st.t += dt;
     uf[0] = st.W; uf[1] = st.H; uf[2] = st.t; uf[3] = dt;
@@ -350,19 +323,11 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
   });
   const ro = new ResizeObserver(resize); ro.observe(canvas);
   const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }); io.observe(canvas);
-  const onVis = start;
   const onMotion = () => { start(); if (reduce.matches) render(0); };
-  document.addEventListener('visibilitychange', onVis);
+  document.addEventListener('visibilitychange', start);
   reduce.addEventListener('change', onMotion);
   resize();
   start();
-  const control = {
-    pause() { paused = true; cancelAnimationFrame(raf); },
-    resume() { paused = false; start(); },
-    dispose() { cancelAnimationFrame(raf); offTheme(); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', onVis); reduce.removeEventListener('change', onMotion); device.destroy(); },
-  };
-
-  // ?debug のときだけ: 別デバイスで同じ描画をオフスクリーンに行い、画素を PNG で返す(GPU のない検証環境用)
   if (location.search.includes('debug')) {
     (window as any).__petalsCapture = async (steps = 240, sizeMul = 1): Promise<string> => {
       const g2 = await makeDevice();
@@ -389,5 +354,10 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
       return c.toDataURL('image/png');
     };
   }
-  return { count: r.st.count, ...control };
+  return {
+    count: r.st.count,
+    pause() { paused = true; cancelAnimationFrame(raf); },
+    resume() { paused = false; start(); },
+    dispose() { cancelAnimationFrame(raf); offTheme(); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', start); reduce.removeEventListener('change', onMotion); device.destroy(); },
+  };
 }

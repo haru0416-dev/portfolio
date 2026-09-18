@@ -1,4 +1,5 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 const blog = defineCollection({
@@ -14,7 +15,6 @@ const blog = defineCollection({
 });
 
 const works = defineCollection({
-  // 1 作品 1 ファイル。frontmatter が一覧に出す情報、本文が作品ページ(/works/<id>/)の説明
   loader: glob({ pattern: '*.md', base: './src/content/works' }),
   schema: z.object({
     name: z.string(),

@@ -5,17 +5,14 @@ import Footer from '../components/Footer.astro';
 import { SITE } from '../site';
 import { ClientRouter } from 'astro:transitions';
 import { componentDataByCssVariable } from 'virtual:astro:assets/fonts/internal';
-// 先に必要になるラテン文字のフォントだけ preload する(見出しの Fredoka と本文の Nunito)
 const preloads = ['--font-fredoka', '--font-nunito'].flatMap((v) => componentDataByCssVariable.get(v)?.preloads ?? []);
 
 interface Props {
   title?: string;
   description?: string;
   wide?: boolean;
-  /** 共有用画像。省略するとサイト共通の /og.png */
   image?: { src: string; alt: string };
   type?: 'website' | 'article';
-  /** 和文の見出し(.display-jp)が無いページは false。見出し用の書体を先読みしない */
   jpHeadings?: boolean;
 }
 const { title, description = SITE.description, wide = false, image, type = 'website', jpHeadings = true } = Astro.props;
@@ -40,7 +37,7 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
     <meta name="theme-color" content="#f8f5fd" media="(prefers-color-scheme: light)" data-light="#f8f5fd" data-dark="#15121c" />
     <meta name="theme-color" content="#15121c" media="(prefers-color-scheme: dark)" data-light="#f8f5fd" data-dark="#15121c" />
     <script is:inline>
-      // 保存したテーマがあれば color-scheme を固定、無ければ OS に追従。遷移で <html> が差し替わるたびに再適用
+      // 初回描画前とページ遷移後にテーマを適用する。
       (() => {
         const apply = () => {
           const t = localStorage.getItem('theme');
@@ -48,7 +45,6 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
           h.classList.toggle('dark', t === 'dark');
           h.classList.toggle('light', t === 'light');
           document.querySelector('meta[name="color-scheme"]').content = t ?? 'light dark';
-          // テーマを固定したときは OS の設定によらずその色、固定していなければ OS に合わせた色
           document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
             m.content = t === 'light' || t === 'dark' ? m.dataset[t] : m.media.includes('dark') ? m.dataset.dark : m.dataset.light;
           });
@@ -80,8 +76,6 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">
-    <!-- 背景(装飾。本文の裏、CSS のみ)。ダークは深海(光の帯・泡・マリンスノー)、ライトは水面(波紋・日差しのきらめき)。
-         出ない側は色を透明にして隠す -->
     <div class="sea" aria-hidden="true">
       <i class="rays"></i><i class="rays rays-2"></i>
       <canvas class="deep"></canvas>
@@ -94,7 +88,6 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
       import { startDeep } from '../scripts/deep';
       import type { BackgroundControl } from '../scripts/background';
       installSmoothScroll();
-      // 背景(ライト: 水面 / ダーク: 深海)。ページ遷移で canvas が差し替わるので、そのたびに付け直す
       let bg: BackgroundControl[] = [];
       const boot = () => {
         bg.forEach((b) => b.dispose());
@@ -106,7 +99,6 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
       document.addEventListener('astro:after-swap', boot);
     </script>
     <Header />
-    <!-- 本文だけのページの幅は、広いページの中身の幅(960px)を黄金比で割ったもの(960 ÷ φ ≒ 592px。左右の余白を足して 41rem) -->
     <main id="content" tabindex="-1" transition:name="main" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-[64rem]' : 'max-w-[41rem]']}>
       <slot />
     </main>

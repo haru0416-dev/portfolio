@@ -1,16 +1,9 @@
-// 背景アニメーションの骨組み。テーマに応じて起動・停止し、リサイズ・タブの非表示・reduced-motion を面倒みる。
-// 描画の中身(scene)だけを各ファイルが書く。
-//
-// 大きさは window の resize ではなく canvas 自身の大きさで決める。スマホではスクロール中にアドレスバーが縮んで
-// innerHeight が変わり、そのたびに作り直すと波紋や粒が消えて一瞬止まって見えていた。背景は CSS で
-// 大きいほうの画面の高さ(100lvh)に固定してあり、アドレスバーの出し入れでは canvas の大きさが変わらない。
+// アドレスバーの伸縮で背景を再初期化しないよう、window ではなく 100lvh の canvas 自体を測る。
 import { isDark, onThemeChange } from './theme';
 
 export type Scene = {
-  /** canvas の寸法が決まったとき(初回と、画面の回転などで大きさが変わったとき)に呼ばれる。
-      2 回目以降は今の状態をできるだけ引き継ぐこと(作り直すと動きが一瞬止まって見える) */
   resize(w: number, h: number): void;
-  /** 1 コマ分。dt は秒 */
+  /** dt は秒。 */
   step(dt: number): void;
   render(): void;
 };
@@ -28,7 +21,7 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     const w = Math.round(canvas.clientWidth), h = Math.round(canvas.clientHeight);
     if (!w || !h || (w === W && h === H)) return;
     W = w; H = h;
-    canvas.width = W * dpr; canvas.height = H * dpr; // ここで中身が消えるので、動いていればすぐ描き直す
+    canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     scene.resize(W, H);
     if (running) scene.render();
@@ -52,13 +45,11 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
       start();
     }
   };
-  const onVis = sync;
   const offTheme = onThemeChange(sync);
-  // ResizeObserver は描画の直前に 1 フレーム 1 回だけ呼ばれるので、待たずに合わせる(待つと引き伸ばされた絵が見える)
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
-  document.addEventListener('visibilitychange', onVis);
+  document.addEventListener('visibilitychange', sync);
   reduce.addEventListener('change', sync);
   resize();
-  return { dispose() { stop(); offTheme(); observer.disconnect(); document.removeEventListener('visibilitychange', onVis); reduce.removeEventListener('change', sync); } };
+  return { dispose() { stop(); offTheme(); observer.disconnect(); document.removeEventListener('visibilitychange', sync); reduce.removeEventListener('change', sync); } };
 }

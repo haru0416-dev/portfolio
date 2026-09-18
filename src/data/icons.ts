@@ -1,5 +1,3 @@
-// lucide のうちサイトで使うものだけを名前で引けるようにする。
-// 作品にアイコンを足すときは https://lucide.dev/icons で名前を探し、ここに 1 行足す。
 import Sprout from '@lucide/astro/icons/sprout';
 import MessageCircle from '@lucide/astro/icons/message-circle';
 import Scale from '@lucide/astro/icons/scale';

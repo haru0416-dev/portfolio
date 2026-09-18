@@ -1,30 +1,26 @@
-// 桜の花びらが舞う。
-// 描画効率のため、花びらは色×大きさ×奥行きごとに一度だけ描いてスプライトにし、毎フレームは転写だけ行う。
-
 type Petal = {
   x: number; y: number;
   sprite: HTMLCanvasElement; half: number;
-  rot: number; spin: number;          // 画面内の回転
-  tilt: number; tiltSpeed: number;    // 軸回りの回転(横幅の伸縮で表す)
+  rot: number; spin: number;
+  tilt: number; tiltSpeed: number;
   vy: number; sway: number; swaySpeed: number; phase: number;
   depth: number;
 };
 
 const COLORS = ['#f9c9d8', '#f5b3c8', '#fbd9e4', '#f4a2bc', '#fde9f0'];
 const LAYERS = [
-  { depth: 0.55, blur: 1.6, alpha: 0.55 }, // 奥: 小さく、ぼけて、薄い
+  { depth: 0.55, blur: 1.6, alpha: 0.55 },
   { depth: 0.8, blur: 0.6, alpha: 0.8 },
-  { depth: 1.0, blur: 0, alpha: 0.95 },    // 手前
+  { depth: 1.0, blur: 0, alpha: 0.95 },
 ];
 
-/** 桜の花びら(先端に切れ込み)を一枚描く。基準サイズは半径 r */
 function drawPetalPath(ctx: CanvasRenderingContext2D, r: number) {
   ctx.beginPath();
-  ctx.moveTo(0, r);                                   // 付け根
-  ctx.bezierCurveTo(r * 1.1, r * 0.6, r * 1.05, -r * 0.55, r * 0.42, -r * 0.92); // 右辺
-  ctx.quadraticCurveTo(r * 0.2, -r * 1.02, 0, -r * 0.62);                         // 切れ込み
+  ctx.moveTo(0, r);
+  ctx.bezierCurveTo(r * 1.1, r * 0.6, r * 1.05, -r * 0.55, r * 0.42, -r * 0.92);
+  ctx.quadraticCurveTo(r * 0.2, -r * 1.02, 0, -r * 0.62);
   ctx.quadraticCurveTo(-r * 0.2, -r * 1.02, -r * 0.42, -r * 0.92);
-  ctx.bezierCurveTo(-r * 1.05, -r * 0.55, -r * 1.1, r * 0.6, 0, r);              // 左辺
+  ctx.bezierCurveTo(-r * 1.05, -r * 0.55, -r * 1.1, r * 0.6, 0, r);
   ctx.closePath();
 }
 
@@ -37,21 +33,19 @@ function makeSprite(color: string, r: number, blur: number, alpha: number, dpr: 
   ctx.setTransform(dpr, 0, 0, dpr, size / 2 / dpr, size / 2 / dpr);
   if (blur) ctx.filter = `blur(${blur}px)`;
   ctx.globalAlpha = alpha;
-  // 付け根が濃く、先端が淡いグラデーション
   const g = ctx.createLinearGradient(0, r, 0, -r);
   g.addColorStop(0, shade(color, -0.12));
   g.addColorStop(1, shade(color, 0.08));
   ctx.fillStyle = g;
   drawPetalPath(ctx, r);
   ctx.fill();
-  // 中央の淡い筋
   ctx.strokeStyle = 'rgba(255,255,255,0.35)';
   ctx.lineWidth = r * 0.08;
   ctx.beginPath(); ctx.moveTo(0, r * 0.85); ctx.quadraticCurveTo(r * 0.05, 0, 0, -r * 0.5); ctx.stroke();
   return c;
 }
 
-/** #rrggbb を明るく(+)/暗く(-)する */
+/** hex は #rrggbb のみ。 */
 function shade(hex: string, k: number) {
   const n = parseInt(hex.slice(1), 16);
   const f = (v: number) => Math.max(0, Math.min(255, Math.round(k > 0 ? v + (255 - v) * k : v * (1 + k))));
@@ -89,7 +83,6 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
     };
   };
 
-  /** ゆっくり変わる風。二つの周期を重ねて単調にならないようにする */
   const wind = (time: number) => 10 * Math.sin(time * 0.23) + 6 * Math.sin(time * 0.61 + 1.3);
 
   const step = (dt: number) => {
@@ -103,7 +96,6 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
       p.rot += p.spin * dt;
       p.tilt += p.tiltSpeed * dt;
       if (p.y > H + p.half * 2 || p.x < -p.half * 4 || p.x > W + p.half * 4) Object.assign(p, make(true));
-      // 回転と、軸回りの傾きによる横幅の伸縮を 1 回の setTransform で済ませる
       const sx = 0.35 + 0.65 * Math.abs(Math.cos(p.tilt));
       const c = Math.cos(p.rot), s = Math.sin(p.rot);
       ctx.setTransform(c * sx * dpr, s * sx * dpr, -s * dpr, c * dpr, p.x * dpr, p.y * dpr);
@@ -126,9 +118,8 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
     const oldW = W, oldH = H;
     W = r.width; H = r.height;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    const n = Math.min(160, Math.round((W * H) / 5500)); // 面積に応じた枚数
+    const n = Math.min(160, Math.round((W * H) / 5500));
     if (oldW && petals.length) {
-      // 位置を比例で保ち、枚数だけ合わせる
       for (const p of petals) { p.x *= W / oldW; p.y *= H / oldH; }
       while (petals.length < n) petals.push(make(false));
       petals.length = n;
@@ -141,15 +132,14 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
 
   const ro = new ResizeObserver(resize); ro.observe(canvas);
   const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }); io.observe(canvas);
-  const onVis = start;
   const onMotion = () => { start(); if (reduce.matches) step(0); };
-  document.addEventListener('visibilitychange', onVis);
+  document.addEventListener('visibilitychange', start);
   reduce.addEventListener('change', onMotion);
   resize();
   start();
   return {
     pause() { paused = true; cancelAnimationFrame(raf); },
     resume() { paused = false; start(); },
-    dispose() { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', onVis); reduce.removeEventListener('change', onMotion); },
+    dispose() { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', start); reduce.removeEventListener('change', onMotion); },
   };
 }

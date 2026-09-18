@@ -79,7 +79,6 @@ const path = Astro.url.pathname;
     cleanup?.();
     cleanup = undefined;
   });
-  // ページ遷移のたびに新しい選択欄へ付け直す
   document.addEventListener('astro:page-load', () => {
     cleanup?.();
     cleanup = undefined;
@@ -111,7 +110,7 @@ const path = Astro.url.pathname;
       h.classList.toggle('dark', next === 'dark');
       h.classList.toggle('light', next === 'light');
       document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next === 'system' ? 'light dark' : next);
-      // アドレスバーの色も合わせる(Base.astro の初期化と同じ規則)
+      // Base.astro の初期化と同じ色選択を維持する。
       document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
         m.content = next === 'system' ? (m.media.includes('dark') ? m.dataset.dark : m.dataset.light) ?? m.content : m.dataset[next] ?? m.content;
       });

@@ -1,16 +1,15 @@
-// 今の実効テーマ。color-scheme の算出値は「light dark」のまま返ることがあるので、
-// クラス指定があればそれを、無ければ OS の設定を見る
-const mq = matchMedia('(prefers-color-scheme: dark)');
+// color-scheme の算出値は「light dark」の場合があるため、クラス指定を優先し、なければ OS 設定を見る。
+const darkScheme = matchMedia('(prefers-color-scheme: dark)');
 export function isDark(): boolean {
-  const c = document.documentElement.classList;
-  if (c.contains('dark')) return true;
-  if (c.contains('light')) return false;
-  return mq.matches;
+  const classes = document.documentElement.classList;
+  if (classes.contains('dark')) return true;
+  if (classes.contains('light')) return false;
+  return darkScheme.matches;
 }
-/** テーマが変わる可能性のある事象(クラスの変更、OS の設定変更)で fn を呼ぶ。解除関数を返す */
+/** 実効テーマが同じでも fn は呼ばれる。 */
 export function onThemeChange(fn: () => void): () => void {
-  const mo = new MutationObserver(fn);
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  mq.addEventListener('change', fn);
-  return () => { mo.disconnect(); mq.removeEventListener('change', fn); };
+  const observer = new MutationObserver(fn);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  darkScheme.addEventListener('change', fn);
+  return () => { observer.disconnect(); darkScheme.removeEventListener('change', fn); };
 }

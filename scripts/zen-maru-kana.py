@@ -2,12 +2,7 @@
 # requires-python = ">=3.12"
 # dependencies = ["fonttools", "brotli"]
 # ///
-"""見出し用に、かなと約物だけを詰めた Zen Maru Gothic Bold を作る。
-
-Zen Maru Gothic には字間を詰める OpenType 機能(palt)が無く、CSS で palt を指定しても
-全角幅のまま(「ト」は字形の左に 378/1000 の空きがある)。そこで、かなと約物のグリフだけを
-取り出し、かなは左右の空きを最大 SIDE まで削り、約物は半角にした幅を焼き込んだフォントを作る。
-漢字は元のまま(CSS の unicode-range で、この範囲だけこのフォントを使う)。
+"""palt 非対応の Zen Maru Gothic のかな・約物を詰めた派生フォントを作る。
 
     uv run scripts/zen-maru-kana.py
 
@@ -29,22 +24,19 @@ LICENSE = "https://github.com/google/fonts/raw/main/ofl/zenmarugothic/OFL.txt"
 OUT = Path(__file__).resolve().parent.parent / "public" / "fonts"
 FAMILY = "Zen Maru Kana"
 
-# かなの字形の左右に残す空き(1000 分率)。元の空きがこれより狭ければ元のまま
+# 1000 分率
 SIDE = 60
-# 約物は一般的な palt と同じく半角(500)にし、字形の置き場所だけ変える
 HALF = 500
-OPENING = {0x3008, 0x300A, 0x300C, 0x300E, 0x3010, 0x3014, 0xFF08}  # 開き括弧: 右半分に字形がある
-CENTERED = {0x30FB, 0xFF1A, 0xFF1B}  # 中黒・コロン・セミコロン: 中央に置く
-CLOSING = {0x3001, 0x3002, 0x3009, 0x300B, 0x300D, 0x300F, 0x3011, 0x3015, 0xFF09, 0xFF0C, 0xFF0E}  # 閉じ括弧・句読点: 左半分
+OPENING = {0x3008, 0x300A, 0x300C, 0x300E, 0x3010, 0x3014, 0xFF08}
+CENTERED = {0x30FB, 0xFF1A, 0xFF1B}
+CLOSING = {0x3001, 0x3002, 0x3009, 0x300B, 0x300D, 0x300F, 0x3011, 0x3015, 0xFF09, 0xFF0C, 0xFF0E}
 
-# ひらがな・カタカナ(長音符 ー と濁点単体は除く)と、和文の約物
 CODEPOINTS = [
     *range(0x3041, 0x3097), 0x309D, 0x309E,
     *range(0x30A1, 0x30FB), 0x30FD, 0x30FE,
     0x3001, 0x3002, *range(0x3008, 0x3012), 0x3014, 0x3015, 0x30FB,
     0xFF01, 0xFF08, 0xFF09, 0xFF0C, 0xFF0E, 0xFF1A, 0xFF1B, 0xFF1F,
 ]
-# css の unicode-range に書く値
 UNICODE_RANGE = "U+3001-3002, U+3008-3011, U+3014-3015, U+3041-3096, U+309D-309E, U+30A1-30FB, U+30FD-30FE, U+FF01, U+FF08-FF09, U+FF0C, U+FF0E, U+FF1A-FF1B, U+FF1F"
 
 
@@ -52,7 +44,7 @@ def main() -> None:
     font = TTFont(io.BytesIO(urllib.request.urlopen(SRC).read()))
 
     opts = subset.Options()
-    opts.layout_features = []  # kern なども要らない(幅を直接変える)
+    opts.layout_features = []
     opts.hinting = False
     opts.name_IDs = ["*"]
     sub = subset.Subsetter(opts)

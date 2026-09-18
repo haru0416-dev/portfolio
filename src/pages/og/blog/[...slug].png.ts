@@ -1,4 +1,3 @@
-// 記事ごとの共有用画像。ビルド時に /og/blog/<slug>.png として書き出す
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { postEyebrow, renderCardImage } from '../../../og';

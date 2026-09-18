@@ -1,5 +1,4 @@
 ---
-// 作品ページ。src/content/works/<id>.md の frontmatter から見出し・リンク・技術を出し、本文があれば続けて載せる
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Tile from '../../components/Tile.astro';
@@ -20,7 +19,6 @@ const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archiv
 const showRepo = d.repo && d.status !== 'soon';
 
 const url = new URL(`/works/${work.id}/`, Astro.site).href;
-// 検索エンジン向けの作品情報(schema.org)
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareSourceCode',
@@ -44,7 +42,7 @@ const jsonLd = {
     <header class="mb-12">
       <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
       <div class="flex items-center gap-4">
-        <Tile icon={d.icon as any} size={48} class="hue-0" />
+        <Tile icon={d.icon} size={48} class="hue-0" />
         <h1 class="display-jp text-2xl sm:text-3xl min-w-0">{d.name}</h1>
       </div>
       <p class="mt-6 text-base text-ink-2">{d.summary}</p>

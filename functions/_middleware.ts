@@ -1,13 +1,3 @@
-// curl / wget / HTTPie で来たときだけ、HTML の代わりに名刺のような 1 枚のテキストを返す。
-// ブラウザには影響しない。curl でも ?html を付ければ HTML が取れる。
-// Cloudflare Pages Functions として dist と一緒に配信される。
-//
-// 見つけた人向けのおまけ(つながっている):
-//   dig TXT haru0416.dev   → curl -I を勧める(DNS の TXT レコード。ダッシュボードで設定)
-//   curl -I haru0416.dev   → X-Sprout ヘッダーが /coffee を勧める(全応答に付ける)
-//   curl .../coffee        → 418 I'm a teapot(RFC 2324)
-//     本来は BREW メソッドだが、Cloudflare は未登録のメソッドを Functions に届く前に 501 で返すので、パスで受ける
-
 type Meta = {
   name: string; tagline: string; github: string;
   posts: { title: string; date: string; path: string }[];
@@ -19,7 +9,6 @@ const CLI = /^(curl|wget|httpie|xh|aria2|fetch)\b/i;
 
 const SPROUT = 'thanks for peeking. brew something: curl https://haru0416.dev/coffee';
 
-// コーヒーを頼まれたときの返事
 const TEAPOT = `
        ;,'
      _o_    ;:;'
@@ -33,7 +22,6 @@ const TEAPOT = `
 コーヒーは淹れられません。ここは静的サイトで、しかもティーポットです。
 (RFC 2324 / RFC 7168)
 `;
-// 普段は使わないメソッドへの返事
 const REFUSE: Record<string, string> = {
   DELETE: '消せません。芽はまだ育っている途中です。',
   PUT: '上書きできません。直してほしいところは https://haru0416.dev/works/#feedback へ。',
@@ -58,6 +46,7 @@ const respond: PagesFunction = async (ctx) => {
   if (req.method in REFUSE) return text(`${REFUSE[req.method]}\n`, 405, { Allow: 'GET, HEAD' });
 
   const url = new URL(req.url);
+  // Cloudflare は BREW を Functions 到達前に 501 で拒否するため、パスで受ける。
   if (url.pathname === '/coffee' || url.pathname === '/coffee/') return text(TEAPOT, 418);
   const ua = req.headers.get('user-agent') ?? '';
   const accept = req.headers.get('accept') ?? '';
@@ -72,7 +61,7 @@ const respond: PagesFunction = async (ctx) => {
   });
 };
 
-/** 端末の幅(表示上の列数)。全角は 2、半角は 1 として数える */
+/** 端末の表示列数（全角 2、半角 1）。 */
 const width = (s: string) => [...s].reduce((n, c) => n + (/[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/.test(c) ? 2 : 1), 0);
 const pad = (s: string, w: number) => s + ' '.repeat(Math.max(0, w - width(s)));
 

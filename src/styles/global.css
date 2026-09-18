@@ -1,14 +1,10 @@
 @import "tailwindcss";
 
-/* =====================================================================
-   1. トークン
-   配色は OKLCH。色相を 3 つ決め、明度と彩度の段階で全色を作る。
-   light-dark() で両テーマを 1 か所に書き、.light / .dark は color-scheme を固定するだけ。
-   ===================================================================== */
+/* トークン */
 :root {
-  --h: 300;        /* 地と文字: 薄紫 */
-  --h-accent: 356; /* 差し色: 桃 */
-  --h-mint: 175;   /* 副の差し色: 薄荷 */
+  --h: 300;
+  --h-accent: 356;
+  --h-mint: 175;
   color-scheme: light dark;
 
   --paper:       light-dark(oklch(97.5% 0.010 var(--h)),        oklch(19% 0.020 var(--h)));
@@ -18,29 +14,18 @@
   --muted:       light-dark(oklch(50%   0.035 var(--h)),        oklch(66% 0.030 var(--h)));
   --line:        light-dark(oklch(91%   0.030 var(--h)),        oklch(32% 0.030 var(--h)));
   --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
-  --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent))); /* 小さな文字用 */
-  --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent))); /* ボタンの地 */
+  --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
+  --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
   --accent-soft: light-dark(oklch(92%   0.060 var(--h-accent)), oklch(36% 0.070 var(--h-accent)));
   --on-accent:   light-dark(white, var(--paper));
-  /* ガラス素材 */
   --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
-  --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));   /* 縁と上辺の光 */
-  --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%)); /* 縁の影 */
+  --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));
+  --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%));
   --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
 }
 :root.light { color-scheme: light; }
 :root.dark  { color-scheme: dark; }
 
-/* 寸法の規則(全ページ共通。scripts ではなく、この規則に合わない値を書かないことで守る)
-   - 単位 u = 8px。行送りは u の倍数(縦のリズム)。余白・間隔・角丸は 4px(u/2)の倍数
-   - 文字サイズは 16px × 1.25^n。text-sm だけは半段(16 ÷ √1.25 = 14.31px)
-   - カプセル(.pill / .chip / .tag)は高さを u の倍数(40 / 32 / 24)にし、左右の余白 = 高さの半分(= 角の半径)
-   - 入れ子の角丸は同心(内側 = 外側 − 余白)。アイコンの台(.tile)は角丸 = 一辺の 1/3 なので、一辺は 12 の倍数
-   - 行内の要素(コード・リンク)の余白は 4px。行送りは変えない
-   - 比は黄金比 φ と三分割を使い、寸法は u に丸める。
-     本文だけのページの幅 = 広いページの中身の幅 ÷ φ(960 → 592)。トップの 2 列は φ : 1(552 : 344)。
-     トップの顔は最初の画面の 61.8% で終わり(下の余白 64px を優先)、横は左 2/3 に言葉、右 1/3 の中央に芽の円。
-     Lab の canvas は黄金長方形(.golden) */
 @theme {
   /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
   --text-xs: 0.8rem;       --text-xs--line-height: 1rem;
@@ -54,7 +39,6 @@
   --text-5xl: 3.815rem;    --text-5xl--line-height: 4rem;
   --text-6xl: 4.768rem;    --text-6xl--line-height: 5rem;
   --text-7xl: 5.96rem;     --text-7xl--line-height: 6rem;
-  /* 角丸は 8 / 16 / 24 / 40。入れ子は「内側 = 外側 − 余白」で同心にする */
   --radius-lg: 0.5rem; --radius-2xl: 1rem; --radius-3xl: 1.5rem; --radius-4xl: 2.5rem;
 }
 
@@ -70,13 +54,11 @@
   --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --font-display: var(--font-fredoka);  /* 見出し(ラテン) */
-  --font-sans: var(--font-nunito);      /* 本文。日本語は OS のフォントに任せる */
+  --font-display: var(--font-fredoka);
+  --font-sans: var(--font-nunito);
 }
 
-/* =====================================================================
-   2. 土台
-   ===================================================================== */
+/* ベース */
 html { background: var(--paper); }
 body {
   color: var(--ink);
@@ -85,36 +67,29 @@ body {
   font-feature-settings: "palt", "ss01", "cv11";
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
-  /* 日本語の折り返し。非対応ブラウザでは既定の挙動に戻るだけ */
-  line-break: strict;              /* 禁則を厳しめに */
-  overflow-wrap: anywhere;         /* 長い URL や英単語ではみ出さない */
-  text-autospace: normal;          /* 和文と英数の間に四分アキ */
-  text-spacing-trim: space-first;  /* 連続する約物のアキを詰める */
-  hanging-punctuation: allow-end;  /* 行末の句読点をぶら下げる */
+  line-break: strict;
+  overflow-wrap: anywhere;
+  text-autospace: normal;
+  text-spacing-trim: space-first;
+  hanging-punctuation: allow-end;
 }
 ::selection { background: var(--accent-soft); }
 
-/* 見出しは文節で折り返して行長を揃え、段落は泣き別れを避ける。
-   本文は文節で折り返すと行末が大きく空く(記事で右端の空きの中央値がスマホ 49px、通常の改行なら 5px)ので、見出しとラベル類だけにする */
+/* 文節単位の改行は本文の行末を空けすぎるため、見出しとラベルに限定する。 */
 :is(h1, h2, h3, .display, .display-jp) { text-wrap: balance; }
 :is(h1, h2, h3, .display, .display-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; }
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
-time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数値は途中で切らない */
+time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
 
-/* キーボード操作時のフォーカス輪郭 */
 :where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: inherit; }
 
-/* 支援技術にだけ読ませる */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
 .skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-/* =====================================================================
-   3. 書体と部品
-   ===================================================================== */
+/* コンポーネント */
 .display { font-family: var(--font-display); font-weight: 600; }
-/* 和文見出しの書体。Zen Maru Gothic は palt(かなと約物を詰める機能)を持たず全角幅のままになるので、
-   かなと約物だけ詰めたもの(scripts/zen-maru-kana.py で生成)を先に当てる。漢字は元の Zen Maru Gothic */
+/* palt 非対応のため、かな・約物を詰めた生成フォントを優先する。 */
 @font-face {
   font-family: "Zen Maru Kana"; font-weight: 700; font-display: swap;
   src: url("/fonts/zen-maru-kana-700.woff2") format("woff2");
@@ -122,7 +97,6 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 }
 .display-jp { font-family: "Zen Maru Kana", var(--font-zen-maru); font-weight: 700; }
 
-/* セクション見出し: 小さなラベル + 点線(.eyebrow-plain は点線なし) */
 .eyebrow {
   display: flex; align-items: center; gap: 1rem; height: 1.5rem;
   font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
@@ -131,9 +105,6 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 .eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
 .eyebrow-plain::after { display: none; }
 
-/* ガラス素材(Liquid Glass の考え方を控えめに):
-   背後をぼかして彩度を上げ、縁に光のリング(左上が明るく右下が暗い)と上辺のハイライトを置く。
-   本物の屈折は SVG の変位が要るので、縁の光で「レンズの厚み」だけを暗示する */
 .glass {
   isolation: isolate;
   background: var(--glass-bg);
@@ -141,8 +112,8 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
   backdrop-filter: blur(14px) saturate(1.4);
   box-shadow: inset 0 1px 0 var(--glass-hi);
 }
-.glass:not(.sticky, .fixed, .absolute) { position: relative; } /* sticky なヘッダーの位置指定は上書きしない */
-.glass::before { /* 1px の光のリング */
+.glass:not(.sticky, .fixed, .absolute) { position: relative; }
+.glass::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; padding: 1px; pointer-events: none;
   background: linear-gradient(135deg, var(--glass-hi), transparent 35%, transparent 65%, var(--glass-lo));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -152,27 +123,22 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; } /* 日付と数�
 }
 @media (hover: hover) and (pointer: fine) { .glass:hover::before { opacity: 1.3; } }
 @supports not (backdrop-filter: blur(1px)) { .glass { background: var(--paper-2); } }
-header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッダーは下の線だけにする(光のリングが画面の端に線として出る) */
+header.site.glass::before { content: none; }
 
-/* 区切り線は点線 */
-/* 線は重ねて描き、箱の大きさを変えない(border だと中身が 2px 下がり、4px の格子から外れる) */
+/* 区切り線は重ねて描き、border による寸法の変化を避ける。 */
 :is(.dotted, .divide-line > :not(:first-child)) { position: relative; }
 :is(.dotted, .divide-line > :not(:first-child))::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--line); pointer-events: none; }
-/* ヘッダーとフッターの境の実線も同じく重ねて描く(ヘッダーの高さを 64px = 8u のままにする) */
 .line-bottom::after { content: ""; position: absolute; inset: auto 0 0; border-bottom: 1px solid var(--line); pointer-events: none; }
 .line-top::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 1px solid var(--line); pointer-events: none; }
 
-/* カード: 角丸 40 − 余白 24 = 内側の座布団の角丸 16(同心) */
 .card { border-radius: 2.5rem; padding: 1.5rem; }
 .card:where(:not(.glass)) { background: var(--paper-2); }
 
-/* 座布団(アイコンの台)。寸法は --tile、Works では 3 色で回す */
 .tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
 .tile.hue-0 { background: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
 .tile.hue-1 { background: color-mix(in oklch, var(--mint) 22%, var(--paper)); color: color-mix(in oklch, var(--mint) 70%, var(--ink)); }
 .tile.hue-2 { background: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
 
-/* 丸いボタン */
 .pill {
   display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem;
   padding: 0 1.25rem; border-radius: 999px; font-size: var(--text-sm); line-height: 1.5rem; font-weight: 700;
@@ -185,24 +151,20 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 .icon-btn:where(:not(.glass)) { background: var(--paper); }
 .icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
 
-/* ガラスのボタンは淡い地に溶けやすいので、1px の枠で輪郭を出す */
 :is(.pill, .chip, .icon-btn).glass:not(.pill-accent, [aria-pressed="true"]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line); }
 
-/* 絞り込みチップ(押した状態は aria-pressed) */
 .chip { display: inline-flex; align-items: center; height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 1rem; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
 .chip:where(:not(.glass)) { background: var(--paper-2); }
 .chip[aria-pressed="true"], .chip.glass[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
-/* カード全体を押せるようにする(題名のリンクを枠いっぱいに広げる)。カード内のほかのボタンは z-1 で上に出す */
+/* カード内の個別リンクは z-1 でこのオーバーレイより上に置く。 */
 .card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 
-/* タグ。カードの上では地の色、一覧の上では一段暗い色 */
 .tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .75rem; border-radius: 999px; }
-:is(ol, .on-paper) .tag { background: var(--paper-2); } /* .on-paper: 地の上に直接タグを並べるとき */
-.tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); } /* 作品の状態(開発中など) */
+:is(ol, .on-paper) .tag { background: var(--paper-2); }
+.tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); }
 
-/* ホバーできる端末だけの反応 */
 @media (hover: hover) and (pointer: fine) {
   .pill:not(.pill-accent):hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
   .pill-accent:hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
@@ -210,7 +172,6 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
   .u-link:hover::after { transform: scaleX(1); }
 }
 
-/* リンクの下線がホバーで伸びる */
 .u-link { position: relative; text-decoration: none; }
 .u-link::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -.1em; height: 1px;
@@ -218,24 +179,18 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
   transition: transform 200ms var(--ease-out);
 }
 
-/* 押せるものは押した瞬間に応える */
 .press { transition: transform 160ms var(--ease-out); }
 .press:active { transform: scale(0.94); }
 
-/* 角の曲線はスクワークル(対応ブラウザのみ。他は円弧のまま) */
 @supports (corner-shape: squircle) {
   .card, .tile, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
 }
 
-/* Petals の背景: 薄い空のグラデーション */
-/* 黄金長方形(横 : 縦 = φ : 1)。高さは 8px の格子に丸める。round() が無ければ縦横比だけ合わせる */
 .golden { aspect-ratio: 1.618; }
 @supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
 .petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
-/* =====================================================================
-   4. 記事本文(Markdown の出力)
-   ===================================================================== */
+/* 記事本文 */
 .prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
 .prose > * + * { margin-top: 1.5rem; }
 .prose :is(h2, h3) { font-family: "Zen Maru Kana", var(--font-zen-maru); font-weight: 700; color: var(--ink); }
@@ -246,9 +201,9 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 .prose ul li::marker { color: var(--accent); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
 .prose li + li { margin-top: .5rem; }
-.prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 上下の余白は押せる範囲を 24px 以上にするため(行の高さは変わらない) */
+.prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 行高を変えずにタップ領域を広げる */
 .prose strong { font-weight: 600; }
-.prose code { font-size: .8944em; line-height: 1; background: var(--paper-2); padding: 0 .25rem; border-radius: .25rem; } /* line-height: 1 で行送りを押し広げない(等幅書体は基準線の位置が違い、行が 1px 伸びる) */
+.prose code { font-size: .8944em; line-height: 1; background: var(--paper-2); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
 .prose pre { padding: 1.5rem; border-radius: 1rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; border: 1px solid var(--line); }
 .prose pre code { background: none; padding: 0; }
 .prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
@@ -259,11 +214,8 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 .prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
-/* =====================================================================
-   5. 動き
-   ===================================================================== */
+/* アニメーション */
 
-/* 5a. 読み込み時: 名前の文字が順に出て、一文が続く(一度きり) */
 .wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
 .hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
 @keyframes wm-in { to { opacity: 1; transform: none; } }
@@ -271,24 +223,17 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
   .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
 }
 
-/* 5a'. 背景: 深海の気配。上から差す光の帯、昇る泡とマリンスノー、下ほど深く。transform だけを動かす。
-   light-dark() は色しか受け付けないので、濃さは色の不透明度に含める */
 :root {
   --sea-h: 225;
-  /* ダーク = 深海 */
   --sea-depth: light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
   --sea-ray:   light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
-  /* ライト = 水面 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
-/* 高さはアドレスバーが隠れたときの画面の高さ(lvh)に固定する。inset: 0 だとスクロール中にバーが縮むたびに
-   高さが変わり、背景の canvas が作り直されて動きが一瞬止まって見える */
+/* 100lvh で高さを固定し、アドレスバーの開閉による Canvas のリサイズを防ぐ。 */
 .sea { position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
-  /* ダーク: 下ほど深く。ライト: 上ほど空の水色 */
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%); }
 .sea i { position: absolute; display: block; }
 
-/* 光の帯(ダーク): 斜めの淡い縞を、下に向かって消しながら左右にゆっくり揺らす。2 層目は角度と速さを変えて厚みを出す */
 .sea .rays {
   inset: -20% -30%;
   background: repeating-linear-gradient(104deg, transparent 0 9%, var(--sea-ray) 11.5%, transparent 14% 23%);
@@ -301,34 +246,28 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
 }
 @keyframes rays-sway { from { transform: translateX(-2vw) skewX(0deg); } to { transform: translateX(2vw) skewX(1.5deg); } }
 
-/* 深海(ダーク): src/scripts/deep.ts が描く canvas(沈むマリンスノー・泡の列) */
-.sea .deep { position: absolute; inset: 0; width: 100%; height: 100%; }
-
-/* 波紋(ライト): src/scripts/surface.ts が高さ場を解いて描く canvas。上部は薄く、下へ行くほど見える */
-.sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .65; }
+.sea .deep, .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sea .surface { opacity: .65; }
 @media (prefers-reduced-motion: reduce) { .sea .surface { display: none; } }
 
 @media (prefers-reduced-motion: reduce) { .sea i { animation: none; } }
 
 
-/* 5b. スクロール連動(CSS のみ)。animation ショートハンドは timeline を初期化するので longhand で書く */
+/* animation の一括指定は timeline をリセットするため、個別に指定する。 */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {
   @media (prefers-reduced-motion: no-preference) {
-    /* 画面に入るとき、少し下から浮かぶ */
     .reveal {
       animation-name: reveal; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: view();
       animation-range: entry 0% entry 40%;
     }
     @keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-    /* トップの名前は、スクロールより少しゆっくり上へずれて薄くなる */
     .parallax {
       animation-name: drift; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: scroll(root);
       animation-range: 0 480px;
     }
     @keyframes drift { to { transform: translateY(-24px); opacity: 0.6; } }
-    /* ヘッダーはスクロールし始めると線が濃くなる */
     header.site {
       animation-name: header-line; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: scroll(root);
@@ -338,35 +277,29 @@ header.site.glass::before { content: none; } /* 画面幅いっぱいのヘッ�
   }
 }
 
-/* 5c. ページ遷移(Astro の ClientRouter)。本文だけが短く溶けて入れ替わり、全画面のクロスフェードはしない */
 ::view-transition-old(main) { animation: vt-out 180ms cubic-bezier(0.4, 0, 0.6, 1) both; }
 ::view-transition-new(main) { animation: vt-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both; }
 ::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
 @keyframes vt-out { to { opacity: 0; transform: translateY(-4px); filter: blur(2px); } }
 @keyframes vt-in { from { opacity: 0; transform: translateY(6px); filter: blur(2px); } }
-/* 「戻る」では上下を逆にする(Astro が方向を属性で教えてくれる) */
 html[data-astro-transition="back"]::view-transition-old(main) { animation-name: vt-out-back; }
 html[data-astro-transition="back"]::view-transition-new(main) { animation-name: vt-in-back; }
 @keyframes vt-out-back { to { opacity: 0; transform: translateY(4px); filter: blur(2px); } }
 @keyframes vt-in-back { from { opacity: 0; transform: translateY(-6px); filter: blur(2px); } }
-/* 共有要素(記事タイトル): 位置は 300ms で移動。古い文字はすぐ消し、新しい文字だけが滑り込む */
 ::view-transition-group(*) { animation-duration: 300ms; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
 ::view-transition-image-pair(*) { isolation: auto; }
 ::view-transition-old(*) { animation: vt-title-out 100ms ease-out both; mix-blend-mode: normal; }
 ::view-transition-new(*) { animation: vt-title-in 200ms ease-out 80ms both; mix-blend-mode: normal; }
 @keyframes vt-title-out { to { opacity: 0; } }
 @keyframes vt-title-in { from { opacity: 0; } }
-/* 動かさないもの(名前付きは一般則より優先) */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
 ::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
-/* タグ絞り込み(同一ページ内)では本文の出入りは動かさず、項目だけが詰まる */
 html:active-view-transition-type(filter)::view-transition-old(main),
 html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; }
 
 /* =====================================================================
-   6. カーソル(ホバーできる端末だけ)。lucide の線画に倣う: 矢印 / 芽(リンク) / I ビーム。
-   画像は public/cursors/*.svg(tools/cursors.py で生成)
+   6. カーソル
    ===================================================================== */
 @media (hover: hover) and (pointer: fine) {
   :root {
@@ -377,7 +310,7 @@ html:active-view-transition-type(filter)::view-transition-new(main) { animation:
   }
   html, body { cursor: var(--cursor-arrow); }
   a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn { cursor: var(--cursor-hand); }
-  :is(a, button, .press, .chip, .pill, .icon-btn):active { cursor: var(--cursor-hand-down); } /* 押している間は少し縮む */
+  :is(a, button, .press, .chip, .pill, .icon-btn):active { cursor: var(--cursor-hand-down); }
   input, textarea, [contenteditable] { cursor: var(--cursor-text); } /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * { cursor: inherit; }
   canvas { cursor: var(--cursor-arrow); }

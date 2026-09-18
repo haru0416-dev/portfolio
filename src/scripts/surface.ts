@@ -1,23 +1,18 @@
-// 水面(ライトの背景)。低解像度の高さ場で 2D 波動方程式を解き、雨粒の波紋を物理として広げる。
-// 描画は高さの勾配から「左上から光が当たった水面」の明暗を作り、上部には波の干渉による光の網目を薄く重ねる。
 import { runBackground, type BackgroundControl } from './background';
 
-const CELL = 4;           // 1 セルが画面の何 px か(小さいほど精細で重い)
-const DAMP = 0.966;       // 減衰(1 に近いほど長く残る)
+const CELL = 4; // CSS px / セル
+const DAMP = 0.966;
 const FPS = 30;
-const LIGHT = [-0.7, -0.7]; // 光の向き(左上)
+const LIGHT = [-0.7, -0.7];
 
 export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
   return runBackground(canvas, { theme: 'light', fps: FPS }, (ctx) => {
     let W = 0, H = 0, cw = 0, ch = 0;
     let cur = new Float32Array(0), prev = new Float32Array(0);
-    // 同じ列の光の位相は 1 フレームに 1 回だけ計算する。元の数式と同じ倍精度を保つ。
     let xPhase = new Float64Array(0), xRipple = new Float64Array(0);
     let img: ImageData, off: HTMLCanvasElement, offCtx: CanvasRenderingContext2D;
     let nextDrop = 0, now = 0;
 
-    // 雨粒。一気に押し込むと濃い点が出るので、数フレームに分けてなだらかに。
-    // 形は中心がくぼみ、縁がわずかに盛り上がる(着水のクレーター)
     type Drop = { x: number; y: number; r: number; amp: number; left: number; total: number };
     const drops: Drop[] = [];
     const drop = (r: number, amp: number, frames: number) => {
@@ -41,7 +36,6 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
         const first = cw === 0, ocw = cw, och = ch, ocur = cur, oprev = prev;
         W = w; H = h; cw = Math.ceil(W / CELL); ch = Math.ceil(H / CELL);
         cur = new Float32Array(cw * ch); prev = new Float32Array(cw * ch);
-        // 大きさが変わっても波紋を消さない。重なる範囲の高さをそのまま写す
         for (let y = 0; y < Math.min(ch, och); y++) {
           cur.set(ocur.subarray(y * ocw, y * ocw + Math.min(cw, ocw)), y * cw);
           prev.set(oprev.subarray(y * ocw, y * ocw + Math.min(cw, ocw)), y * cw);
@@ -55,7 +49,7 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
       step(dt) {
         now += dt;
         if (now >= nextDrop) {
-          const big = Math.random() < 0.18; // 大きい雨粒は稀
+          const big = Math.random() < 0.18;
           drop(big ? 4 : 3, big ? 3.2 : 2, big ? 6 : 4);
           nextDrop = now + 2.2 + Math.random() * 3.3;
         }
@@ -77,14 +71,14 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
           xRipple[x] = Math.sin(x * 0.11 - tt * 0.7);
         }
         for (let y = 1; y < ch - 1; y++) {
-          const fade = Math.max(0, 1 - y / (ch * 0.55)); // 光の網目は下へ行くほど消える
+          const fade = Math.max(0, 1 - y / (ch * 0.55));
           const row = y * cw;
           const yRipple = fade > 0 ? Math.sin(y * 0.13 + tt) : 0;
           const yPhase = y * 0.17 - tt * 1.3;
           for (let x = 1; x < cw - 1; x++) {
             const i = row + x, o = i * 4;
             const gx = cur[i + 1] - cur[i - 1], gy = cur[i + cw] - cur[i - cw];
-            const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.1; // 光に向く斜面は明るく、背く斜面は暗く
+            const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.1;
             let net = 0;
             if (fade > 0) {
               const cx = Math.sin(xPhase[x] + yRipple) + Math.sin(yPhase + xRipple[x]);
@@ -92,13 +86,13 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
             }
             if (net > 0.02 && s <= 0.02) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, net * 255); }
             else if (s > 0) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, s * 255 * 0.75); }
-            else { d[o] = 112; d[o + 1] = 128; d[o + 2] = 208; d[o + 3] = Math.min(255, -s * 255 * 0.5); } // 配色の薄紫に寄せた青
+            else { d[o] = 112; d[o + 1] = 128; d[o + 2] = 208; d[o + 3] = Math.min(255, -s * 255 * 0.5); }
           }
         }
         offCtx.putImageData(img, 0, 0);
         ctx.clearRect(0, 0, W, H);
         ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-        ctx.filter = 'blur(1.5px)'; // 差分法の格子状のざらつきを消す
+        ctx.filter = 'blur(1.5px)';
         ctx.drawImage(off, 0, 0, W, H);
         ctx.filter = 'none';
       },

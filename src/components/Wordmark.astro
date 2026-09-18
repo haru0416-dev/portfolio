@@ -1,6 +1,4 @@
 ---
-// 名前を 1 文字ずつ順に出す。読み込み時に一度だけ見る演出なので許容範囲。
-// 支援技術には分割前の文字列を読ませ、分割した文字は隠す
 interface Props { text: string; class?: string }
 const { text, class: cls } = Astro.props;
 const chars = [...text];

@@ -14,13 +14,12 @@ const Code = ICONS.code, Ext = ICONS['external-link'];
     {works.map((w, i) => (
       <li class="card glass reveal flex flex-col gap-4 group">
         <div class="flex items-center gap-4">
-          <Tile icon={w.data.icon as any} size={48} class={`hue-${i % 3}`} />
+          <Tile icon={w.data.icon} size={48} class={`hue-${i % 3}`} />
           <h2 class="display-jp text-lg min-w-0 flex-1"><a href={`/works/${w.id}/`} class="card-link group-hover:text-accent transition-colors">{w.data.name}</a></h2>
         </div>
         <p class="text-sm text-ink-2 flex-1">{w.data.summary}</p>
         <div class="flex items-end gap-2 min-h-8">
           <div class="flex flex-wrap gap-2 flex-1 pb-1">
-            {/* 状態は見出しの横に置くと題名が押しつぶされるので、タグの先頭に差し色で置く */}
             {badge[w.data.status] && <span class="tag badge tracking-[.1em] uppercase">{badge[w.data.status]}</span>}
             {w.data.stack.map((s) => <span class="tag">{s}</span>)}
           </div>

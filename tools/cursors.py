@@ -1,6 +1,4 @@
-# カーソルの SVG を public/cursors/ に書き出し、global.css の第 6 節を書き換える。形や色を変えるときはこのファイルを編集して `python3 tools/cursors.py`
-# 形は lucide の文法(24 の格子、線幅 2、角丸、塗りなし)に従う。矢印は mouse-pointer-2、I ビームは text-cursor、リンクは sprout。
-# 線は桃色、その下に白い太線を敷いて縁取りにする(ライト・ダーク両方で見える)。
+# 再生成: python3 tools/cursors.py
 import os
 
 PINK = '#ea689f'; WHITE = '#fff'
@@ -9,7 +7,6 @@ TEXT = ["M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1", "M7 22h1a4 4 0 0 0 4-4", "M
 SPROUT = ["M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3", "M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4", "M5 21h14"]
 
 def lucide(paths, size, scale, tx, ty, fill=None, extra=''):
-    """lucide の線画を、白い太線の縁取り → 桃色の線、の順で重ねる"""
     ps = ''.join(f"<path d='{d}'/>" for d in paths)
     f = f" fill='{fill}'" if fill else " fill='none'"
     return (f"<svg xmlns='http://www.w3.org/2000/svg' width='{size}' height='{size}' viewBox='0 0 {size} {size}'>"
@@ -22,22 +19,17 @@ OUT = os.path.join(ROOT, 'public/cursors')
 os.makedirs(OUT, exist_ok=True)
 
 def url(name, svg, hx, hy, fb):
-    """SVG をファイルに書き出し、それを参照する cursor 値を返す"""
     open(os.path.join(OUT, name + '.svg'), 'w').write(svg + '\n')
     return f'url(/cursors/{name}.svg) {hx} {hy}, {fb}'
 
-# 矢印: 28px に 24 格子を 1.0 倍で。先端(4,4)がホットスポット。中は淡い桃で薄く塗る
 arrow = lucide([ARROW], 28, 1.0, 2, 2, fill='#f9c9d8')
-# リンクの上: 形は矢印のまま、中を濃く塗るだけ(切り替わりで点滅しないように)
 sprout = lucide([ARROW], 28, 1.0, 2, 2, fill='#f3a5c4')
-sprout_down = lucide([ARROW], 28, 1.0, 2, 2, fill=PINK)  # 変換は他と同じ(ホットスポットがずれないように)
-# I ビーム(入力欄だけ): 中心がホットスポット
+sprout_down = lucide([ARROW], 28, 1.0, 2, 2, fill=PINK)
 ibeam = lucide(TEXT, 28, 1.0, 2, 2)
 
 css = f"""
 /* =====================================================================
-   6. カーソル(ホバーできる端末だけ)。lucide の線画に倣う: 矢印 / 芽(リンク) / I ビーム。
-   画像は public/cursors/*.svg(tools/cursors.py で生成)
+   6. カーソル
    ===================================================================== */
 @media (hover: hover) and (pointer: fine) {{
   :root {{
@@ -48,7 +40,7 @@ css = f"""
   }}
   html, body {{ cursor: var(--cursor-arrow); }}
   a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn {{ cursor: var(--cursor-hand); }}
-  :is(a, button, .press, .chip, .pill, .icon-btn):active {{ cursor: var(--cursor-hand-down); }} /* 押している間は少し縮む */
+  :is(a, button, .press, .chip, .pill, .icon-btn):active {{ cursor: var(--cursor-hand-down); }}
   input, textarea, [contenteditable] {{ cursor: var(--cursor-text); }} /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * {{ cursor: inherit; }}
   canvas {{ cursor: var(--cursor-arrow); }}

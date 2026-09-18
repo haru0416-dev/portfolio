@@ -1,4 +1,3 @@
-// 作品ごとの共有用画像。ビルド時に /og/works/<id>.png として書き出す。円の中は作品のアイコン
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { lucideIcon, renderCardImage } from '../../../og';

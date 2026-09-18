@@ -13,12 +13,11 @@ export async function getStaticPaths() {
   }));
 }
 const { post, newer, older } = Astro.props;
-const { Content, remarkPluginFrontmatter } = await render(post);
+const { Content } = await render(post);
 const url = new URL(`/blog/${post.id}/`, Astro.site).href;
 const image = new URL(`/og/blog/${post.id}.png`, Astro.site).href;
 const published = post.data.pubDate.toISOString();
 const modified = (post.data.updatedDate ?? post.data.pubDate).toISOString();
-// 検索エンジン向けの記事情報(schema.org の BlogPosting)
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
