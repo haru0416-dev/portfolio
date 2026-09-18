@@ -1,6 +1,12 @@
 // curl / wget / HTTPie で来たときだけ、HTML の代わりに名刺のような 1 枚のテキストを返す。
 // ブラウザには影響しない。curl でも ?html を付ければ HTML が取れる。
 // Cloudflare Pages Functions として dist と一緒に配信される。
+//
+// 見つけた人向けのおまけ(つながっている):
+//   dig TXT haru0416.dev   → curl -I を勧める(DNS の TXT レコード。ダッシュボードで設定)
+//   curl -I haru0416.dev   → X-Sprout ヘッダーが /coffee を勧める(全応答に付ける)
+//   curl .../coffee        → 418 I'm a teapot(RFC 2324)
+//     本来は BREW メソッドだが、Cloudflare は未登録のメソッドを Functions に届く前に 501 で返すので、パスで受ける
 
 type Meta = {
   name: string; tagline: string; github: string;
@@ -11,9 +17,48 @@ type Meta = {
 
 const CLI = /^(curl|wget|httpie|xh|aria2|fetch)\b/i;
 
+const SPROUT = 'thanks for peeking. brew something: curl https://haru0416.dev/coffee';
+
+// コーヒーを頼まれたときの返事
+const TEAPOT = `
+       ;,'
+     _o_    ;:;'
+ ,-.'---\`.__ ;
+((j\`=====',-'
+ \`-\\     /
+    \`-=-'
+
+418 I'm a teapot
+
+コーヒーは淹れられません。ここは静的サイトで、しかもティーポットです。
+(RFC 2324 / RFC 7168)
+`;
+// 普段は使わないメソッドへの返事
+const REFUSE: Record<string, string> = {
+  DELETE: '消せません。芽はまだ育っている途中です。',
+  PUT: '上書きできません。直してほしいところは https://haru0416.dev/works/#feedback へ。',
+  PATCH: '書き換えられません。直してほしいところは https://haru0416.dev/works/#feedback へ。',
+  POST: '受け取れるものがありません。ここは読むだけのサイトです。',
+};
+
+function text(body: string, status: number, headers: Record<string, string> = {}) {
+  return new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', ...headers } });
+}
+
 export const onRequest: PagesFunction = async (ctx) => {
+  const res = await respond(ctx);
+  // 静的ファイルの応答はそのままでは変更できないので、複製してヘッダーを足す
+  const out = new Response(res.body, res);
+  out.headers.set('X-Sprout', SPROUT);
+  return out;
+};
+
+const respond: PagesFunction = async (ctx) => {
   const req = ctx.request;
+  if (req.method in REFUSE) return text(`${REFUSE[req.method]}\n`, 405, { Allow: 'GET, HEAD' });
+
   const url = new URL(req.url);
+  if (url.pathname === '/coffee' || url.pathname === '/coffee/') return text(TEAPOT, 418);
   const ua = req.headers.get('user-agent') ?? '';
   const accept = req.headers.get('accept') ?? '';
   const wantsText = CLI.test(ua) && !accept.includes('text/html') && !url.searchParams.has('html');

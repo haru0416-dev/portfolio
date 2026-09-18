@@ -68,6 +68,8 @@ bunx astro check
 
 curl / wget / HTTPie でトップページを取得すると、HTML の代わりにサイト紹介のテキストが返る。処理は Cloudflare Pages Functions の `functions/_middleware.ts` にある。`?html` を付けると HTML、`?plain` を付けると色なしのテキストになる。
 
+同じファイルに、見つけた人向けのおまけを置いている。全応答に `X-Sprout` ヘッダーを付け、`/coffee` は 418 I'm a teapot を返す。POST・PUT・PATCH・DELETE には一言添えて 405 を返す。DNS の TXT レコード(ダッシュボードで設定)は `curl -I` を勧め、順にたどれるようにしている。RFC 2324 の BREW メソッドは Cloudflare が Functions に届く前に 501 で返すので使えない。
+
 紹介文やリンクはビルド時に生成する `/meta.json` から読む。ローカルで試すには `bun run build && bunx wrangler pages dev dist` を実行する。
 
 ## デプロイ (Cloudflare Pages)
