@@ -38,12 +38,19 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
 
     return {
       resize(w, h) {
+        const first = cw === 0, ocw = cw, och = ch, ocur = cur, oprev = prev;
         W = w; H = h; cw = Math.ceil(W / CELL); ch = Math.ceil(H / CELL);
         cur = new Float32Array(cw * ch); prev = new Float32Array(cw * ch);
+        // 大きさが変わっても波紋を消さない。重なる範囲の高さをそのまま写す
+        for (let y = 0; y < Math.min(ch, och); y++) {
+          cur.set(ocur.subarray(y * ocw, y * ocw + Math.min(cw, ocw)), y * cw);
+          prev.set(oprev.subarray(y * ocw, y * ocw + Math.min(cw, ocw)), y * cw);
+        }
         xPhase = new Float64Array(cw); xRipple = new Float64Array(cw);
         off = document.createElement('canvas'); off.width = cw; off.height = ch;
         offCtx = off.getContext('2d')!; img = offCtx.createImageData(cw, ch);
-        drops.length = 0; drop(4, 3, 4); nextDrop = 0.4;
+        for (const p of drops) { p.x = Math.min(p.x, cw - 3); p.y = Math.min(p.y, ch - 3); }
+        if (first) { drop(4, 3, 4); nextDrop = 0.4; }
       },
       step(dt) {
         now += dt;

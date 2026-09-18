@@ -19,7 +19,10 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
     return {
       resize(w, h) {
         W = w; H = h;
-        flakes = Array.from({ length: Math.round((W * H) / 14000) }, () => makeFlake(true)); // 1280×800 で 70 粒ほど
+        // 1280×800 で 70 粒ほど。大きさが変わっても今ある粒は残し(作り直すと一斉に跳んで見える)、数だけ合わせる
+        const n = Math.round((W * H) / 14000);
+        flakes = flakes.filter((f) => f.x <= W + 8 && f.y <= H + 8).slice(0, n);
+        while (flakes.length < n) flakes.push(makeFlake(true));
       },
       step(dt) {
         t += dt;

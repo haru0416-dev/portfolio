@@ -261,7 +261,9 @@ ol .tag { background: var(--paper-2); }
   /* ライト = 水面 */
   --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
-.sea { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+/* 高さはアドレスバーが隠れたときの画面の高さ(lvh)に固定する。inset: 0 だとスクロール中にバーが縮むたびに
+   高さが変わり、背景の canvas が作り直されて動きが一瞬止まって見える */
+.sea { position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
   /* ダーク: 下ほど深く。ライト: 上ほど空の水色 */
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%); }
 .sea i { position: absolute; display: block; }
