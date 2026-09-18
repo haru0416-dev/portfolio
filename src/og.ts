@@ -1,4 +1,4 @@
-// 記事・作品ごとの共有用画像(1200×630 PNG)をビルド時に Takumi で描く。色は public/og.svg に合わせている
+// 記事・作品ごとの共有用画像(1200×630 PNG)をビルド時に Takumi で描く。色はサイトのダークテーマ(深海)に合わせている
 //
 // 配置は「整っている」を次の規則で定義し、それを満たすように計算する。
 // 各要素を一度単独で描いてインク(実際に塗られる画素)の外接矩形を測り、インクが目標の線に来るよう箱をずらす。
@@ -6,8 +6,9 @@
 // - 左寄せの要素(小見出し・題名・タグ・ロゴ)はインクの左端を一本の線に揃える。右端(ドメイン・区切り線・円)も同様
 // - フッターの文字はベースラインを下余白の線に揃える
 // - 文字サイズは 24 から比 1.5 で伸ばす(24・36・54・81)。題名はその中間(×√1.5)も候補にし、収まる最大のものを選ぶ。行送りは 4/3
-// - 題名とタグの塊は、小見出しと区切り線の間の空きの上下が等しくなる位置に置く。
-//   円の中心は題名の中心に揃える(塊の中心だとタグのぶん下がり、題名より下に見える)
+// - 題名とタグの塊は、小見出しと区切り線の間の空きの上下が等しくなる位置に置く
+// - アイコンは小さく名前の横に置く。作品のアイコンは題名の 1 行目の左(インクの高さ = 文字サイズ × 0.8)、
+//   サイトの芽はフッターの「haru.」の左(インクの高さ = 字の高さ)。どちらも縦はインクの中心で揃える
 // - 題名の各行の長さを揃える(行数が変わらない範囲で幅を最小にする)。それでも最短の行が最長の行の半分に満たなければ、字を小さくする
 import { Renderer } from '@takumi-rs/core';
 import { fromHtml } from '@takumi-rs/helpers/html';
@@ -23,13 +24,13 @@ const U = 24;
 const L = {
   margin: 4 * U, card: 1.5 * U, radius: 1.5 * U,
   small: U, logo: 1.5 * U, titleSizes: [81, 66, 54, 44], lineHeight: 4 / 3, maxLines: 3,
-  gap: { band: 2 * U, tags: 1.5 * U, footer: U },
-  // アイコンを置く円。直径 10u、題名との間は 2u。中のアイコンはインクの高さを直径の半分にする
-  window: { size: 10 * U, gap: 2 * U, icon: 0.5 },
+  gap: { band: 2 * U, tags: 1.5 * U, footer: U, icon: U },
+  titleIcon: 0.8, // 題名の横のアイコンのインクの高さ(文字サイズ比)
 };
-// public/og.svg と同じ色
-const C = { ink: '#352d46', ink2: '#51475f', muted: '#756981', accent: '#cf4e88', line: '#ddd9e7' };
-const BG = 'background-color:#f1f3fb;background-image:radial-gradient(ellipse 510px 430px at 1050px 480px, rgba(246,213,230,.7), rgba(246,213,230,0)),linear-gradient(170deg,#e8f2fc,#faf5fb)';
+// global.css のダークの値を sRGB にしたもの(paper / ink / ink-2 / muted / line / accent)
+const C = { ink: '#ece9f2', ink2: '#c0bbca', muted: '#958ea2', accent: '#fe89b7', line: '#352f40' };
+// 深海の背景: 地の色に、下へ行くほど濃くなる青(--sea-depth)と、左上からの淡い光の帯
+const BG = 'background-color:#15121c;background-image:linear-gradient(to bottom, rgba(0,94,125,0) 25%, rgba(0,94,125,.18)),linear-gradient(104deg, rgba(101,186,225,0) 30%, rgba(101,186,225,.06) 36%, rgba(101,186,225,0) 42%)';
 
 // サイトの Sprout アイコン(lucide)。記事ごとのアイコンが無いときに円の中に置く
 const sprout = `data:image/svg+xml,${encodeURIComponent(
@@ -123,7 +124,7 @@ async function lineWidths(html: string) {
 
 type El = {
   key: string; x: number; y: number; w?: number;
-  kind?: 'text' | 'img' | 'rule' | 'circle';
+  kind?: 'text' | 'img' | 'rule';
   style?: string; content?: string; color?: string; src?: string; size?: number;
 };
 
@@ -137,8 +138,6 @@ function page(els: El[], only?: string) {
         return `<img src="${e.src}" width="${e.size}" height="${e.size}" style="${pos}${hide(e.key) ? 'opacity:0' : ''}" />`;
       case 'rule':
         return `<div style="${pos}height:0;border-top:2px dashed ${hide(e.key) ? 'transparent' : only ? '#000' : C.line}"></div>`;
-      case 'circle':
-        return `<div style="${pos}width:${e.size}px;height:${e.size}px;border-radius:50%;border:2px solid ${hide(e.key) ? 'transparent' : only ? '#000' : 'rgba(255,255,255,.8)'};background-color:${only ? 'transparent' : 'rgba(255,255,255,.45)'}"></div>`;
       default: {
         // 計測時は子要素の色指定も外し、測る要素だけを黒で描く
         const content = only ? (e.content ?? '').replace(/color:#[0-9a-f]{6}/gi, 'color:inherit') : e.content;
@@ -168,7 +167,7 @@ export interface CardImage {
   eyebrow: string;
   title: string;
   tags: string[];
-  /** 円の中に置く画像(URL か data URI)。省略するとサイトの芽のアイコン */
+  /** 題名の左に置く小さな画像(URL か data URI)。作品のアイコン用。記事は無し */
   icon?: string;
 }
 
@@ -182,7 +181,7 @@ export async function lucideIcon(name: string) {
 }
 
 /** 規則から各要素の位置を解く。返す html(only) は計測にも使う */
-export async function layoutCard({ eyebrow, title, tags, icon = sprout }: CardImage) {
+export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   const M = L.margin, R = W - M, B = H - M;
   const els: El[] = [];
   const place = async (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => {
@@ -200,10 +199,12 @@ export async function layoutCard({ eyebrow, title, tags, icon = sprout }: CardIm
   const eyebrowBottom = M + (eb.bottom - eb.top);
 
   // 下: ロゴとドメインのベースライン(インクの下端)を下余白の線に
-  const logo = await place(
-    { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${L.logo}px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink },
-    (o) => [M - o.left, B - o.bottom],
-  );
+  const logoEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${L.logo}px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
+  const logo = await probe({ ...logoEl, x: 0, y: 0 });
+  // 芽: インクの高さを「haru」の字の高さに合わせ、ベースラインを揃えて左に置く
+  const s0 = await probe({ key: 'sprout', kind: 'img', src: sprout, size: 100, x: 0, y: 0 });
+  const sp = await place({ key: 'sprout', kind: 'img', src: sprout, size: Math.round(100 * (logo.bottom - logo.top) / (s0.bottom - s0.top)) }, (o) => [M - o.left, B - o.bottom]);
+  els.push({ ...logoEl, x: M + (sp.right - sp.left) + L.gap.icon - logo.left, y: B - logo.bottom });
   await place({ key: 'domain', style: `font-size:${L.small}px;white-space:nowrap`, content: 'haru0416.dev', color: C.ink2 }, (o) => [R - o.right, B - o.bottom]);
   // 区切り線: 線の下端からフッターの字の上端までを 1u(2 は線の太さ)
   const ruleY = B - (logo.bottom - logo.top) - L.gap.footer - 2;
@@ -211,8 +212,9 @@ export async function layoutCard({ eyebrow, title, tags, icon = sprout }: CardIm
 
   // 中段: 小見出しの下端〜区切り線の上端の空き。題名+タグの塊の中心をこの空きの中央に
   const mid = (eyebrowBottom + ruleY) / 2;
-  const d = L.window.size;
-  const cw = R - M - d - L.window.gap; // 題名とタグの幅
+  const fullW = R - M;
+  const i0 = icon ? await probe({ key: 'icon', kind: 'img', src: icon, size: 100, x: 0, y: 0 }) : null;
+  const cw = fullW; // タグの幅
   const bandH = ruleY - eyebrowBottom - 2 * L.gap.band;
   const tagsEl = { key: 'tags', style: `font-size:${L.small}px;gap:${L.small / 2}px;flex-wrap:wrap`, content: tags.map((t) => `<span>#${esc(t)}</span>`).join(''), color: C.muted, w: cw };
   const tg = tags.length ? await probe({ ...tagsEl, x: 0, y: 0 }) : null;
@@ -221,11 +223,15 @@ export async function layoutCard({ eyebrow, title, tags, icon = sprout }: CardIm
   // 題名: 3 行以内で空きに収まる最大の文字サイズを選び、行の長さを揃える
   const content = esc(phrases(title));
   let chosen: { e: El; o: Box } | undefined;
+  let iconW = 0;
   for (const size of L.titleSizes) {
     const style = `display:block;font-family:'Zen Maru Kana','Zen Maru Gothic';font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
+    // 題名の幅は、左に置くアイコン(インクの高さ = 文字サイズ × 0.8)のぶん狭くなる
+    iconW = i0 ? Math.round(size * L.titleIcon * (i0.right - i0.left) / (i0.bottom - i0.top)) + L.gap.icon : 0;
+    const tw = fullW - iconW;
     const at = (w: number) => lineWidths(`<div style="width:${w}px;${style}">${content}</div>`);
-    const lines = (await at(cw)).length;
-    let lo = Math.floor(cw / lines), hi = cw;
+    const lines = (await at(tw)).length;
+    let lo = Math.floor(tw / lines), hi = tw;
     while (hi - lo > 4) {
       const w = (lo + hi) >> 1;
       if ((await at(w)).length > lines) lo = w; else hi = w;
@@ -238,15 +244,16 @@ export async function layoutCard({ eyebrow, title, tags, icon = sprout }: CardIm
   }
   const { e: te, o: to } = chosen!;
   const top = mid - (to.bottom - to.top + tagsH) / 2;
-  els.push({ ...te, x: M - to.left, y: top - to.top });
+  els.push({ ...te, x: M + iconW - to.left, y: top - to.top });
   if (tg) els.push({ ...tagsEl, x: M - tg.left, y: top + (to.bottom - to.top) + L.gap.tags - tg.top });
 
-  // 円とアイコン: 円の右端を余白の線に、中心を題名のインクの中心の高さに。アイコンはインクの中心を円の中心に
-  const cy = top + (to.bottom - to.top) / 2;
-  await place({ key: 'window', kind: 'circle', size: d }, (o) => [R - o.right, cy - (o.top + o.bottom) / 2]);
-  const i0 = await probe({ key: 'icon', kind: 'img', src: icon, size: 100, x: 0, y: 0 });
-  const iconSize = Math.round(100 * d * L.window.icon / (i0.bottom - i0.top));
-  await place({ key: 'icon', kind: 'img', src: icon, size: iconSize }, (o) => [R - d / 2 - (o.left + o.right) / 2, cy - (o.top + o.bottom) / 2]);
+  // 作品のアイコン: 題名の 1 行目の左。インクの中心を 1 行目の行の中心に揃える
+  if (icon && i0) {
+    const size = parseInt(te.style!.match(/font-size:(\d+)/)![1]);
+    const lh = Math.round(size * L.lineHeight);
+    const cy = top - to.top + lh / 2;
+    await place({ key: 'icon', kind: 'img', src: icon, size: Math.round(100 * size * L.titleIcon / (i0.bottom - i0.top)) }, (o) => [M - o.left, cy - (o.top + o.bottom) / 2]);
+  }
 
   return { html: (only?: string) => page(els, only) };
 }
