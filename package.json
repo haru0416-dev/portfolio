@@ -18,6 +18,8 @@
     "@astrojs/sitemap": "^3.7.4",
     "@lucide/astro": "^1.46.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@takumi-rs/core": "^2.14.0",
+    "@takumi-rs/helpers": "^2.14.0",
     "astro": "^7.3.3",
     "tailwindcss": "^4.3.3"
   },

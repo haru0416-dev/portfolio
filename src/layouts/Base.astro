@@ -12,12 +12,15 @@ interface Props {
   title?: string;
   description?: string;
   wide?: boolean;
+  /** 共有用画像。省略するとサイト共通の /og.png */
+  image?: { src: string; alt: string };
+  type?: 'website' | 'article';
 }
-const { title, description = SITE.description, wide = false } = Astro.props;
+const { title, description = SITE.description, wide = false, image, type = 'website' } = Astro.props;
 const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const socialImage = new URL('/og.png', Astro.site);
-const socialImageAlt = 'haru のロゴと Rust / TypeScript、haru0416.dev';
+const socialImage = new URL(image?.src ?? '/og.png', Astro.site);
+const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru0416.dev';
 ---
 <!doctype html>
 <html lang="ja">
@@ -46,7 +49,7 @@ const socialImageAlt = 'haru のロゴと Rust / TypeScript、haru0416.dev';
     </script>
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:locale" content="ja_JP" />

@@ -14,7 +14,12 @@ export async function getStaticPaths() {
 const { post, newer, older } = Astro.props;
 const { Content, remarkPluginFrontmatter } = await render(post);
 ---
-<Base title={post.data.title} description={post.data.description}>
+<Base
+  title={post.data.title}
+  description={post.data.description}
+  type="article"
+  image={{ src: `/og/blog/${post.id}.png`, alt: `記事「${post.data.title}」の題名と haru0416.dev` }}
+>
   <article>
     <header class="mb-12">
       <div class="text-xs text-muted flex flex-wrap gap-x-4 mb-4 tracking-[.05em]">

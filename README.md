@@ -13,6 +13,8 @@
 
 共有用画像は `public/og.png`(1200×630px)。編集用の `public/og.svg` にはサイトで使うフォントを埋め込んでいる。SVGを変更したらブラウザで描画し、同じ寸法・倍率1でPNGも書き出す。共通レイアウトから公開ドメインの絶対URLをOGP・Twitterカードに指定する。
 
+記事ページの共有用画像は、ビルド時に `src/og.ts` が Takumi で記事ごとに描き、`/og/blog/<slug>.png` に書き出す(`src/pages/og/blog/[...slug].png.ts`)。フォントはビルド時に Google Fonts から、題名に使う文字を含む分割ファイルだけ取得するので、ビルドにはネットワーク接続が要る。Takumi は `word-break: auto-phrase` に未対応のため、題名は `Intl.Segmenter` で区切った文節の切れ目だけで改行させている。
+
 ## ファイルの役割
 
 | 場所 | 役割 |
