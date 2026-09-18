@@ -11,6 +11,8 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
   return runBackground(canvas, { theme: 'light', fps: FPS }, (ctx) => {
     let W = 0, H = 0, cw = 0, ch = 0;
     let cur = new Float32Array(0), prev = new Float32Array(0);
+    // 同じ列の光の位相は 1 フレームに 1 回だけ計算する。元の数式と同じ倍精度を保つ。
+    let xPhase = new Float64Array(0), xRipple = new Float64Array(0);
     let img: ImageData, off: HTMLCanvasElement, offCtx: CanvasRenderingContext2D;
     let nextDrop = 0, now = 0;
 
@@ -38,6 +40,7 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
       resize(w, h) {
         W = w; H = h; cw = Math.ceil(W / CELL); ch = Math.ceil(H / CELL);
         cur = new Float32Array(cw * ch); prev = new Float32Array(cw * ch);
+        xPhase = new Float64Array(cw); xRipple = new Float64Array(cw);
         off = document.createElement('canvas'); off.width = cw; off.height = ch;
         offCtx = off.getContext('2d')!; img = offCtx.createImageData(cw, ch);
         drops.length = 0; drop(4, 3, 4); nextDrop = 0.4;
@@ -62,14 +65,24 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
       },
       render() {
         const d = img.data, tt = now * 0.25;
+        for (let x = 1; x < cw - 1; x++) {
+          xPhase[x] = x * 0.21 + tt * 1.7;
+          xRipple[x] = Math.sin(x * 0.11 - tt * 0.7);
+        }
         for (let y = 1; y < ch - 1; y++) {
           const fade = Math.max(0, 1 - y / (ch * 0.55)); // 光の網目は下へ行くほど消える
+          const row = y * cw;
+          const yRipple = fade > 0 ? Math.sin(y * 0.13 + tt) : 0;
+          const yPhase = y * 0.17 - tt * 1.3;
           for (let x = 1; x < cw - 1; x++) {
-            const i = y * cw + x, o = i * 4;
+            const i = row + x, o = i * 4;
             const gx = cur[i + 1] - cur[i - 1], gy = cur[i + cw] - cur[i - cw];
             const s = (gx * LIGHT[0] + gy * LIGHT[1]) * 1.1; // 光に向く斜面は明るく、背く斜面は暗く
-            const cx = Math.sin(x * 0.21 + tt * 1.7 + Math.sin(y * 0.13 + tt)) + Math.sin(y * 0.17 - tt * 1.3 + Math.sin(x * 0.11 - tt * 0.7));
-            const net = Math.max(0, cx - 1.3) * fade * 0.4;
+            let net = 0;
+            if (fade > 0) {
+              const cx = Math.sin(xPhase[x] + yRipple) + Math.sin(yPhase + xRipple[x]);
+              net = Math.max(0, cx - 1.3) * fade * 0.4;
+            }
             if (net > 0.02 && s <= 0.02) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, net * 255); }
             else if (s > 0) { d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.min(255, s * 255 * 0.75); }
             else { d[o] = 112; d[o + 1] = 128; d[o + 2] = 208; d[o + 3] = Math.min(255, -s * 255 * 0.5); } // 配色の薄紫に寄せた青
