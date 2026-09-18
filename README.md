@@ -1,99 +1,120 @@
 # Portfolio
 
-記事と自作ツール、ブラウザで動く実験を載せる個人サイト。Astro と Tailwind を使い、静的に生成したファイルを Cloudflare Pages に置く。
+記事、自作ツール、ブラウザで動く実験を載せる個人サイト。Astro と Tailwind CSS で静的に生成し、Cloudflare Pages に配信する。
 
-## 構成
+公開先: https://haru0416.dev/
 
-- `/blog`: `src/content/blog/*.md` を記事として出す。frontmatter は `title / description / pubDate / tags / draft`。タグの絞り込みには最新カードも含め、表示件数と0件時の案内を出す。
-- `/works`: `src/content/works/<id>.md` に 1 作品 1 ファイルで登録する。frontmatter は `name / summary / stack / icon / repo / url / issues / status / order`。一覧のカードから `/works/<id>/` の作品ページに飛ぶ。本文を書くと作品ページに載る。`#feedback` に感想・不具合の報告先を載せる。`issues` は受付が有効な公開 GitHub Issues の URL がある作品だけ指定する。作品ページの共有用画像は `/og/works/<id>.png`(題名の左に `icon` の lucide アイコン)。
-- `/lab`: 実験を 1 ページに 1 つずつ置く。追加するときは `src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。
-- `/rss.xml`, `/sitemap-index.xml` は自動生成。`public/robots.txt` でサイトマップの場所を伝える。`/fonts.css` には自前配信するフォントの `@font-face` をまとめている。
+## 開発
 
-サイト名や GitHub のリンクは `src/site.ts`。公開 URL は `https://haru0416.dev` で、`astro.config.mjs` の `site` に設定している。
-
-サイト共通の共有用画像は `/og.png` で、ビルド時に `src/og.ts` の `renderSiteImage` が描く(`src/pages/og.png.ts`)。共通レイアウトから公開ドメインの絶対URLをOGP・Twitterカードに指定する。
-
-記事ページの共有用画像は、ビルド時に `src/og.ts` が Takumi で記事ごとに描き、`/og/blog/<slug>.png` に書き出す(`src/pages/og/blog/[...slug].png.ts`)。フォントはビルド時に Google Fonts から、題名に使う文字を含む分割ファイルだけ取得するので、ビルドにはネットワーク接続が要る。Takumi は `word-break: auto-phrase` に未対応のため、題名は `Intl.Segmenter` で区切った文節の切れ目だけで改行させている。配置は `src/og.ts` 冒頭に書いた規則(余白・左右の端・ベースライン・題名の縦位置)を満たすように、各要素のインクの位置を測ってから計算する。右側の円は記事ごとのアイコンを置く枠で、`renderPostImage` の `icon` に画像を渡すと差し替わる(省略時はサイトの芽のアイコン)。
-
-## ファイルの役割
-
-| 場所 | 役割 |
-|---|---|
-| `src/layouts/Base.astro` | 共通レイアウト。フォントの preload、テーマ判定、ページ遷移(ClientRouter)、スキップリンク |
-| `src/components/` | `Logo` `Header` `Footer` `Hero`(ページ冒頭)`PostList`(記事一覧)`Tile`(アイコン背景)`Wordmark`(名前の文字送り) |
-| `src/styles/global.css` | 色や寸法の変数、基本スタイル、書体と部品、記事本文、アニメーション |
-| `src/scripts/` | `smooth-scroll`(ホイールの慣性)`reading`(読了時間)`theme`(実効テーマの判定)`background`(背景の起動・停止、リサイズ、非表示時の停止)`surface`(水面)`deep`(深海)`petals`(Canvas 2D)`petals-gpu`(WebGPU) |
-| `src/data/icons.ts` | 使う lucide アイコンの登録。作品のアイコンはここに足す |
-
-## 見た目の規則
-
-寸法は単位 u = 8px で組む。行送りは u の倍数、余白・間隔・角丸は 4px の倍数、文字サイズは 16px × 1.25^n(text-sm だけ半段)。カプセル形の部品は左右の余白を高さの半分にする。線(区切りの点線、ヘッダー・フッターの境)は重ねて描き、箱の大きさを変えない。比には黄金比と三分割を使う(本文の幅 = 広い幅 ÷ φ、トップの 2 列は φ : 1、トップの顔は画面の 61.8% で終わり、横は 2/3 と 1/3 に分ける)。詳しい規則は `src/styles/global.css` の冒頭にある。
-
-配色は OKLCH で指定する。地の色、桃色、薄荷色の色相を `--h`、`--h-accent`、`--h-mint` にまとめ、明度と彩度を変えて使っている。ライトとダークの色は `light-dark()` で指定する。ヘッダーのテーマ設定で「端末の設定に合わせる」「ライト」「ダーク」を選ぶ。端末の設定に戻すと保存済みの固定テーマを解除する。
-
-見出しは `.display` が Fredoka、`.display-jp` が Zen Maru Gothic 700。Zen Maru Gothic は palt(かなと約物を詰める機能)を持たないので、かなと約物だけ詰めた `public/fonts/zen-maru-kana-700.woff2` を先に当てている。`uv run scripts/zen-maru-kana.py` で作り直せる(元フォントと同じ OFL。ライセンスは同じ場所の `zen-maru-kana-OFL.txt`)。和文の見出しが無いページは `Base` に `jpHeadings={false}` を渡し、このフォントを先読みしない。本文には Nunito と OS の日本語フォントを使う。
-
-背景の `.sea` はテーマによって変わる。ダークでは CSS で 2 層の光の帯を動かし、`src/scripts/deep.ts` がマリンスノーと下から上がる泡を描く。下へ行くほど青みが濃くなる。ライトでは `src/scripts/surface.ts` が 2D 波動方程式で雨粒の波紋を計算する。画面の上部には光の網目を重ね、空の水色を付けている。
-
-光の帯は CSS の transform、粒子と波紋は Canvas 2D で動かす。reduced-motion では深海を静止画にし、水面の Canvas を隠す。
-
-`.glass` は背後をぼかして彩度を上げ、左上が明るく右下が暗い縁と、上辺のハイライトを付ける。ヘッダー、カード、ピル、チップ、アイコンボタンに使う。桃色のボタンと押下中のチップは不透明のまま。
-
-カーソルは lucide と同じ 24 の格子、線幅 2、角丸で描いた mouse-pointer-2。桃色の線に白い縁取りを付けている。リンクに重ねても形は変えず、色だけを濃くする。押している間はさらに濃くなり、入力欄では I ビームを使う。画像は `public/cursors/*.svg` にある。CSS の `cursor` に SVG を埋め込み、ホバーできる端末だけに適用する。JavaScript は使わない。形を変えるときは `tools/cursors.py` を編集して実行する。
-
-ホバーと押下の変化は 150〜200ms。スクロールに連動する動きは CSS で指定し、ページ遷移では本文だけを動かす。背景・花びら・慣性スクロールは閲覧中の `prefers-reduced-motion` の変更にも対応する。ただし、花びらの一時停止は設定変更では解除しない。
-
-慣性スクロールはキー・ポインター・タッチ操作で中断する。細かいホイール入力や、外部からスクロール位置が変わったときも中断する。
-
-## 単位の規約
-
-- 余白は 8px の倍数(Tailwind の `2 / 4 / 6 / 8 / 12 / 16 / 24 / 32`)。ピルやチップの内側だけ 4px 刻みを許容する。
-- 文字サイズは 16px を基準に 1.25 倍ずつ増やす(`text-xs` 〜 `text-7xl`)。行送りは 8px の倍数に丸めてある。`text-[...]` や `leading-*` で個別に指定しない。
-- 角丸は `rounded-lg`(8)/ `rounded-2xl`(16)/ `rounded-3xl`(24)/ `rounded-4xl`(40)/ `rounded-full`。入れ子では、外側の角丸から余白を引いた値を内側の角丸にする。たとえばカードが 40px、余白が 24px なら、アイコン背景の角丸は 16px。対応ブラウザでは `corner-shape: squircle`(超楕円)を使い、直線と円弧のつなぎ目にある曲率の段差をなくす。
-- 本文の幅は 42rem、広いレイアウトは 64rem。日付の列は 6rem。
-
-値は `src/styles/global.css` の `@theme` で定義している。
-
-## コマンド
-
-パッケージ管理は Bun。
+Node.js 22.12.0 以上と Bun を使う。Bun のバージョンは `package.json` の `packageManager` を参照。フォント取得のため、ビルドにはネットワーク接続が必要。
 
 ```sh
 bun install
-bun run dev      # 開発サーバー
-bun run build    # dist/ に静的出力
-bun run preview  # dist/ を配信して確認
-bunx astro check
+bun run dev --background
 ```
 
-## curl で見ると
+開発サーバーは http://localhost:4321/ で起動する。
 
-curl / wget / HTTPie でトップページを取得すると、HTML の代わりにサイト紹介のテキストが返る。処理は Cloudflare Pages Functions の `functions/_middleware.ts` にある。`?html` を付けると HTML、`?plain` を付けると色なしのテキストになる。
+```sh
+bun run astro dev status
+bun run astro dev logs
+bun run astro dev stop
+```
 
-同じファイルに、見つけた人向けのおまけを置いている。全応答に `X-Sprout` ヘッダーを付け、`/coffee` は 418 I'm a teapot を返す。POST・PUT・PATCH・DELETE には一言添えて 405 を返す。DNS の TXT レコード(ダッシュボードで設定)は `curl -I` を勧め、順にたどれるようにしている。RFC 2324 の BREW メソッドは Cloudflare が Functions に届く前に 501 で返すので使えない。
+型チェックとビルド:
 
-紹介文やリンクはビルド時に生成する `/meta.json` から読む。ローカルで試すには `bun run build && bunx wrangler pages dev dist` を実行する。
+```sh
+bun run astro check
+bun run build
+bun run preview
+```
 
-## デプロイ (Cloudflare Pages)
+出力先は `dist/`。`preview` は静的出力の確認用で、Cloudflare Pages Functions は実行しない。
 
-応答ヘッダーは `public/_headers` で指定する。全ページにセキュリティ用のヘッダー(HSTS、`nosniff`、他サイトへの埋め込み禁止など)を付け、ファイル名にハッシュが入る `/_astro/*` は1年キャッシュする。`*.pages.dev` の配信先とプレビューには `X-Robots-Tag: noindex` を付け、検索には本番ドメインだけを載せる。
+## コンテンツの追加
 
-Pages プロジェクトは `haru0416-portfolio`。現在は Git 連携ではなく、CLI から直接アップロードしている。
-本番URLは https://haru0416.dev/ 。Pages の配信先 https://haru0416-portfolio.pages.dev/ でも開ける。
+### 記事
+
+`src/content/blog/` に Markdown または MDX を追加する。frontmatter の必須項目は `title` と `pubDate`。`description`、`updatedDate`、`tags`、`draft` は任意で、`draft: true` の記事は公開対象から外れる。
+
+記事は `/blog/<slug>/` に生成される。一覧のタグ絞り込み、RSS、記事ごとのOG画像にも反映される。
+
+### 作品
+
+`src/content/works/<id>.md` に登録する。必須項目は `name`、`summary`、`stack`。本文を書けば `/works/<id>/` の説明として表示される。
+
+任意項目は `icon`、`repo`、`url`、`issues`、`status`、`order`。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
+
+`issues` には、受付を有効にした公開 GitHub Issues のURLを指定する。作品ページと `/works/#feedback` に掲載される。アイコンを追加するときは `src/data/icons.ts` にも登録する。
+
+項目の型とデフォルト値は `src/content.config.ts` で定義している。
+
+### Lab
+
+`src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。
+
+## 主なファイル
+
+| 場所 | 役割 |
+| --- | --- |
+| `src/site.ts` | サイト名、説明、GitHub URL |
+| `astro.config.mjs` | 公開URL、フォント、Astroの設定 |
+| `src/layouts/Base.astro` | 共通レイアウト、メタ情報、テーマ、ページ遷移 |
+| `src/components/` | ヘッダー、記事一覧などの共通部品 |
+| `src/styles/global.css` | 色・寸法の変数、部品、記事本文、アニメーション |
+| `src/scripts/` | テーマ判定、スクロール、背景・花びらの描画 |
+| `src/og.ts` | TakumiによるOG画像生成 |
+| `functions/_middleware.ts` | CLI向け応答と追加ヘッダー |
+| `public/_headers` | 静的ファイルの応答ヘッダーとキャッシュ設定 |
+
+## スタイルと生成アセット
+
+色と寸法は `src/styles/global.css` にまとめている。色は OKLCH と `light-dark()` で指定し、ヘッダーで端末設定・ライト・ダークを切り替える。レイアウトの最大幅は通常 `41rem`、`wide` 指定時は `64rem`。
+
+背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面のCanvasを隠す。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
+
+### フォント
+
+ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito とOSの日本語フォントを使う。フォントは自前配信し、`/fonts.css` に `@font-face` をまとめる。
+
+和文見出しには、かなと約物を詰めた派生フォントを優先して当てる。再生成には uv と Python 3.12 以上が必要。
+
+```sh
+uv run scripts/zen-maru-kana.py
+```
+
+出力は `public/fonts/zen-maru-kana-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと先読みを省ける。
+
+### OG画像とカーソル
+
+OG画像はビルド時に1200×630のPNGとして生成する。サイト共通は `/og.png`、記事用は `/og/blog/<slug>.png`、作品用は `/og/works/<id>.png`。配色はダークテーマに合わせ、作品のアイコンは題名の左に置く。
+
+カーソルは `tools/cursors.py` で定義する。次のコマンドは `public/cursors/` のSVGと `global.css` のカーソル設定を更新する。
+
+```sh
+python3 tools/cursors.py
+```
+
+## Cloudflare固有の応答
+
+curl・wget・HTTPieなどでトップページを取得すると、サイト紹介をテキストで返す。`?html` または `Accept: text/html` でHTML、`?plain` で色なしのテキストになる。紹介内容はビルド時に生成する `/meta.json` から読む。
+
+ミドルウェアは応答に `X-Sprout` ヘッダーを追加する。`/coffee` は418、POST・PUT・PATCH・DELETEは405を返す。ローカルでこれらを確認する場合は、Astroではなく Wrangler で起動する。
+
+```sh
+bun run build
+bunx wrangler pages dev dist
+```
+
+## デプロイ
+
+Cloudflare Pages の `haru0416-portfolio` にCLIから直接アップロードする。初回は `bunx wrangler login` で認証する。SSH先などでブラウザから localhost に戻れない場合は `bunx wrangler login --device --browser=false` を使う。
 
 ```sh
 bun run build
 bunx wrangler pages deploy dist --project-name haru0416-portfolio --branch main
 ```
 
-`main` は本番ブランチ。上のコマンドは作業ツリーから生成した `dist` を公開するので、未コミットの変更も含まれる。`functions/` も Wrangler が一緒に配信する。
+このコマンドは本番ブランチ `main` に公開する。作業ツリーから生成した `dist/` を使うため、未コミットの変更も含まれる。`functions/` は Wrangler が一緒に配信する。
 
-初回は `bunx wrangler login` で認証する。SSH先などでブラウザのlocalhostへ戻れない場合は `bunx wrangler login --device --browser=false` を使い、表示されたURLとコードで承認する。
-
-独自ドメインは Pages に登録し、DNSも設定済み。現在のレコードは以下。接続先を変更するときも、メール用の MX・TXT は変更しない。
-
-| 種類 | 名前 | 接続先 | プロキシ | TTL |
-|---|---|---|---|---|
-| CNAME | `@` | `haru0416-portfolio.pages.dev` | 有効 | 自動 |
-
-Wrangler の OAuth 認証には DNS の編集権限がないため、DNS の変更はダッシュボードか、このゾーンに限定した DNS 編集権限の API トークンで行う。Pages のカスタムドメインは `Active` で、`https://haru0416.dev/` のHTTPS表示を確認済み。
+Pages側の配信先は https://haru0416-portfolio.pages.dev/ 。`public/_headers` では `*.pages.dev` に `noindex` を指定している。独自ドメインを変更するときは Pages の登録とDNSを確認し、メール用のMX・TXTレコードは変更しない。
