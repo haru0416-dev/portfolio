@@ -295,8 +295,15 @@ html[data-astro-transition="back"]::view-transition-new(main) { animation-name: 
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
 ::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
-html:active-view-transition-type(filter)::view-transition-old(main),
-html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; }
+/* タグ絞り込み(同一ページ内)では本文は切り替えるだけで、記事(.post)だけが詰まる。
+   本文を重ねたり高さを補間したりすると、新旧の本文が引き伸ばされて二重に見える。 */
+html:active-view-transition-type(filter)::view-transition-group(main) { animation: none; }
+html:active-view-transition-type(filter)::view-transition-old(main) { display: none; }
+html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; height: auto; }
+html:active-view-transition-type(filter)::view-transition-old(.post) { display: none; }
+html:active-view-transition-type(filter)::view-transition-new(.post) { animation: none; }
+html:active-view-transition-type(filter)::view-transition-old(.post):only-child { display: block; animation: vt-title-out 150ms ease-out both; }
+html:active-view-transition-type(filter)::view-transition-new(.post):only-child { animation: vt-title-in 200ms ease-out 80ms both; }
 
 /* =====================================================================
    6. カーソル
