@@ -21,7 +21,6 @@
   --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
   --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));
   --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%));
-  --shadow:      light-dark(oklch(40% 0.06 var(--h) / 12%), oklch(0% 0 0 / 35%));
   --sea-depth:   light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
   --sea-ray:     light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
   --sea-sky:     light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
@@ -136,8 +135,9 @@ header.site.glass::before { content: none; }
 }
 
 .work-card {
-  display: block; position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 1.5rem; color: white;
-  box-shadow: 0 1px 2px var(--shadow), 0 4px 12px -4px var(--shadow), inset 0 0 0 1px var(--glass-hi);
+  display: block; position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 1.5rem; color: var(--ink);
+  /* 落ち影は使わず、pill/chip と同じ細いリングと上辺のハイライトで縁取る。 */
+  box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
   transition: box-shadow 300ms ease;
 }
 .work-hero { border-radius: 2.5rem; }
@@ -168,8 +168,9 @@ header.site.glass::before { content: none; }
 .hue-0 { --cover-bg: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); --cover-fg: var(--accent); --cover-dot: color-mix(in oklch, var(--accent) 35%, transparent); }
 .hue-1 { --cover-bg: color-mix(in oklch, var(--mint) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--mint) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--mint) 55%, transparent); }
 .hue-2 { --cover-bg: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); --cover-fg: var(--ink-2); --cover-dot: color-mix(in oklch, var(--ink-2) 30%, transparent); }
-.work-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, oklch(18% 0.03 var(--h) / .82), oklch(18% 0.03 var(--h) / .35) 30%, transparent 60%); }
-.work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.25rem; text-shadow: 0 1px 2px oklch(0% 0 0 / .3); }
+/* カバーは紙色に寄せてあるので、題名はインク色で直接置く。写真カバーのときだけ下端を紙色でぼかして読めるようにする。 */
+.work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.25rem; }
+.work-card:has(.cover-img) .caption { background: linear-gradient(to top, color-mix(in oklch, var(--paper) 85%, transparent), transparent); }
 
 /* 押し込みの transform は各部品の transition に含める。 */
 .press:active { transform: scale(0.94); }
@@ -227,7 +228,7 @@ header.site.glass::before { content: none; }
   :is(.pill-accent, .link-row-accent):hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
   .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
   .u-link:hover::after { transform: scaleX(1); }
-  .work-card:hover { box-shadow: 0 2px 4px var(--shadow), 0 16px 32px -8px var(--shadow), inset 0 0 0 1px var(--glass-hi); }
+  .work-card:hover { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px color-mix(in oklch, var(--accent) 45%, var(--line)); }
   .work-card:hover .cover { transform: scale(1.05); }
 }
 

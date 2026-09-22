@@ -52,7 +52,6 @@ const jsonLd = {
     <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
     <header transition:name={`work-${work.id}`} transition:animate="initial" class="work-card work-hero mb-12">
       <WorkCover icon={d.icon} cover={d.cover} hue={hue} iconSize={160} loading="eager" sizes="(min-width: 68rem) 60rem, 100vw" widths={[640, 1200, 1920]} />
-      <span class="shade" aria-hidden="true"></span>
       <div class="caption">
         <p class="text-xs leading-4 tracking-[.1em] uppercase opacity-85 mb-2">
           {WORK_STATUS_LABELS[d.status] && <span class="font-bold">{WORK_STATUS_LABELS[d.status]} · </span>}{d.stack.join(' · ')}
