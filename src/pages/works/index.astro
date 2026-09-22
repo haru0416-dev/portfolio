@@ -27,7 +27,7 @@ const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archiv
             <span class="shade" aria-hidden="true"></span>
             {badge[w.data.status] && <span class="tag badge absolute top-4 left-4 z-1 tracking-[.1em] uppercase">{badge[w.data.status]}</span>}
             <span class="caption">
-              <span transition:name={`work-title-${w.id}`} class="display-jp block w-fit max-w-full text-base leading-6 line-clamp-2">{w.data.name}</span>
+              <span transition:name={`work-title-${w.id}`} class="vt-swap display-jp block w-fit max-w-full text-base leading-6 line-clamp-2">{w.data.name}</span>
               <span class="block text-xs leading-4 mt-1 opacity-80 truncate">{w.data.stack.join(' · ')}</span>
             </span>
           </a>

@@ -56,7 +56,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
               <span transition:name={`work-${w.id}`} class="cover-thumb block"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
               <div class="min-w-0">
-                <div transition:name={`work-title-${w.id}`} class="display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
+                <div transition:name={`work-title-${w.id}`} class="vt-swap display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
                 <p class="text-sm text-muted">{firstSentence(w.data.summary)}</p>
               </div>
             </a>
@@ -72,7 +72,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         {lab.map((l) => (
           <li>
             <a href={`/lab/${l.slug}/`} class="group block">
-              <div transition:name={`lab-${l.slug}`} class="display w-fit text-lg group-hover:text-accent-ink transition-colors">{l.title}</div>
+              <div transition:name={`lab-${l.slug}`} class="vt-swap display w-fit text-lg group-hover:text-accent-ink transition-colors">{l.title}</div>
               <p class="text-sm text-muted">{l.description}</p>
             </a>
           </li>
