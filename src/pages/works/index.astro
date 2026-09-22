@@ -46,13 +46,8 @@ const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archiv
   <section id="feedback" aria-labelledby="feedback-heading" class="mt-16 pt-8 dotted scroll-mt-24">
     <h2 id="feedback-heading" class="display-jp text-2xl mb-4">感想・不具合の報告</h2>
     <div class="max-w-[44rem] space-y-4 text-sm text-ink-2">
-      <p>下記の作品への感想や不具合は、それぞれの GitHub Issues へお願いします。投稿には GitHub へのログインが必要です。</p>
+      <p>作品への感想や不具合は、各作品ページの「感想・不具合を送る」から GitHub Issues へお願いします。投稿には GitHub へのログインが必要です。</p>
       <p>投稿内容は公開されます。個人情報や、公開したくない会話ログ・認証情報などは書き込まないでください。</p>
-      <ul role="list" class="space-y-2">
-        {works.filter((w) => w.data.issues).map((w) => (
-          <li><a href={w.data.issues} class="u-link hover:text-ink inline-flex items-center min-h-6">{w.data.name} の GitHub Issues →</a></li>
-        ))}
-      </ul>
     </div>
   </section>
 </Base>
