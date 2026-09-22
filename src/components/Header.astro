@@ -18,7 +18,7 @@ const path = Astro.url.pathname;
           class:list={['inline-flex shrink-0 items-center h-8 rounded-lg px-1 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
-      <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-lg text-muted hover:text-ink transition-colors">
+      <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-lg text-muted hover:text-ink hover:bg-paper-2">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>
@@ -71,6 +71,8 @@ const path = Astro.url.pathname;
   .theme-options label:has(:checked) { background: var(--paper-2); }
   .theme-options label:has(:focus-visible) { outline: 3px solid var(--ink); outline-offset: 0; }
   .theme-options input { flex-shrink: 0; accent-color: var(--accent-ink); cursor: inherit; }
+  /* 枠は行(label)に描くので、ラジオ自体の枠は重ねない。 */
+  .theme-options input:focus-visible { outline: none; }
 </style>
 <script>
   import { isDark, onThemeChange } from '../scripts/theme';
@@ -109,12 +111,18 @@ const path = Astro.url.pathname;
       applySiteTheme?.();
       sync();
     };
+    let openedByKey = false;
+    const markPointer = () => { openedByKey = false; };
+    const markKey = () => { openedByKey = true; };
     const syncOpen = () => {
       const open = popover.matches(':popover-open');
       btn.setAttribute('aria-expanded', String(open));
-      if (open) popover.querySelector<HTMLInputElement>('input:checked')?.focus();
+      // マウスで開いたときはキーボード用の枠を出さない。
+      if (open) popover.querySelector<HTMLInputElement>('input:checked')?.focus({ focusVisible: openedByKey } as FocusOptions);
     };
     sync();
+    btn.addEventListener('pointerdown', markPointer);
+    btn.addEventListener('keydown', markKey);
     popover.addEventListener('change', select);
     popover.addEventListener('toggle', syncOpen);
     const offTheme = onThemeChange(sync);
@@ -122,6 +130,8 @@ const path = Astro.url.pathname;
       offTheme();
       popover.removeEventListener('change', select);
       popover.removeEventListener('toggle', syncOpen);
+      btn.removeEventListener('pointerdown', markPointer);
+      btn.removeEventListener('keydown', markKey);
     };
   });
 </script>

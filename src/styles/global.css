@@ -86,7 +86,7 @@ body {
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
 time, .tabular-nums { white-space: nowrap; }
 
-:where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: inherit; }
+:where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
@@ -175,7 +175,7 @@ header.site.glass::before { content: none; }
 
 /* 押し込みの transform は各部品の transition に含める。 */
 .press:active { transform: scale(0.94); }
-.press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out); }
+.press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out), color 150ms ease, background-color 150ms ease; }
 
 .pill, .chip {
   display: inline-flex; align-items: center; font-weight: 700;
@@ -226,14 +226,16 @@ header.site.glass::before { content: none; }
 @media (hover: hover) and (pointer: fine) {
   .pill:not(.pill-accent):hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
   .link-row:not(.link-row-accent):hover { background: var(--accent-soft); }
-  :is(.pill-accent, .link-row-accent):hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
+  /* ダークでは暗くすると押せないように見えるため、明るくする。 */
+  :is(.pill-accent, .link-row-accent):hover { background: color-mix(in oklch, var(--accent-btn) 88%, light-dark(black, white)); }
   .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
   .u-link:hover::after { transform: scaleX(1); }
   .work-card:hover { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px color-mix(in oklch, var(--accent) 45%, var(--line)); }
   .work-card:hover .cover { transform: scale(1.05); }
 }
 
-.scroll-row { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-block: 4px; margin-block: -4px; }
+/* 左右の余白ぶん scroll-padding を取り、先頭を余白の内側に揃える。上下はフォーカス枠(3px + 3px)が切れない幅を取る。 */
+.scroll-row { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 1rem; overscroll-behavior-x: contain; padding-block: 6px; margin-block: -6px; }
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row > * { flex-shrink: 0; scroll-snap-align: start; }
 @media (min-width: 40rem) { .scroll-row { overflow: visible; } }
