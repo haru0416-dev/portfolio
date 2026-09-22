@@ -128,13 +128,12 @@ header.site.glass::before { content: none; }
 
 .card { border-radius: 2.5rem; padding: 1.5rem; }
 .card:where(:not(.glass)) { background: var(--paper-2); }
-.tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
 .golden { aspect-ratio: 1.618; }
 @supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
 .petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
 @supports (corner-shape: squircle) {
-  .card, .tile, .work-card, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
+  .card, .work-card, .cover-thumb, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
 }
 
 /* 作品カード: 16:9 のカバーに題名を重ねる。カバーはアイコンか cover 画像で、色は hue-0〜2 で回す。 */
@@ -144,7 +143,16 @@ header.site.glass::before { content: none; }
   transition: box-shadow 300ms ease;
 }
 .work-hero { border-radius: 2.5rem; }
-@media (min-width: 40rem) { .work-hero { aspect-ratio: 21 / 9; } }
+@media (min-width: 40rem) { .work-hero { aspect-ratio: 12 / 5; } }
+/* 高さを 8px に丸め、行送りをグリッドに乗せる。cqi は親を基準にする。 */
+@supports (height: round(1px, 8px)) {
+  :has(> .work-card) { container-type: inline-size; }
+  .work-card { aspect-ratio: auto; height: round(100cqi * 9 / 16, 8px); }
+  @media (min-width: 40rem) { .work-hero { height: round(100cqi * 5 / 12, 8px); } }
+}
+.cover-thumb { position: relative; flex-shrink: 0; width: 6rem; height: 3.5rem; border-radius: .75rem; overflow: hidden; }
+.cover-thumb .cover { padding: 0; justify-content: center; }
+.cover-thumb .cover-icon { filter: none; }
 .cover {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden;
   background-color: var(--cover-bg); color: var(--cover-fg); transition: transform 500ms var(--ease-out);

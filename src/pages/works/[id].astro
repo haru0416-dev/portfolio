@@ -9,7 +9,7 @@ export async function getStaticPaths() {
   const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
   return works.map((work, i) => ({
     params: { id: work.id },
-    props: { work, hue: i, prev: works[i - 1], next: works[i + 1] },
+    props: { work, hue: i, prev: works[i - 1] && { work: works[i - 1], hue: i - 1 }, next: works[i + 1] && { work: works[i + 1], hue: i + 1 } },
   }));
 }
 const { work, hue, prev, next } = Astro.props;
@@ -95,17 +95,23 @@ const jsonLd = {
   {(prev || next) && <nav aria-label="前後の作品" class="mt-16 pt-8 dotted grid grid-cols-2 gap-4 sm:gap-8 text-sm">
     <div>
       {prev && (
-        <a href={`/works/${prev.id}/`} class="group block">
-          <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">← Prev</div>
-          <div class="display-jp text-base group-hover:text-accent transition-colors">{prev.data.name}</div>
+        <a href={`/works/${prev.work.id}/`} class="group flex items-center gap-4">
+          <span class="cover-thumb hidden sm:block"><WorkCover icon={prev.work.data.icon} cover={prev.work.data.cover} hue={prev.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+          <span class="min-w-0">
+            <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">← Prev</span>
+            <span class="display-jp block text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
+          </span>
         </a>
       )}
     </div>
     <div class="text-right">
       {next && (
-        <a href={`/works/${next.id}/`} class="group block">
-          <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">Next →</div>
-          <div class="display-jp text-base group-hover:text-accent transition-colors">{next.data.name}</div>
+        <a href={`/works/${next.work.id}/`} class="group flex flex-row-reverse items-center gap-4">
+          <span class="cover-thumb hidden sm:block"><WorkCover icon={next.work.data.icon} cover={next.work.data.cover} hue={next.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+          <span class="min-w-0">
+            <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">Next →</span>
+            <span class="display-jp block text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>
+          </span>
         </a>
       )}
     </div>

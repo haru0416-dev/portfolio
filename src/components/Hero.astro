@@ -1,14 +1,9 @@
 ---
-interface Props {
-  eyebrow?: string;
-  title: string;
-  lead?: string;
-  displayJp?: boolean;
-}
-const { eyebrow, title, lead, displayJp = false } = Astro.props;
+import Wordmark from './Wordmark.astro';
+interface Props { title: string; lead?: string }
+const { title, lead } = Astro.props;
 ---
 <header class="pt-4 pb-12 mb-4">
-  {eyebrow && <p class="eyebrow eyebrow-plain mb-4"><span>{eyebrow}</span></p>}
-  <h1 class:list={[displayJp ? 'display-jp' : 'display', 'text-3xl sm:text-4xl']}>{title}</h1>
-  {lead && <p class="text-base text-ink-2 mt-4 max-w-[36rem]">{lead}</p>}
+  <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text={title} /></h1>
+  {lead && <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead">{lead}</p>}
 </header>

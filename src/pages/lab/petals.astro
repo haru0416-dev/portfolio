@@ -1,11 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
-import Hero from '../../components/Hero.astro';
 import { labBySlug } from '../../data/lab';
 const meta = labBySlug('petals');
 ---
 <Base title={meta.title} description={meta.description} wide jpHeadings={false}>
-  <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} />
+  <header class="mb-12">
+    <a href="/lab/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Lab</a>
+    <h1 class="display text-2xl sm:text-3xl">{meta.title}</h1>
+    <p class="mt-4 text-base text-ink-2 max-w-[36rem]">{meta.description}<span class="text-muted"> · {meta.date.replaceAll('-', '.')}</span></p>
+  </header>
   <div class="@container">
     <canvas id="petals" role="img" aria-label="桜の花びらが風に乗って舞うアニメーション" class="w-full rounded-3xl petal-sky golden"></canvas>
   </div>

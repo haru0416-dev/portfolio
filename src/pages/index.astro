@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import Tile from '../components/Tile.astro';
+import WorkCover from '../components/WorkCover.astro';
 import Wordmark from '../components/Wordmark.astro';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
@@ -51,12 +51,12 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
     <section class="reveal lg:col-start-2 lg:row-start-1 lg:row-span-2">
       <h2 class="eyebrow mb-4"><span>Works</span></h2>
       <ul role="list" class="space-y-4">
-        {works.map((w) => (
+        {works.map((w, i) => (
           <li>
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
-              <Tile icon={w.data.icon} size={48} class="bg-paper-2" />
+              <span class="cover-thumb block"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
               <div class="min-w-0">
-                <div class="text-base font-bold leading-6 group-hover:text-accent transition-colors">{w.data.name}</div>
+                <div class="text-base font-bold leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
                 <p class="text-sm text-muted">{firstSentence(w.data.summary)}</p>
               </div>
             </a>
@@ -72,7 +72,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         {lab.map((l) => (
           <li>
             <a href={`/lab/${l.slug}/`} class="group block">
-              <div class="display text-lg group-hover:text-accent transition-colors">{l.title}</div>
+              <div class="display text-lg group-hover:text-accent-ink transition-colors">{l.title}</div>
               <p class="text-sm text-muted">{l.description}</p>
             </a>
           </li>

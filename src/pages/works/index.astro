@@ -1,17 +1,14 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Wordmark from '../../components/Wordmark.astro';
+import Hero from '../../components/Hero.astro';
 import WorkCover from '../../components/WorkCover.astro';
 const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
 const stacks = [...new Set(works.flatMap((w) => w.data.stack))].sort((a, b) => a.localeCompare(b, 'en'));
 const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archived: 'Archived' } as const;
 ---
 <Base title="Works" wide>
-  <header class="pt-4 pb-12 mb-4">
-    <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text="Works" /></h1>
-    <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead">作ったツールをいくつか紹介しています。ほかのプロジェクトは GitHub にあります。</p>
-  </header>
+  <Hero title="Works" lead="作ったツールをいくつか紹介しています。ほかのプロジェクトは GitHub にあります。" />
 
   <search aria-label="技術で絞り込む" class="mb-6">
     <div id="stack-filter" class="scroll-row -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 sm:flex-wrap">

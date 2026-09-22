@@ -63,16 +63,16 @@ const jsonLd = {
     <div>
       {older && (
         <a href={`/blog/${older.id}/`} class="group block">
-          <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">← Older</div>
-          <div class="display-jp text-base group-hover:text-accent transition-colors">{older.data.title}</div>
+          <div class="text-xs tracking-[.12em] uppercase text-muted mb-2">← Older</div>
+          <div class="display-jp text-base group-hover:text-accent-ink transition-colors">{older.data.title}</div>
         </a>
       )}
     </div>
     <div class="text-right">
       {newer && (
         <a href={`/blog/${newer.id}/`} class="group block">
-          <div class="text-xs tracking-[.12em] uppercase text-muted mb-1">Newer →</div>
-          <div class="display-jp text-base group-hover:text-accent transition-colors">{newer.data.title}</div>
+          <div class="text-xs tracking-[.12em] uppercase text-muted mb-2">Newer →</div>
+          <div class="display-jp text-base group-hover:text-accent-ink transition-colors">{newer.data.title}</div>
         </a>
       )}
     </div>
