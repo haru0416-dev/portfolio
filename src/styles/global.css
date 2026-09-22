@@ -66,7 +66,8 @@
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --font-display: var(--font-fredoka), var(--font-zen-maru);
-  --font-display-jp: "Zen Maru Kana", var(--font-zen-maru);
+  /* 欧文は英字の見出しと同じ Fredoka、かなは Zen Maru Kana、漢字は Zen Maru Gothic で描く。 */
+  --font-display-jp: "Zen Maru Kana", var(--font-fredoka), var(--font-zen-maru);
   --font-sans: var(--font-nunito);
   --font-mono: var(--font-jetbrains);
 }
@@ -107,9 +108,8 @@ time, .tabular-nums { white-space: nowrap; }
   src: url("/fonts/zen-maru-kana-700.woff2") format("woff2");
   unicode-range: U+3001-3002, U+3008-3011, U+3014-3015, U+3041-3096, U+309D-309E, U+30A1-30FB, U+30FD-30FE, U+FF01, U+FF08-FF09, U+FF0C, U+FF0E, U+FF1A-FF1B, U+FF1F;
 }
-.display-jp { font-family: var(--font-display-jp); font-weight: 700; }
-/* 作品名は英字の名前が多いため、欧文だけ見出しと同じ Fredoka にする。Fredoka は 600 のみ読み込むので太さを合わせる。 */
-.display-jp.work-name { font-family: "Zen Maru Kana", var(--font-fredoka), var(--font-zen-maru); font-weight: 600; }
+/* Fredoka は 600 のみ読み込むため 600 を指定する。和文は 700 しかないので、そのまま 700 で描かれる。 */
+.display-jp { font-family: var(--font-display-jp); font-weight: 600; }
 .hero-mark {
   background: color-mix(in oklch, var(--accent-soft) 45%, var(--glass-bg));
   box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px color-mix(in oklch, var(--accent) 30%, var(--line)), 0 0 0 12px color-mix(in oklch, var(--accent-soft) 25%, transparent);

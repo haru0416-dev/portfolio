@@ -1,6 +1,6 @@
 .prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
 .prose > * + * { margin-top: 1.5rem; }
-.prose :is(h2, h3) { font-family: var(--font-display-jp); font-weight: 700; color: var(--ink); }
+.prose :is(h2, h3) { font-family: var(--font-display-jp); font-weight: 600; color: var(--ink); }
 .prose h2 { font-size: var(--text-xl); line-height: 2rem; margin-top: 4rem; }
 .prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
 .prose h2 + *, .prose h3 + * { margin-top: 1rem; }
