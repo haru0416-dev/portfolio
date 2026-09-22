@@ -76,6 +76,11 @@ function mountFilter(kind: keyof typeof filters): MountedFilter | undefined {
     });
     empty.hidden = count > 0;
     status.textContent = `${selected ? `#${selected} · ` : ''}${count} 件の${label}`;
+    // 絞り込みを URL に残し、共有や再読み込み、記事のタグからのリンクで同じ状態を開けるようにする。
+    const url = new URL(location.href);
+    if (selected) url.searchParams.set(prefix, selected);
+    else url.searchParams.delete(prefix);
+    if (url.href !== location.href) history.replaceState(history.state, '', url);
   };
   const select = (value: string, animate: boolean) => {
     if (value === selected) return;
@@ -116,6 +121,9 @@ function mountFilter(kind: keyof typeof filters): MountedFilter | undefined {
     allButton?.focus({ preventScroll: true });
     select('', event.detail > 0);
   }, { signal: listeners.signal });
+
+  const initial = new URLSearchParams(location.search).get(prefix) ?? '';
+  if (initial && buttons.some(({ value }) => value === initial)) select(initial, false);
 
   return {
     finish() {
