@@ -49,10 +49,10 @@ const jsonLd = {
 >
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   <article>
-    <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
+    <a href="/works/" data-vt-back class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
     <header transition:name={`work-${work.id}`} transition:animate="initial" class="work-card work-hero mb-12">
       <WorkCover icon={d.icon} cover={d.cover} hue={hue} iconSize={160} loading="eager" sizes="(min-width: 68rem) 60rem, 100vw" widths={[640, 1200, 1920]} />
-      <div class="caption">
+      <div transition:name={`work-caption-${work.id}`} transition:animate="initial" class="caption vt-swap">
         <p class="text-xs leading-4 tracking-[.1em] uppercase opacity-85 mb-2">
           {WORK_STATUS_LABELS[d.status] && <span class="font-bold">{WORK_STATUS_LABELS[d.status]} · </span>}{d.stack.join(' · ')}
         </p>
@@ -99,7 +99,7 @@ const jsonLd = {
           <span transition:name={`work-${prev.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover icon={prev.work.data.icon} cover={prev.work.data.cover} hue={prev.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
           <span class="min-w-0">
             <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">← Prev</span>
-            <span class="display-jp block text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
+            <span transition:name={`work-title-${prev.work.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
           </span>
         </a>
       )}
@@ -110,7 +110,7 @@ const jsonLd = {
           <span transition:name={`work-${next.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover icon={next.work.data.icon} cover={next.work.data.cover} hue={next.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
           <span class="min-w-0">
             <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">Next →</span>
-            <span class="display-jp block text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>
+            <span transition:name={`work-title-${next.work.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit ml-auto text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>
           </span>
         </a>
       )}

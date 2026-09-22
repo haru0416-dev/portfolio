@@ -95,7 +95,13 @@ const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、har
       import { startSurface } from '../scripts/surface';
       import { startDeep } from '../scripts/deep';
       import type { BackgroundControl } from '../scripts/background';
+      import type { TransitionBeforePreparationEvent } from 'astro:transitions/client';
       installSmoothScroll();
+      // 「← Works」のような戻りリンクは、履歴の戻ると同じ向きで遷移させる。
+      document.addEventListener('astro:before-preparation', (e) => {
+        const ev = e as TransitionBeforePreparationEvent;
+        if (ev.sourceElement?.closest('[data-vt-back]')) ev.direction = 'back';
+      });
       let bg: BackgroundControl[] = [];
       const boot = () => {
         bg.forEach((b) => b.dispose());
