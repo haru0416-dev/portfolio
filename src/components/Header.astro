@@ -106,14 +106,7 @@ const path = Astro.url.pathname;
       if (next !== 'system' && next !== 'light' && next !== 'dark') return;
       if (next === 'system') localStorage.removeItem('theme');
       else localStorage.setItem('theme', next);
-      const h = document.documentElement;
-      h.classList.toggle('dark', next === 'dark');
-      h.classList.toggle('light', next === 'light');
-      document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next === 'system' ? 'light dark' : next);
-      // Base.astro の初期化と同じ色選択を維持する。
-      document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
-        m.content = next === 'system' ? (m.media.includes('dark') ? m.dataset.dark : m.dataset.light) ?? m.content : m.dataset[next] ?? m.content;
-      });
+      applySiteTheme?.();
       sync();
     };
     const syncOpen = () => {

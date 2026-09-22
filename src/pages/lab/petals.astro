@@ -1,8 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Hero from '../../components/Hero.astro';
-import { LAB } from '../../data/lab';
-const meta = LAB.find((l) => l.slug === 'petals')!;
+import { labBySlug } from '../../data/lab';
+const meta = labBySlug('petals');
 ---
 <Base title={meta.title} description={meta.description} wide jpHeadings={false}>
   <Hero eyebrow={`Lab / ${meta.date.replaceAll('-', '.')}`} title={meta.title} lead={meta.description} />

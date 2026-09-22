@@ -2,12 +2,13 @@
 import { getCollection } from 'astro:content';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
+import { formatDate } from '../date';
 
 export async function GET() {
   const posts = (await getCollection('blog', ({ data }) => !data.draft))
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .slice(0, 5)
-    .map((p) => ({ title: p.data.title, date: p.data.pubDate.toISOString().slice(0, 10), path: `/blog/${p.id}/` }));
+    .map((p) => ({ title: p.data.title, date: formatDate(p.data.pubDate), path: `/blog/${p.id}/` }));
   const works = (await getCollection('works'))
     .sort((a, b) => a.data.order - b.data.order)
     .map((w) => ({ name: w.data.name, status: w.data.status, url: w.data.status === 'soon' ? null : (w.data.url ?? w.data.repo ?? null) }));

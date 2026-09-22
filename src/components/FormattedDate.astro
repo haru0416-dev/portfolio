@@ -1,6 +1,7 @@
 ---
+import { formatDate } from '../date';
 interface Props { date: Date; class?: string }
 const { date, class: cls } = Astro.props;
-const iso = date.toISOString().slice(0, 10);
+const iso = formatDate(date);
 ---
 <time datetime={iso} class:list={['tabular-nums', cls]}>{iso.replaceAll('-', '.')}</time>

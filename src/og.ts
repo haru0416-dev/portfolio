@@ -4,6 +4,8 @@ import { googleFonts, subsetFonts, type FontSubset } from '@takumi-rs/helpers';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { SITE } from './site';
+import { THEME_COLOR } from './palette';
+import { formatDate } from './date';
 
 const W = 1200, H = 630;
 export const OG_SIZE = { width: W, height: H } as const;
@@ -16,7 +18,7 @@ const L = {
   titleIcon: 0.8, // インクの高さ / 文字サイズ
 };
 const C = { ink: '#ece9f2', ink2: '#c0bbca', muted: '#958ea2', accent: '#fe89b7', line: '#352f40' };
-const PAPER = '#15121c';
+const PAPER = THEME_COLOR.dark;
 const BG = [
   `background-color:${PAPER}`,
   'background-image:' + [
@@ -177,10 +179,14 @@ export interface CardImage {
   icon?: string;
 }
 
-export const postEyebrow = (date: Date) => `BLOG · ${date.toISOString().slice(0, 10).replaceAll('-', '.')}`;
+export const postEyebrow = (date: Date) => `BLOG · ${formatDate(date).replaceAll('-', '.')}`;
 
 export async function lucideIcon(name: string) {
-  const svg = await readFile(join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`), 'utf8');
+  const path = join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`);
+  const svg = await readFile(path, 'utf8').catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') throw new Error(`lucide-static に ${name}.svg がありません。src/data/icon-names.ts の名前とパッケージがずれています。`, { cause: err });
+    throw err;
+  });
   return `data:image/svg+xml,${encodeURIComponent(svg.replace(/<!--.*?-->/s, '').replaceAll('currentColor', C.accent))}`;
 }
 

@@ -3,6 +3,8 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE } from '../site';
+import { labFromPath } from '../data/lab';
+import { rootColorStyle, THEME_COLOR } from '../palette';
 import { ClientRouter } from 'astro:transitions';
 import { componentDataByCssVariable } from 'virtual:astro:assets/fonts/internal';
 const preloads = ['--font-fredoka', '--font-nunito'].flatMap((v) => componentDataByCssVariable.get(v)?.preloads ?? []);
@@ -18,11 +20,13 @@ interface Props {
 const { title, description = SITE.description, wide = false, image, type = 'website', jpHeadings = true } = Astro.props;
 const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const socialImage = new URL(image?.src ?? '/og.png', Astro.site);
-const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru0416.dev';
+const lab = labFromPath(Astro.url.pathname);
+const social = image ?? (lab ? { src: `/og/lab/${lab.slug}.png`, alt: `実験「${lab.title}」の題名と haru0416.dev` } : undefined);
+const socialImage = new URL(social?.src ?? '/og.png', Astro.site);
+const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、haru0416.dev';
 ---
 <!doctype html>
-<html lang="ja">
+<html lang="ja" style={rootColorStyle}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,24 +37,28 @@ const socialImageAlt = image?.alt ?? 'haru のロゴと Rust / TypeScript、haru
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
     <meta name="color-scheme" content="light dark" />
-    <!-- --paper の地の色(OKLCH を sRGB に変換した値) -->
-    <meta name="theme-color" content="#f8f5fd" media="(prefers-color-scheme: light)" data-light="#f8f5fd" data-dark="#15121c" />
-    <meta name="theme-color" content="#15121c" media="(prefers-color-scheme: dark)" data-light="#f8f5fd" data-dark="#15121c" />
+    <meta name="theme-color" content={THEME_COLOR.light} media="(prefers-color-scheme: light)" data-light={THEME_COLOR.light} data-dark={THEME_COLOR.dark} />
+    <meta name="theme-color" content={THEME_COLOR.dark} media="(prefers-color-scheme: dark)" data-light={THEME_COLOR.light} data-dark={THEME_COLOR.dark} />
     <script is:inline>
-      // 初回描画前とページ遷移後にテーマを適用する。
+      // 初回描画前とページ遷移後にテーマを適用する。設定変更もここを呼ぶ。
       (() => {
         const apply = () => {
           const t = localStorage.getItem('theme');
           const h = document.documentElement;
           h.classList.toggle('dark', t === 'dark');
           h.classList.toggle('light', t === 'light');
-          document.querySelector('meta[name="color-scheme"]').content = t ?? 'light dark';
+          const scheme = document.querySelector('meta[name="color-scheme"]');
+          if (scheme) scheme.content = t === 'light' || t === 'dark' ? t : 'light dark';
           document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
             m.content = t === 'light' || t === 'dark' ? m.dataset[t] : m.media.includes('dark') ? m.dataset.dark : m.dataset.light;
           });
         };
+        globalThis.applySiteTheme = apply;
         apply();
-        document.addEventListener('astro:after-swap', apply);
+        if (!globalThis.__themeSwapBound) {
+          globalThis.__themeSwapBound = true;
+          document.addEventListener('astro:after-swap', () => globalThis.applySiteTheme());
+        }
       })();
     </script>
     <meta property="og:title" content={fullTitle} />

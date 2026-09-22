@@ -11,7 +11,7 @@ import { SITE_ICON as SiteIcon } from '../data/icons';
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 5);
-const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order).slice(0, 4);
+const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
 const lab = LAB.slice(0, 3);
 const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 ---

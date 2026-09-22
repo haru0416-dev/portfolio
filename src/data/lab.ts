@@ -13,3 +13,14 @@ export const LAB: LabEntry[] = [
     date: '2026-09-17',
   },
 ];
+
+export function labBySlug(slug: string): LabEntry {
+  const entry = LAB.find((item) => item.slug === slug);
+  if (!entry) throw new Error(`Lab に「${slug}」がありません。src/data/lab.ts に登録してください。`);
+  return entry;
+}
+
+export function labFromPath(pathname: string): LabEntry | undefined {
+  const slug = pathname.match(/^\/lab\/([^/]+)\/?$/)?.[1];
+  return slug ? LAB.find((item) => item.slug === slug) : undefined;
+}

@@ -29,7 +29,11 @@ bun run build
 bun run preview
 ```
 
-出力先は `dist/`。`preview` は静的出力の確認用で、Cloudflare Pages Functions は実行しない。
+出力先は `dist/`。`preview` は静的出力の確認用で、Cloudflare Pages Functions は実行しない。418 や curl 向けテキストは次で確認する。
+
+```sh
+bun run pages:dev
+```
 
 ## コンテンツの追加
 
@@ -102,8 +106,7 @@ curl・wget・HTTPieなどでトップページを取得すると、サイト紹
 ミドルウェアは応答に `X-Sprout` ヘッダーを追加する。`/coffee` は418、POST・PUT・PATCH・DELETEは405を返す。ローカルでこれらを確認する場合は、Astroではなく Wrangler で起動する。
 
 ```sh
-bun run build
-bunx wrangler pages dev dist
+bun run pages:dev
 ```
 
 ## デプロイ
@@ -111,10 +114,9 @@ bunx wrangler pages dev dist
 Cloudflare Pages の `haru0416-portfolio` にCLIから直接アップロードする。初回は `bunx wrangler login` で認証する。SSH先などでブラウザから localhost に戻れない場合は `bunx wrangler login --device --browser=false` を使う。
 
 ```sh
-bun run build
-bunx wrangler pages deploy dist --project-name haru0416-portfolio --branch main
+bun run deploy
 ```
 
-このコマンドは本番ブランチ `main` に公開する。作業ツリーから生成した `dist/` を使うため、未コミットの変更も含まれる。`functions/` は Wrangler が一緒に配信する。
+このコマンドは本番ブランチ `main` に公開する。未コミットの変更があるときは止める。作業ツリーのまま上げるときは `ALLOW_DIRTY=1 bun run deploy` を使う。`functions/` は Wrangler が一緒に配信する。
 
 Pages側の配信先は https://haru0416-portfolio.pages.dev/ 。`public/_headers` では `*.pages.dev` に `noindex` を指定している。独自ドメインを変更するときは Pages の登録とDNSを確認し、メール用のMX・TXTレコードは変更しない。

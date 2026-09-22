@@ -1,3 +1,5 @@
+import { ICON_NAMES, type IconName } from './icon-names';
+
 import Sprout from '@lucide/astro/icons/sprout';
 import MessageCircle from '@lucide/astro/icons/message-circle';
 import Scale from '@lucide/astro/icons/scale';
@@ -20,5 +22,12 @@ export const ICONS = {
   cpu: Cpu,
 } as const;
 
-export type IconName = keyof typeof ICONS;
+
+export type { IconName };
+export { ICON_NAMES };
+
+const registered = Object.keys(ICONS);
+if (registered.length !== ICON_NAMES.length || ICON_NAMES.some((name) => !registered.includes(name))) {
+  throw new Error('ICON_NAMES と ICONS が一致しません。');
+}
 export const SITE_ICON = Sprout;

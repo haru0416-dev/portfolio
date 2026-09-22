@@ -2,12 +2,11 @@
 
 /* トークン */
 :root {
-  --h: 300;
   --h-accent: 356;
   --h-mint: 175;
   color-scheme: light dark;
 
-  --paper:       light-dark(oklch(97.5% 0.010 var(--h)),        oklch(19% 0.020 var(--h)));
+  /* --h と --paper は src/palette.ts が html の style に置く。 */
   --paper-2:     light-dark(oklch(94.5% 0.022 var(--h)),        oklch(25% 0.028 var(--h)));
   --ink:         light-dark(oklch(32%   0.050 var(--h)),        oklch(94% 0.012 var(--h)));
   --ink-2:       light-dark(oklch(47%   0.040 var(--h)),        oklch(80% 0.022 var(--h)));
