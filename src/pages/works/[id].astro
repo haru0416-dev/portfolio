@@ -62,7 +62,7 @@ const jsonLd = {
 
     <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
       <div class="max-w-reading">
-        <p class="text-base sm:text-lg text-ink">{d.summary}</p>
+        <p class="phrase text-base sm:text-lg text-ink">{d.summary}</p>
         <div class="mt-6 flex flex-wrap gap-2 on-paper">
           {WORK_STATUS_LABELS[d.status] && <span class="tag badge tracking-[.1em] uppercase">{WORK_STATUS_LABELS[d.status]}</span>}
           {d.stack.map((s) => <span class="tag">{s}</span>)}

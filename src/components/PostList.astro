@@ -8,14 +8,14 @@ const { posts, compact = false } = Astro.props;
 <ol role="list" class="on-paper">
   {posts.map((p) => (
     <li class="reveal" data-post data-tags={JSON.stringify(p.data.tags)}>
-      <a href={`/blog/${p.id}/`} class="group grid sm:grid-cols-[6rem_1fr] gap-x-4 gap-y-1 py-4">
-        <div class="flex gap-3 sm:block text-xs text-muted sm:pt-1">
+      <a href={`/blog/${p.id}/`} class="group grid sm:grid-cols-[6rem_1fr] sm:items-baseline gap-x-4 gap-y-1 py-4">
+        <div class="flex gap-3 sm:block text-xs text-muted">
           <FormattedDate date={p.data.pubDate} class="block leading-4" />
           {!compact && <span class="block leading-4 sm:mt-1">{readingMinutes(p.body)} min</span>}
         </div>
         <div class="min-w-0">
-          <h3 transition:name={`post-${p.id}`} transition:animate="initial" class="vt-swap display-jp text-lg w-fit group-hover:text-accent-ink transition-colors">{p.data.title}</h3>
-          {p.data.description && <p class="text-sm text-ink-2 mt-2">{p.data.description}</p>}
+          <h3 transition:name={`post-${p.id}`} transition:animate="initial" class="vt-swap display-jp text-lg leading-6 w-fit group-hover:text-accent-ink transition-colors">{p.data.title}</h3>
+          {p.data.description && <p class="phrase text-sm text-ink-2 mt-2">{p.data.description}</p>}
           {!compact && p.data.tags.length > 0 && (
             <div class="mt-2 flex flex-wrap gap-2">{p.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
           )}

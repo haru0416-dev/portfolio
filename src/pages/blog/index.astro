@@ -42,8 +42,8 @@ for (const post of rest) {
             <span class="text-muted">· {readingMinutes(latest.body)} min</span>
           </div>
           <h2 transition:name={`post-${latest.id}`} transition:animate="initial" class="vt-swap display-jp text-xl sm:text-2xl w-fit group-hover:text-accent-ink transition-colors">{latest.data.title}</h2>
-          {latest.data.description && <p class="mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}
-          <div class="mt-4 flex flex-wrap gap-2">{latest.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
+          {latest.data.description && <p class="phrase mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}
+          <div class="mt-4 flex flex-wrap gap-2 on-paper">{latest.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
         </a>
       </div>
     )}

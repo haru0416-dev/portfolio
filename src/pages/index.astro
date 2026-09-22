@@ -23,7 +23,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
       <p class="display-jp mt-6 text-base sm:text-xl text-ink hero-lead">
         作ったツールと開発メモ
       </p>
-      <p class="mt-4 text-base text-ink-2 max-w-[32rem] hero-lead">
+      <p class="mt-4 text-base text-ink-2 max-w-[32rem] hero-lead phrase">
         Rust や TypeScript でツールや対話プログラムを作っています。開発中に試したことや、ブラウザで動く実験も載せています。
       </p>
       <div class="mt-8 flex flex-wrap gap-2 hero-lead">
@@ -52,10 +52,10 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         {works.map((w, i) => (
           <li>
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
-              <span transition:name={`work-${w.id}`} transition:animate="initial" class="cover-thumb block"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+              <span transition:name={`work-${w.id}`} transition:animate="initial" class="cover-thumb block mt-1.5"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
               <div class="min-w-0">
                 <div transition:name={`work-title-${w.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
-                <p class="text-sm text-muted">{firstSentence(w.data.summary)}</p>
+                <p class="phrase text-sm text-muted mt-2">{firstSentence(w.data.summary)}</p>
               </div>
             </a>
           </li>
@@ -66,12 +66,12 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 
     <section class="reveal lg:col-start-1 lg:row-start-2">
       <h2 class="eyebrow mb-4"><span>Lab</span></h2>
-      <ul role="list" class="space-y-2">
+      <ul role="list" class="space-y-4">
         {lab.map((l) => (
           <li>
             <a href={`/lab/${l.slug}/`} class="group block">
-              <div transition:name={`lab-${l.slug}`} transition:animate="initial" class="vt-swap display w-fit text-lg group-hover:text-accent-ink transition-colors">{l.title}</div>
-              <p class="text-sm text-muted">{l.description}</p>
+              <div transition:name={`lab-${l.slug}`} transition:animate="initial" class="vt-swap display w-fit text-lg leading-6 group-hover:text-accent-ink transition-colors">{l.title}</div>
+              <p class="phrase text-sm text-muted mt-2">{l.description}</p>
             </a>
           </li>
         ))}

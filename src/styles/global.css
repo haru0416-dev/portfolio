@@ -81,7 +81,8 @@ body {
 
 /* 文節単位の改行は本文の行末を空けすぎるため、見出しとラベルに限定する。 */
 :is(h1, h2, h3, .display, .display-jp) { text-wrap: balance; }
-:is(h1, h2, h3, .display, .display-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; }
+/* 2〜3行で終わる説明文(.phrase)も、語の途中で折り返さないよう文節で改行する。 */
+:is(h1, h2, h3, .display, .display-jp, .eyebrow, .tag, .chip, .pill, .phrase) { word-break: auto-phrase; }
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
 time, .tabular-nums { white-space: nowrap; }
 
