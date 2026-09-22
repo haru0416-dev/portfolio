@@ -8,6 +8,7 @@ export const ICON_NAMES = [
   'code',
   'external-link',
   'cpu',
+  'bug',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

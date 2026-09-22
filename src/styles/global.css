@@ -4,6 +4,7 @@
 :root {
   --h-accent: 356;
   --h-mint: 175;
+  --sea-h: 225;
   color-scheme: light dark;
 
   /* --h と --paper は src/palette.ts が html の style に置く。 */
@@ -17,10 +18,14 @@
   --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
   --accent-soft: light-dark(oklch(92%   0.060 var(--h-accent)), oklch(36% 0.070 var(--h-accent)));
   --on-accent:   light-dark(white, var(--paper));
+  --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
   --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
   --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));
   --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%));
-  --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
+  --shadow:      light-dark(oklch(40% 0.06 var(--h) / 12%), oklch(0% 0 0 / 35%));
+  --sea-depth:   light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
+  --sea-ray:     light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
+  --sea-sky:     light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }
 :root.light { color-scheme: light; }
 :root.dark  { color-scheme: dark; }
@@ -38,7 +43,6 @@
   --text-5xl: 3.815rem;    --text-5xl--line-height: 4rem;
   --text-6xl: 4.768rem;    --text-6xl--line-height: 5rem;
   --text-7xl: 5.96rem;     --text-7xl--line-height: 6rem;
-  --radius-lg: 0.5rem; --radius-2xl: 1rem; --radius-3xl: 1.5rem; --radius-4xl: 2.5rem;
 }
 
 @theme inline {
@@ -54,6 +58,7 @@
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --font-display: var(--font-fredoka);
+  --font-display-jp: "Zen Maru Kana", var(--font-zen-maru);
   --font-sans: var(--font-nunito);
 }
 
@@ -78,7 +83,7 @@ body {
 :is(h1, h2, h3, .display, .display-jp) { text-wrap: balance; }
 :is(h1, h2, h3, .display, .display-jp, .eyebrow, .tag, .chip, .pill) { word-break: auto-phrase; }
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
-time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
+time, .tabular-nums { white-space: nowrap; }
 
 :where(a, button, [tabindex]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: inherit; }
 
@@ -86,7 +91,7 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
 .skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
 .skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-/* コンポーネント */
+/* 書体 */
 .display { font-family: var(--font-display); font-weight: 600; }
 /* palt 非対応のため、かな・約物を詰めた生成フォントを優先する。 */
 @font-face {
@@ -94,16 +99,9 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
   src: url("/fonts/zen-maru-kana-700.woff2") format("woff2");
   unicode-range: U+3001-3002, U+3008-3011, U+3014-3015, U+3041-3096, U+309D-309E, U+30A1-30FB, U+30FD-30FE, U+FF01, U+FF08-FF09, U+FF0C, U+FF0E, U+FF1A-FF1B, U+FF1F;
 }
-.display-jp { font-family: "Zen Maru Kana", var(--font-zen-maru); font-weight: 700; }
+.display-jp { font-family: var(--font-display-jp); font-weight: 700; }
 
-.eyebrow {
-  display: flex; align-items: center; gap: 1rem; height: 1.5rem;
-  font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
-}
-.eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: 999px; }
-.eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
-.eyebrow-plain::after { display: none; }
-
+/* 面と区切り */
 .glass {
   isolation: isolate;
   background: var(--glass-bg);
@@ -118,9 +116,7 @@ time, .tabular-nums { white-space: nowrap; text-wrap: nowrap; }
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
-  transition: opacity 200ms ease;
 }
-@media (hover: hover) and (pointer: fine) { .glass:hover::before { opacity: 1.3; } }
 @supports not (backdrop-filter: blur(1px)) { .glass { background: var(--paper-2); } }
 header.site.glass::before { content: none; }
 
@@ -132,11 +128,46 @@ header.site.glass::before { content: none; }
 
 .card { border-radius: 2.5rem; padding: 1.5rem; }
 .card:where(:not(.glass)) { background: var(--paper-2); }
-
 .tile { width: var(--tile); height: var(--tile); border-radius: calc(var(--tile) / 3); }
-.tile.hue-0 { background: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); color: var(--accent); }
-.tile.hue-1 { background: color-mix(in oklch, var(--mint) 22%, var(--paper)); color: color-mix(in oklch, var(--mint) 70%, var(--ink)); }
-.tile.hue-2 { background: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); color: var(--ink-2); }
+.golden { aspect-ratio: 1.618; }
+@supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
+.petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
+
+@supports (corner-shape: squircle) {
+  .card, .tile, .work-card, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
+}
+
+/* 作品カード: 16:9 のカバーに題名を重ねる。カバーはアイコンか cover 画像で、色は hue-0〜2 で回す。 */
+.work-card {
+  display: block; position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 1.5rem; color: white;
+  box-shadow: 0 1px 2px var(--shadow), 0 4px 12px -4px var(--shadow), inset 0 0 0 1px var(--glass-hi);
+  transition: box-shadow 300ms ease;
+}
+.work-hero { border-radius: 2.5rem; }
+@media (min-width: 40rem) { .work-hero { aspect-ratio: 21 / 9; } }
+.cover {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden;
+  background-color: var(--cover-bg); color: var(--cover-fg); transition: transform 500ms var(--ease-out);
+}
+/* 題名は左下、バッジは左上に重なるため、アイコンは右寄りに置く。 */
+.work-card .cover { padding: 0 7% 14% 0; }
+.work-hero .cover { padding: 0 10% 0 0; }
+.cover::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(var(--cover-dot) 1.25px, transparent 1.5px); background-size: 1.5rem 1.5rem;
+  mask-image: radial-gradient(ellipse at 50% 40%, black, transparent 75%);
+}
+.cover-icon { position: relative; filter: drop-shadow(0 8px 16px var(--glass-lo)); }
+.cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hue-0 { --cover-bg: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); --cover-fg: var(--accent); --cover-dot: color-mix(in oklch, var(--accent) 35%, transparent); }
+.hue-1 { --cover-bg: color-mix(in oklch, var(--mint) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--mint) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--mint) 55%, transparent); }
+.hue-2 { --cover-bg: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); --cover-fg: var(--ink-2); --cover-dot: color-mix(in oklch, var(--ink-2) 30%, transparent); }
+.work-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, oklch(18% 0.03 var(--h) / .82), oklch(18% 0.03 var(--h) / .35) 30%, transparent 60%); }
+.work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.25rem; text-shadow: 0 1px 2px oklch(0% 0 0 / .3); }
+
+/* 操作部品。押し込みの transition は各部品の transition に含める。 */
+.press:active { transform: scale(0.94); }
+.press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out); }
 
 .pill {
   display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem;
@@ -145,31 +176,37 @@ header.site.glass::before { content: none; }
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
 .pill:where(:not(.glass)) { background: var(--paper-2); }
-.pill-accent, .pill-accent.glass { background: var(--accent-btn); color: var(--on-accent); backdrop-filter: none; -webkit-backdrop-filter: none; }
-.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 999px; color: var(--ink); }
-.icon-btn:where(:not(.glass)) { background: var(--paper); }
-.icon-btn-accent { background: var(--accent-btn); color: var(--on-accent); }
+.pill-accent { background: var(--accent-btn); color: var(--on-accent); backdrop-filter: none; -webkit-backdrop-filter: none; }
 
-:is(.pill, .chip, .icon-btn).glass:not(.pill-accent, [aria-pressed="true"]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line); }
-
-.chip { display: inline-flex; align-items: center; height: 2rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; padding: 0 1rem; border-radius: 999px; color: var(--ink-2); transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out); }
+.chip {
+  display: inline-flex; align-items: center; height: 2rem; padding: 0 1rem; border-radius: 999px;
+  font-size: var(--text-xs); line-height: 1rem; font-weight: 700; color: var(--ink-2);
+  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+}
 .chip:where(:not(.glass)) { background: var(--paper-2); }
-.chip[aria-pressed="true"], .chip.glass[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
-/* カード内の個別リンクは z-1 でこのオーバーレイより上に置く。 */
-.card-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+:is(.pill, .chip).glass:not(.pill-accent, [aria-pressed="true"]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line); }
 
-.tag { display: inline-flex; align-items: center; height: 1.5rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); padding: 0 .75rem; border-radius: 999px; }
+.link-row {
+  display: flex; align-items: center; gap: .75rem; min-height: 3.5rem; padding: .5rem 1rem; border-radius: 1rem;
+  background: var(--paper-2); color: var(--ink);
+  transition: background-color 150ms ease, transform 160ms var(--ease-out);
+}
+.link-row-accent { background: var(--accent-btn); color: var(--on-accent); }
+
+.tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .75rem; border-radius: 999px; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); }
 :is(ol, .on-paper) .tag { background: var(--paper-2); }
 .tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); }
 
-@media (hover: hover) and (pointer: fine) {
-  .pill:not(.pill-accent):hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
-  .pill-accent:hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
-  .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
-  .u-link:hover::after { transform: scaleX(1); }
+.eyebrow {
+  display: flex; align-items: center; gap: 1rem; height: 1.5rem;
+  font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
 }
+.eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: 999px; }
+.eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
+.eyebrow-plain::after { display: none; }
 
 .u-link { position: relative; text-decoration: none; }
 .u-link::after {
@@ -178,21 +215,26 @@ header.site.glass::before { content: none; }
   transition: transform 200ms var(--ease-out);
 }
 
-.press { transition: transform 160ms var(--ease-out); }
-.press:active { transform: scale(0.94); }
-
-@supports (corner-shape: squircle) {
-  .card, .tile, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
+@media (hover: hover) and (pointer: fine) {
+  .pill:not(.pill-accent):hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
+  .link-row:not(.link-row-accent):hover { background: var(--accent-soft); }
+  :is(.pill-accent, .link-row-accent):hover { background: color-mix(in oklch, var(--accent-btn) 88%, black); }
+  .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
+  .u-link:hover::after { transform: scaleX(1); }
+  .work-card:hover { box-shadow: 0 2px 4px var(--shadow), 0 16px 32px -8px var(--shadow), inset 0 0 0 1px var(--glass-hi); }
+  .work-card:hover .cover { transform: scale(1.05); }
 }
 
-.golden { aspect-ratio: 1.618; }
-@supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
-.petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
+/* 横に流れる絞り込みの行。狭い画面ではスクロールし、広い画面では折り返す。 */
+.scroll-row { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-block: 4px; margin-block: -4px; }
+.scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row > * { flex-shrink: 0; scroll-snap-align: start; }
+@media (min-width: 40rem) { .scroll-row { overflow: visible; } }
 
 /* 記事本文 */
 .prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
 .prose > * + * { margin-top: 1.5rem; }
-.prose :is(h2, h3) { font-family: "Zen Maru Kana", var(--font-zen-maru); font-weight: 700; color: var(--ink); }
+.prose :is(h2, h3) { font-family: var(--font-display-jp); font-weight: 700; color: var(--ink); }
 .prose h2 { font-size: var(--text-xl); line-height: 2rem; margin-top: 4rem; }
 .prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
 .prose h2 + *, .prose h3 + * { margin-top: 1rem; }
@@ -213,26 +255,13 @@ header.site.glass::before { content: none; }
 .prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
-/* アニメーション */
-
-.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
-.hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
-@keyframes wm-in { to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
-}
-
-:root {
-  --sea-h: 225;
-  --sea-depth: light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
-  --sea-ray:   light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
-  --sea-sky:      light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
-}
+/* 背景の海 */
 /* 100lvh で高さを固定し、アドレスバーの開閉による Canvas のリサイズを防ぐ。 */
-.sea { position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
-  background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%); }
+.sea {
+  position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
+  background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%);
+}
 .sea i { position: absolute; display: block; }
-
 .sea .rays {
   inset: -20% -30%;
   background: repeating-linear-gradient(104deg, transparent 0 9%, var(--sea-ray) 11.5%, transparent 14% 23%);
@@ -244,13 +273,13 @@ header.site.glass::before { content: none; }
   opacity: .6; animation-duration: 71s; animation-delay: -30s; animation-direction: alternate-reverse;
 }
 @keyframes rays-sway { from { transform: translateX(-2vw) skewX(0deg); } to { transform: translateX(2vw) skewX(1.5deg); } }
-
 .sea .deep, .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sea .surface { opacity: .65; }
-@media (prefers-reduced-motion: reduce) { .sea .surface { display: none; } }
 
-@media (prefers-reduced-motion: reduce) { .sea i { animation: none; } }
-
+/* 登場と流れのアニメーション */
+.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
+.hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
+@keyframes wm-in { to { opacity: 1; transform: none; } }
 
 /* animation の一括指定は timeline をリセットするため、個別に指定する。 */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {
@@ -276,6 +305,15 @@ header.site.glass::before { content: none; }
   }
 }
 
+/* 動きを減らす設定 */
+@media (prefers-reduced-motion: reduce) {
+  .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
+  .sea i { animation: none; }
+  .sea .surface { display: none; }
+  .work-card:hover .cover { transform: none; }
+}
+
+/* ページ遷移 */
 ::view-transition-old(main) { animation: vt-out 180ms cubic-bezier(0.4, 0, 0.6, 1) both; }
 ::view-transition-new(main) { animation: vt-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both; }
 ::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
@@ -294,19 +332,17 @@ html[data-astro-transition="back"]::view-transition-new(main) { animation-name: 
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
 ::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
-/* タグ絞り込み(同一ページ内)では本文は切り替えるだけで、記事(.post)だけが詰まる。
+/* 絞り込み(同一ページ内)では本文は切り替えるだけで、項目(.item)だけが詰まる。
    本文を重ねたり高さを補間したりすると、新旧の本文が引き伸ばされて二重に見える。 */
 html:active-view-transition-type(filter)::view-transition-group(main) { animation: none; }
 html:active-view-transition-type(filter)::view-transition-old(main) { display: none; }
 html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; height: auto; }
-html:active-view-transition-type(filter)::view-transition-old(.post) { display: none; }
-html:active-view-transition-type(filter)::view-transition-new(.post) { animation: none; }
-html:active-view-transition-type(filter)::view-transition-old(.post):only-child { display: block; animation: vt-title-out 150ms ease-out both; }
-html:active-view-transition-type(filter)::view-transition-new(.post):only-child { animation: vt-title-in 200ms ease-out 80ms both; }
+html:active-view-transition-type(filter)::view-transition-old(.item) { display: none; }
+html:active-view-transition-type(filter)::view-transition-new(.item) { animation: none; }
+html:active-view-transition-type(filter)::view-transition-old(.item):only-child { display: block; animation: vt-title-out 150ms ease-out both; }
+html:active-view-transition-type(filter)::view-transition-new(.item):only-child { animation: vt-title-in 200ms ease-out 80ms both; }
 
-/* =====================================================================
-   6. カーソル
-   ===================================================================== */
+/* カーソル */
 @media (hover: hover) and (pointer: fine) {
   :root {
     --cursor-arrow: url(/cursors/arrow.svg) 6 7, auto;
@@ -315,8 +351,8 @@ html:active-view-transition-type(filter)::view-transition-new(.post):only-child 
     --cursor-text:  url(/cursors/text.svg) 14 14, text;
   }
   html, body { cursor: var(--cursor-arrow); }
-  a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn { cursor: var(--cursor-hand); }
-  :is(a, button, .press, .chip, .pill, .icon-btn):active { cursor: var(--cursor-hand-down); }
+  a, button, [role="button"], summary, label { cursor: var(--cursor-hand); }
+  :is(a, button):active { cursor: var(--cursor-hand-down); }
   input, textarea, [contenteditable] { cursor: var(--cursor-text); } /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * { cursor: inherit; }
   canvas { cursor: var(--cursor-arrow); }

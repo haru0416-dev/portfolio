@@ -1,34 +1,47 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Hero from '../../components/Hero.astro';
-import Tile from '../../components/Tile.astro';
-import { ICONS } from '../../data/icons';
+import Wordmark from '../../components/Wordmark.astro';
+import WorkCover from '../../components/WorkCover.astro';
 const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
+const stacks = [...new Set(works.flatMap((w) => w.data.stack))].sort((a, b) => a.localeCompare(b, 'en'));
 const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archived: 'Archived' } as const;
-const Code = ICONS.code, Ext = ICONS['external-link'];
 ---
 <Base title="Works" wide>
-  <Hero eyebrow="Works" title="Selected works" lead="作ったツールをいくつか紹介しています。ほかのプロジェクトは GitHub にあります。" />
-  <ul role="list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {works.map((w, i) => (
-      <li class="card glass reveal flex flex-col gap-4 group">
-        <div class="flex items-center gap-4">
-          <Tile icon={w.data.icon} size={48} class={`hue-${i % 3}`} />
-          <h2 class="display-jp text-lg min-w-0 flex-1"><a href={`/works/${w.id}/`} class="card-link group-hover:text-accent transition-colors">{w.data.name}</a></h2>
-        </div>
-        <p class="text-sm text-ink-2 flex-1">{w.data.summary}</p>
-        <div class="flex items-end gap-2 min-h-8">
-          <div class="flex flex-wrap gap-2 flex-1 pb-1">
-            {badge[w.data.status] && <span class="tag badge tracking-[.1em] uppercase">{badge[w.data.status]}</span>}
-            {w.data.stack.map((s) => <span class="tag">{s}</span>)}
-          </div>
-          {w.data.url && <a href={w.data.url} class="icon-btn icon-btn-accent press relative z-1" aria-label={`${w.data.name} のサイトを開く`}><Ext size={14} stroke-width={2.5} aria-hidden="true" /></a>}
-          {w.data.repo && w.data.status !== 'soon' && <a href={w.data.repo} class="icon-btn glass press relative z-1" aria-label={`${w.data.name} のリポジトリを開く`}><Code size={14} stroke-width={2.5} aria-hidden="true" /></a>}
-        </div>
-      </li>
-    ))}
-  </ul>
+  <header class="pt-4 pb-12 mb-4">
+    <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text="Works" /></h1>
+    <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead">作ったツールをいくつか紹介しています。ほかのプロジェクトは GitHub にあります。</p>
+  </header>
+
+  <search aria-label="技術で絞り込む" class="mb-6">
+    <div id="stack-filter" class="scroll-row -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 sm:flex-wrap">
+      <button type="button" class="chip glass press" data-stack="" aria-pressed="true" aria-controls="work-results">すべて</button>
+      {stacks.map((s) => <button type="button" class="chip glass press" data-stack={s} aria-pressed="false" aria-controls="work-results">#{s}</button>)}
+    </div>
+    <p id="stack-status" class="mt-2 text-sm text-muted" role="status" aria-live="polite" aria-atomic="true">{works.length} 件の作品</p>
+  </search>
+
+  <div id="work-results">
+    <ul role="list" class="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {works.map((w, i) => (
+        <li class="reveal" data-work data-stack={JSON.stringify(w.data.stack)}>
+          <a href={`/works/${w.id}/`} class="work-card group block">
+            <WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} loading={i < 3 ? 'eager' : 'lazy'} />
+            <span class="shade" aria-hidden="true"></span>
+            {badge[w.data.status] && <span class="tag badge absolute top-4 left-4 z-1 tracking-[.1em] uppercase">{badge[w.data.status]}</span>}
+            <span class="caption">
+              <span class="display-jp block text-base leading-6 line-clamp-2">{w.data.name}</span>
+              <span class="block text-xs leading-4 mt-1 opacity-80 truncate">{w.data.stack.join(' · ')}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div id="stack-empty" hidden={works.length > 0}>
+      <p class="text-sm text-muted">{works.length === 0 ? 'まだ作品がありません。' : 'この技術の作品はありません。'}</p>
+      {works.length > 0 && <button id="stack-reset" type="button" class="chip glass press mt-4" aria-controls="work-results">すべての作品を表示</button>}
+    </div>
+  </div>
 
   <section id="feedback" aria-labelledby="feedback-heading" class="mt-16 pt-8 dotted scroll-mt-24">
     <h2 id="feedback-heading" class="display-jp text-2xl mb-4">感想・不具合の報告</h2>
@@ -43,3 +56,63 @@ const Code = ICONS.code, Ext = ICONS['external-link'];
     </div>
   </section>
 </Base>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const box = document.getElementById('stack-filter');
+    const results = document.getElementById('work-results');
+    const status = document.getElementById('stack-status');
+    const empty = document.getElementById('stack-empty');
+    if (!box || !results || !status || !empty) return;
+
+    const buttons = [...box.querySelectorAll<HTMLButtonElement>('button[data-stack]')];
+    const items = [...results.querySelectorAll<HTMLElement>('[data-work]')].map((element) => ({
+      element,
+      stack: JSON.parse(element.dataset.stack ?? '[]') as string[],
+    }));
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let selected = '';
+
+    const select = (stack: string, animate: boolean) => {
+      if (stack === selected) return;
+      selected = stack;
+      const apply = () => {
+        if (stack !== selected) return;
+        buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.stack === stack)));
+        let count = 0;
+        items.forEach(({ element, stack: s }) => {
+          element.hidden = stack !== '' && !s.includes(stack);
+          if (!element.hidden) count++;
+        });
+        empty.hidden = count > 0;
+        status.textContent = `${stack ? `#${stack} · ` : ''}${count} 件の作品`;
+      };
+      if (!animate || reducedMotion.matches || !document.startViewTransition ||
+          !CSS.supports('selector(:active-view-transition-type(filter))')) {
+        apply();
+        return;
+      }
+      items.forEach(({ element }, i) => {
+        element.style.setProperty('view-transition-class', 'item');
+        element.style.setProperty('view-transition-name', `filter-work-${i}`);
+      });
+      document.startViewTransition({ update: apply, types: ['filter'] }).finished.finally(() => {
+        if (stack !== selected) return;
+        items.forEach(({ element }) => {
+          element.style.removeProperty('view-transition-class');
+          element.style.removeProperty('view-transition-name');
+        });
+      });
+    };
+
+    box.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('button[data-stack]');
+      if (!button || !box.contains(button)) return;
+      select(button.dataset.stack ?? '', event.detail > 0);
+    });
+    document.getElementById('stack-reset')?.addEventListener('click', (event) => {
+      buttons.find((button) => button.dataset.stack === '')?.focus({ preventScroll: true });
+      select('', event.detail > 0);
+    });
+  });
+</script>

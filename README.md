@@ -47,9 +47,9 @@ bun run pages:dev
 
 `src/content/works/<id>.md` に登録する。必須項目は `name`、`summary`、`stack`。本文を書けば `/works/<id>/` の説明として表示される。
 
-任意項目は `icon`、`repo`、`url`、`issues`、`status`、`order`。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
+任意項目は `icon`、`cover`、`repo`、`url`、`issues`、`status`、`order`。`cover` は一覧と作品ページのサムネイルに使う画像で、`src/content/works/` からの相対パスで指定する。指定がなければ `icon` を使ったカバーを描く。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
 
-`issues` には、受付を有効にした公開 GitHub Issues のURLを指定する。作品ページと `/works/#feedback` に掲載される。アイコンを追加するときは `src/data/icons.ts` にも登録する。
+`issues` には、受付を有効にした公開 GitHub Issues のURLを指定する。作品ページに掲載される。アイコンを追加するときは `src/data/icons.ts` にも登録する。
 
 項目の型とデフォルト値は `src/content.config.ts` で定義している。
 

@@ -33,11 +33,12 @@ const blog = defineCollection({
 
 const works = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/works' }),
-  schema: z.object({
+  schema: ({ image }) => z.object({
     name: z.string(),
     summary: z.string(),
     stack: z.array(z.string()),
     icon: z.enum(ICON_NAMES).default('box'),
+    cover: image().optional(),
     repo: z.url().optional(),
     url: z.url().optional(),
     issues: z.url().optional(),

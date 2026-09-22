@@ -1,22 +1,30 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Tile from '../../components/Tile.astro';
+import WorkCover from '../../components/WorkCover.astro';
+import { ICONS } from '../../data/icons';
 import { SITE } from '../../site';
 
 export async function getStaticPaths() {
   const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
   return works.map((work, i) => ({
     params: { id: work.id },
-    props: { work, prev: works[i - 1], next: works[i + 1] },
+    props: { work, hue: i, prev: works[i - 1], next: works[i + 1] },
   }));
 }
-const { work, prev, next } = Astro.props;
+const { work, hue, prev, next } = Astro.props;
 const { Content } = await render(work);
 const d = work.data;
 const hasBody = Boolean(work.body?.trim());
 const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archived: 'Archived' } as const;
 const showRepo = d.repo && d.status !== 'soon';
+const Ext = ICONS['external-link'], Code = ICONS.code, Bug = ICONS.bug;
+const links = [
+  d.url && { href: d.url, label: 'サイトを開く', Icon: Ext, accent: true },
+  showRepo && { href: d.repo!, label: 'GitHub', Icon: Code, accent: false },
+  d.issues && { href: d.issues, label: '感想・不具合を送る', Icon: Bug, accent: false },
+].filter((l): l is Exclude<typeof l, false | '' | undefined> => Boolean(l));
+const shortUrl = (href: string) => href.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 const url = new URL(`/works/${work.id}/`, Astro.site).href;
 const jsonLd = {
@@ -35,32 +43,53 @@ const jsonLd = {
 <Base
   title={d.name}
   description={d.summary}
+  wide
   image={{ src: `/og/works/${work.id}.png`, alt: `作品「${d.name}」の名前とアイコン、haru0416.dev` }}
 >
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   <article>
-    <header class="mb-12">
-      <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
-      <div class="flex items-center gap-4">
-        <Tile icon={d.icon} size={48} class="hue-0" />
-        <h1 class="display-jp text-2xl sm:text-3xl min-w-0">{d.name}</h1>
+    <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
+    <header class="work-card work-hero mb-12">
+      <WorkCover icon={d.icon} cover={d.cover} hue={hue} iconSize={160} loading="eager" sizes="(min-width: 68rem) 60rem, 100vw" widths={[640, 1200, 1920]} />
+      <span class="shade" aria-hidden="true"></span>
+      <div class="caption p-6 sm:p-8">
+        <p class="text-xs leading-4 tracking-[.1em] uppercase opacity-85 mb-2">
+          {badge[d.status] && <span class="font-bold">{badge[d.status]} · </span>}{d.stack.join(' · ')}
+        </p>
+        <h1 class="display-jp text-2xl sm:text-4xl">{d.name}</h1>
       </div>
-      <p class="mt-6 text-base text-ink-2">{d.summary}</p>
-      <div class="mt-4 flex flex-wrap gap-2 on-paper">
-        {badge[d.status] && <span class="tag badge tracking-[.1em] uppercase">{badge[d.status]}</span>}
-        {d.stack.map((s) => <span class="tag">{s}</span>)}
-      </div>
-      {(d.url || showRepo || d.issues) && (
-        <div class="mt-8 flex flex-wrap gap-2">
-          {d.url && <a href={d.url} class="pill pill-accent press">サイトを開く</a>}
-          {showRepo && <a href={d.repo} class="pill glass press">GitHub</a>}
-          {d.issues && <a href={d.issues} class="pill glass press">感想・不具合を送る</a>}
-        </div>
-      )}
-      {d.issues && <p class="mt-4 text-xs text-muted">感想・不具合は GitHub Issues で受け付けています（投稿には GitHub へのログインが必要で、内容は公開されます）。</p>}
     </header>
 
-    {hasBody && <div class="prose"><Content /></div>}
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
+      <div class="max-w-[41rem]">
+        <p class="text-base sm:text-lg text-ink">{d.summary}</p>
+        <div class="mt-6 flex flex-wrap gap-2 on-paper">
+          {badge[d.status] && <span class="tag badge tracking-[.1em] uppercase">{badge[d.status]}</span>}
+          {d.stack.map((s) => <span class="tag">{s}</span>)}
+        </div>
+        {hasBody && <div class="prose mt-12"><Content /></div>}
+      </div>
+
+      {links.length > 0 && (
+        <aside aria-labelledby="links-heading">
+          <h2 id="links-heading" class="eyebrow mb-4"><span>Links</span></h2>
+          <ul role="list" class="space-y-2">
+            {links.map(({ href, label, Icon, accent }) => (
+              <li>
+                <a href={href} class:list={['link-row press', accent && 'link-row-accent']}>
+                  <Icon size={16} stroke-width={2.5} aria-hidden="true" class="shrink-0" />
+                  <span class="min-w-0">
+                    <span class="block text-sm leading-5 font-bold">{label}</span>
+                    <span class="block text-xs leading-4 truncate opacity-75">{shortUrl(href)}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          {d.issues && <p class="mt-4 text-xs text-muted">感想・不具合は GitHub Issues で受け付けています（投稿には GitHub へのログインが必要で、内容は公開されます）。</p>}
+        </aside>
+      )}
+    </div>
   </article>
 
   {(prev || next) && <nav aria-label="前後の作品" class="mt-16 pt-8 dotted grid grid-cols-2 gap-4 sm:gap-8 text-sm">

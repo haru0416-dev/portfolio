@@ -102,7 +102,7 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
       // 記事と見出しに名前を付け、本文から切り離して位置だけを補間する。
       const named = [...results.querySelectorAll<HTMLElement>('[data-post], [data-post] [data-astro-transition-scope]')];
       named.forEach((element, i) => {
-        element.style.setProperty('view-transition-class', 'post');
+        element.style.setProperty('view-transition-class', 'item');
         if (element.matches('[data-post]')) element.style.setProperty('view-transition-name', `filter-post-${i}`);
       });
       document.startViewTransition({ update: apply, types: ['filter'] }).finished.finally(() => {

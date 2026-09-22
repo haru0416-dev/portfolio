@@ -9,6 +9,7 @@ import Box from '@lucide/astro/icons/box';
 import Code from '@lucide/astro/icons/code';
 import ExternalLink from '@lucide/astro/icons/external-link';
 import Cpu from '@lucide/astro/icons/cpu';
+import Bug from '@lucide/astro/icons/bug';
 
 export const ICONS = {
   sprout: Sprout,
@@ -20,6 +21,7 @@ export const ICONS = {
   code: Code,
   'external-link': ExternalLink,
   cpu: Cpu,
+  bug: Bug,
 } as const;
 
 
