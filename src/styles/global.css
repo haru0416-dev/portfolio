@@ -27,7 +27,6 @@
   --sea-depth:   light-dark(oklch(80% 0.07 215 / 45%), oklch(45% 0.09 var(--sea-h) / 18%));
   --sea-ray:     light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
   --sea-sky:     light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
-  /* 光源のにじみ。ライトは暖色の太陽、ダークは水面から届く冷たい光。 */
   --sun-core:    light-dark(oklch(100% 0 0 / 95%), oklch(90% 0.04 220 / 30%));
   --sun-glow:    light-dark(oklch(98% 0.06 85 / 60%), oklch(70% 0.08 220 / 12%));
   --sun-haze:    light-dark(oklch(97% 0.05 80 / 22%), oklch(55% 0.07 225 / 5%));
@@ -66,7 +65,6 @@
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --font-display: var(--font-fredoka), var(--font-zen-maru);
-  /* 欧文は英字の見出しと同じ Fredoka、かなは Zen Maru Kana、漢字は Zen Maru Gothic で描く。 */
   --font-display-jp: "Zen Maru Kana", var(--font-fredoka), var(--font-zen-maru);
   --font-sans: var(--font-nunito);
   --font-mono: var(--font-jetbrains);
@@ -151,7 +149,6 @@ header.site.glass::before { content: none; }
 
 .work-card {
   display: block; position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 1.5rem; color: var(--ink);
-  /* 落ち影は使わず、pill/chip と同じ細いリングと上辺のハイライトで縁取る。 */
   box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
   transition: box-shadow 300ms ease;
 }
@@ -174,11 +171,10 @@ header.site.glass::before { content: none; }
 }
 /* 題名は左下、バッジは左上に重なるため、アイコンは右寄りに置く。 */
 .work-card .cover { padding: 0 7% 14% 0; }
-/* 題名は下端に置くため、アイコンは上に寄せて縦に分ける。 */
+/* 題名は下端にあるため、アイコンは上に寄せ、枠の幅に合わせて縮めて重ならないようにする。 */
 .work-hero .cover { align-items: flex-start; padding: 2rem 10% 0 0; }
-/* アイコンは枠の幅に合わせて縮め、題名に重ならないようにする。 */
 .work-hero .cover-icon svg { width: min(10rem, 16.5cqi); height: min(10rem, 16.5cqi); }
-/* 狭い画面では枠が低いため、アイコンを右上に置き、その下に題名を流して枠の高さを中身に合わせる。 */
+/* 狭い画面では枠が低く重なるため、題名をアイコンの下に流し、枠の高さを中身に合わせる。 */
 @media (max-width: 39.99rem) {
   .work-card.work-hero { height: auto; aspect-ratio: auto; }
   .work-hero .cover { padding: 1.25rem 1.5rem 0 0; }
@@ -195,7 +191,7 @@ header.site.glass::before { content: none; }
 .hue-0 { --cover-bg: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); --cover-fg: var(--accent); --cover-dot: color-mix(in oklch, var(--accent) 35%, transparent); }
 .hue-1 { --cover-bg: color-mix(in oklch, var(--mint) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--mint) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--mint) 55%, transparent); }
 .hue-2 { --cover-bg: color-mix(in oklch, var(--lilac) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--lilac) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--lilac) 55%, transparent); }
-/* カバーは紙色に寄せてあるので、題名はインク色で直接置く。写真カバーのときだけ下端を紙色でぼかして読めるようにする。 */
+/* 写真のカバーだけは、題名が読めるよう下端を紙色でぼかす。 */
 .work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.25rem; }
 .work-card:has(.cover-img) .caption { background: linear-gradient(to top, color-mix(in oklch, var(--paper) 85%, transparent), transparent); }
 
@@ -219,7 +215,6 @@ header.site.glass::before { content: none; }
   font-size: var(--text-xs); line-height: 1rem; color: var(--ink-2);
 }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
-/* 絞り込みの件数。ボタンの文字より一段弱くし、数字の幅を揃える。 */
 .chip-count { margin-left: .25rem; font-weight: 500; font-variant-numeric: tabular-nums; opacity: .6; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
@@ -231,7 +226,7 @@ header.site.glass::before { content: none; }
   transition: background-color 150ms ease, transform 160ms var(--ease-out);
 }
 .link-row-accent { background: var(--accent-btn); color: var(--on-accent); }
-/* 一覧の行。ホバーすると、本文の列からはみ出した淡い面が出る。文字の位置は動かさない。 */
+/* ホバーの面は列の外へはみ出させ、文字の位置は動かさない。 */
 .row-link { position: relative; isolation: isolate; }
 .row-link::before {
   content: ""; position: absolute; inset: 0 -.75rem; z-index: -1; border-radius: 1rem;
@@ -298,7 +293,6 @@ header.site.glass::before { content: none; }
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .sea i { position: absolute; display: block; }
-/* 筋ごとに周期の違う揺れと明滅を与える。上端を支点に傾け、下に行くほど薄くする。 */
 .sea .ray {
   top: -5%; height: 80%; left: var(--x); width: max(var(--w), 3.5rem);
   background: linear-gradient(to right in oklch, transparent, var(--sea-ray) 35% 65%, transparent);
@@ -308,7 +302,6 @@ header.site.glass::before { content: none; }
 }
 /* 狭い画面では筋が詰まって雨のように見えるため、細い 2 本を省く。 */
 @media (max-width: 40rem) { .sea .ray:is(:nth-of-type(2), :nth-of-type(6)) { display: none; } }
-/* 光源は、水面の光と同じ左上の画面外に置く。 */
 .sea .sun { left: 12%; top: -6%; }
 .sea .sun::before {
   content: ""; position: absolute; inset: -60vmax;
@@ -343,7 +336,6 @@ header.site.glass::before { content: none; }
   }
 }
 
-/* スクロールすると光源が画面の上へ抜け、にじみが消えていく。 */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
     .sea .sun {

@@ -22,7 +22,6 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
     let img: ImageData, off: HTMLCanvasElement, offCtx: CanvasRenderingContext2D;
     let soft: HTMLCanvasElement, softCtx: CanvasRenderingContext2D;
     let nextDrop = 0, now = 0;
-    // ダークのマリンスノーと対にし、明るい地を暗い粒がゆっくり昇る。
     const motes = createParticles({ color: 'rgb(72,64,112)', area: 20000, dir: -1, alpha: [0.1, 0.32] });
 
     type Drop = { x: number; y: number; r: number; amp: number; left: number; total: number };

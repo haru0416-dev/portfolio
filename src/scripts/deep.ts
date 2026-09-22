@@ -3,7 +3,6 @@ import { createParticles } from './particles';
 
 type Bubble = { x: number; y: number; r: number; v: number; wob: number; phase: number; life: number };
 
-// 泡は輪郭線ではなく、縁が柔らかく光るガラス玉として描く。光は水面と同じく左上から当てる。
 const BUBBLE = 64, BUBBLE_R = 30;
 function makeBubble(): HTMLCanvasElement {
   const c = document.createElement('canvas'); c.width = c.height = BUBBLE;
@@ -66,7 +65,6 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
           ctx.globalAlpha = 0.55 * b.life;
           const size = (b.r * BUBBLE) / BUBBLE_R;
           ctx.save(); ctx.translate(b.x, b.y);
-          // 大きい泡は少し潰れ、上がりながら揺れる。
           if (b.r > 3.5) {
             const q = 0.03 + 0.05 * Math.sin(t * 7 + b.phase) * Math.min(1, (b.r - 3.5) / 4);
             ctx.scale(1 + q, 1 - q);

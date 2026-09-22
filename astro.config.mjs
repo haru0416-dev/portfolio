@@ -21,7 +21,7 @@ export default defineConfig({
   markdown: {
     // 色は CSS 変数で両テーマ分を出力し、prose.css で light-dark() により選ぶ。
     shikiConfig: { themes: CODE_THEME, defaultColor: false, transformers: CODE_TRANSFORMERS },
-    // 脚注の見出しと戻るリンクを日本語にする。「↩」は絵文字で表示される環境があるため矢印を使う。
+    // 「↩」は絵文字で表示される環境があるため矢印を使う。
     processor: satteri({
       hastPlugins: [figureFromTitledImage],
       features: {

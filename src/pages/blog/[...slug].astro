@@ -118,7 +118,6 @@ const jsonLd = {
   .toc-box { background: var(--paper-2); border-radius: 1rem; padding: .75rem 1rem; }
   .toc summary { list-style: none; cursor: var(--cursor-hand, pointer); height: 2rem; }
   .toc summary::-webkit-details-marker { display: none; }
-  /* 開閉の印。閉じると下向き、開くと上向きの山形になる。 */
   .toc-mark {
     margin-left: auto; width: .5rem; height: .5rem; border: solid var(--muted); border-width: 0 2px 2px 0;
     rotate: 45deg; translate: 0 -.125rem; transition: rotate 200ms var(--ease-out), translate 200ms var(--ease-out);
@@ -142,7 +141,7 @@ const jsonLd = {
 </style>
 
 <script>
-  // 目次で、いま読んでいる章を示す。広い画面では目次を常に開いておく。
+  // 広い画面では目次を常に開いておく。
   let offToc: (() => void) | undefined;
   document.addEventListener('astro:before-swap', () => { offToc?.(); offToc = undefined; });
   document.addEventListener('astro:page-load', () => {
@@ -178,7 +177,7 @@ const jsonLd = {
     };
   });
 
-  // 見出しに、その見出しへのリンクを付ける。読み上げで見出しの文言を二度読ませないよう、名前は短くする。
+  // 読み上げで見出しの文言を二度読ませないよう、リンクの名前は短くする。
   document.addEventListener('astro:page-load', () => {
     document.querySelectorAll<HTMLElement>('.prose :is(h2, h3)[id]').forEach((heading) => {
       if (heading.querySelector('.heading-anchor')) return;
@@ -190,7 +189,6 @@ const jsonLd = {
       heading.prepend(link);
     });
   });
-  // コードブロックにコピーボタンを付ける。押すと 1.5 秒だけチェックに変わり、読み上げにも結果を伝える。
   document.addEventListener('astro:page-load', () => {
     const template = document.getElementById('code-copy');
     if (!(template instanceof HTMLTemplateElement) || !navigator.clipboard) return;

@@ -98,7 +98,6 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
         if (nz >= 0) {
           const dx = xs[x], dy = ys[y];
           const shade = clamp01((dx * lx + dy * ly + nz * lz) / ln);
-          // 表面の模様: 球面の座標で値ノイズを重ねる。
           const u = geometry[j + 1] + t * 0.02, v = dy * 4;
           const tex = noise(u * 2, v * 2) * 0.6 + noise(u * 5, v * 5) * 0.4;
           const k = clamp01(Math.pow(shade, 0.8) * (0.45 + tex * 0.6));
@@ -109,7 +108,6 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
           const tw = 0.55 + 0.45 * Math.sin(t * geometry[j + 1] + geometry[j + 2]);
           r += (star[0] - r) * tw; g += (star[1] - g) * tw; b += (star[2] - b) * tw;
         }
-        // ディザ: 閾値のずれを足してから最も近いパレット色を選ぶ。
         const off = BAYER2[(y & 1) * 2 + (x & 1)] * 255 * spread;
         const rr = r + off, gg = g + off, bb = b + off;
         let best = 0, bestD = Infinity;
