@@ -6,7 +6,7 @@ const meta = labBySlug('petals');
 <Base title={meta.title} description={meta.description} wide jpHeadings={false}>
   <header class="mb-12">
     <a href="/lab/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Lab</a>
-    <h1 class="display text-2xl sm:text-3xl">{meta.title}</h1>
+    <h1 transition:name={`lab-${meta.slug}`} class="display w-fit text-2xl sm:text-3xl">{meta.title}</h1>
     <p class="mt-4 text-base text-ink-2 max-w-[36rem]">{meta.description}</p>
     <p class="mt-2 text-xs leading-4 tracking-[.08em] text-muted tabular-nums">{meta.date.replaceAll('-', '.')}</p>
   </header>
