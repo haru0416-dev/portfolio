@@ -12,6 +12,8 @@
   --ink-2:       light-dark(oklch(47%   0.040 var(--h)),        oklch(80% 0.022 var(--h)));
   --muted:       light-dark(oklch(50%   0.035 var(--h)),        oklch(66% 0.030 var(--h)));
   --line:        light-dark(oklch(86%   0.035 var(--h)),        oklch(32% 0.030 var(--h)));
+  /* 点線の区切り。点線は半分が隙間で縁取りより薄く見えるので、--line より濃くする。 */
+  --rule:        light-dark(oklch(74%   0.045 var(--h)),        oklch(45% 0.040 var(--h)));
   --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
   --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
   --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
@@ -126,7 +128,7 @@ header.site.glass::before { content: none; }
 
 /* 区切り線は重ねて描き、border による寸法の変化を避ける。 */
 :is(.dotted, .divide-line > :not(:first-child)) { position: relative; }
-:is(.dotted, .divide-line > :not(:first-child))::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--line); pointer-events: none; }
+:is(.dotted, .divide-line > :not(:first-child))::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--rule); pointer-events: none; }
 .line-bottom::after { content: ""; position: absolute; inset: auto 0 0; border-bottom: 1px solid var(--line); pointer-events: none; }
 .line-top::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 1px solid var(--line); pointer-events: none; }
 
@@ -228,7 +230,7 @@ header.site.glass::before { content: none; }
   font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
 }
 .eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: .375rem; }
-.eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--line); }
+.eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--rule); }
 .eyebrow-plain::after { display: none; }
 
 .u-link { position: relative; text-decoration: none; }
