@@ -21,7 +21,7 @@
   --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
   --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));
   --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%));
-  --sea-depth:   light-dark(transparent, oklch(45% 0.09 var(--sea-h) / 18%));
+  --sea-depth:   light-dark(oklch(80% 0.07 215 / 45%), oklch(45% 0.09 var(--sea-h) / 18%));
   --sea-ray:     light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
   --sea-sky:     light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
 }

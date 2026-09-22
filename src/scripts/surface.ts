@@ -6,7 +6,7 @@ const FPS = 30;
 const LIGHT = [-0.7, -0.7];
 // 光の網: 動く点のボロノイ境界を明るくすると、水底の光の網のような不規則な網目になる。
 const NET = 72; // CSS px / 網目 1 つ
-const NET_DEPTH = 0.6; // 画面上端からこの割合までに網を描く
+const NET_DEPTH = 0.9; // 画面上端からこの割合までに網を描く
 
 export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
   return runBackground(canvas, { theme: 'light', fps: FPS }, (ctx) => {
@@ -117,7 +117,7 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
             // 線の太さと明るさを場所ごとに揺らし、均一なタイル模様に見えないようにする。
             const vary = 0.5 + 0.5 * Math.sin(fx * 0.9 + warpY[x] * 3 + tt * 0.6) * Math.sin(fy * 1.1 - tt * 0.5);
             const c = Math.max(0, 1 - (Math.sqrt(f2) - Math.sqrt(f1)) / (0.12 + 0.12 * vary));
-            netBuf[nrow + (x >> 1)] = c * c * c * (0.35 + 0.65 * vary) * fade * 0.3;
+            netBuf[nrow + (x >> 1)] = c * c * c * (0.35 + 0.65 * vary) * fade * 0.42;
           }
         }
         for (let y = 1; y < ch - 1; y++) {
