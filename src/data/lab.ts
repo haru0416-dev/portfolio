@@ -7,6 +7,12 @@ export type LabEntry = {
 
 export const LAB: LabEntry[] = [
   {
+    slug: 'dither',
+    title: 'Dither',
+    description: '惑星の縁と星空を、組織的ディザで数色に落として描いています。',
+    date: '2026-09-22',
+  },
+  {
     slug: 'petals',
     title: 'Petals',
     description: '風に舞う桜の花びらを WebGPU で描いています。',
