@@ -1,4 +1,5 @@
 import { runBackground, type BackgroundControl } from './background';
+import { createParticles } from './particles';
 
 const CELL = 4; // CSS px / セル
 const DAMP = 0.966;
@@ -21,6 +22,8 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
     let img: ImageData, off: HTMLCanvasElement, offCtx: CanvasRenderingContext2D;
     let soft: HTMLCanvasElement, softCtx: CanvasRenderingContext2D;
     let nextDrop = 0, now = 0;
+    // ダークのマリンスノーと対にし、明るい地を暗い粒がゆっくり昇る。
+    const motes = createParticles({ color: 'rgb(72,64,112)', area: 20000, dir: -1, alpha: [0.1, 0.32] });
 
     type Drop = { x: number; y: number; r: number; amp: number; left: number; total: number };
     const drops: Drop[] = [];
@@ -67,9 +70,11 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
         softCtx = soft.getContext('2d')!; softCtx.filter = 'blur(0.4px)';
         for (const p of drops) { p.x = Math.min(p.x, cw - 3); p.y = Math.min(p.y, ch - 3); }
         if (first) { drop(4, 3, 4); nextDrop = 0.4; }
+        motes.resize(w, h);
       },
       step(dt) {
         now += dt;
+        motes.step(dt);
         if (now >= nextDrop) {
           const big = Math.random() < 0.18;
           drop(big ? 4 : 3, big ? 3.2 : 2, big ? 6 : 4);
@@ -145,6 +150,7 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
         ctx.clearRect(0, 0, W, H);
         ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(soft, 0, 0, W, H);
+        motes.render(ctx);
       },
     };
   });

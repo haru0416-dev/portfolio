@@ -96,6 +96,7 @@ const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、har
   <body class="min-h-dvh flex flex-col">
     <div class="sea" aria-hidden="true">
       {RAYS.map((r) => <i class="ray" style={`--x:${r.x}%;--w:${r.w}%;--a:${r.a};--d:${r.d}s;--o:-${r.o}s`}></i>)}
+      <i class="sun"></i>
       <canvas class="deep"></canvas>
       <canvas class="surface"></canvas>
     </div>

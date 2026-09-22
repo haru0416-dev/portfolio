@@ -24,6 +24,10 @@
   --sea-depth:   light-dark(oklch(80% 0.07 215 / 45%), oklch(45% 0.09 var(--sea-h) / 18%));
   --sea-ray:     light-dark(transparent, oklch(75% 0.10 var(--sea-h) / 18%));
   --sea-sky:     light-dark(oklch(90% 0.05 var(--sea-h) / 35%), transparent);
+  /* 光源のにじみ。ライトは暖色の太陽、ダークは水面から届く冷たい光。 */
+  --sun-core:    light-dark(oklch(100% 0 0 / 95%), oklch(90% 0.04 220 / 30%));
+  --sun-glow:    light-dark(oklch(98% 0.06 85 / 60%), oklch(70% 0.08 220 / 12%));
+  --sun-haze:    light-dark(oklch(97% 0.05 80 / 22%), oklch(55% 0.07 225 / 5%));
 }
 :root.light { color-scheme: light; }
 :root.dark  { color-scheme: dark; }
@@ -261,6 +265,12 @@ header.site.glass::before { content: none; }
 }
 /* 狭い画面では筋が詰まって雨のように見えるため、細い 2 本を省く。 */
 @media (max-width: 40rem) { .sea .ray:is(:nth-of-type(2), :nth-of-type(6)) { display: none; } }
+/* 光源は、水面の光と同じ左上の画面外に置く。 */
+.sea .sun { left: 12%; top: -6%; }
+.sea .sun::before {
+  content: ""; position: absolute; inset: -60vmax;
+  background: radial-gradient(circle, var(--sun-core) 0 2vmax, var(--sun-glow) 5vmax, var(--sun-haze) 22vmax, transparent 50vmax);
+}
 @keyframes ray-sway {
   from { transform: translateX(-1.5vw) skewX(12deg); opacity: calc(var(--a) * .35); }
   to   { transform: translateX(1.5vw) skewX(16deg); opacity: calc(var(--a) * .75); }
@@ -287,6 +297,17 @@ header.site.glass::before { content: none; }
       animation-range: 0 480px;
     }
     @keyframes drift { to { transform: translateY(-24px); opacity: 0.6; } }
+  }
+}
+
+/* スクロールすると光源が画面の上へ抜け、にじみが消えていく。 */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sea .sun {
+      animation-name: sun-drift; animation-fill-mode: both; animation-timing-function: linear;
+      animation-timeline: scroll(root); animation-range: 0 100vh;
+    }
+    @keyframes sun-drift { to { transform: translateY(-40vh); opacity: 0; } }
   }
 }
 
