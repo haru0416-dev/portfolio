@@ -16,16 +16,15 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
   const scene = make(ctx);
   const active = () => (opts.theme === 'dark') === isDark();
 
-  let W = 0, H = 0, raf = 0, running = false, last = 0;
+  let W = 0, H = 0, raf = 0, running = false, last = 0, disposed = false;
   const resize = () => {
     const w = Math.round(canvas.clientWidth), h = Math.round(canvas.clientHeight);
-    if (!w || !h || (w === W && h === H)) return;
+    if (!w || !h || (w === W && h === H)) return false;
     W = w; H = h;
     canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     scene.resize(W, H);
-    if (running) scene.render();
-    sync();
+    return true;
   };
   const frame = (now: number) => {
     if (!running) return;
@@ -38,18 +37,27 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
   const start = () => { if (running || reduce.matches || !active() || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
   const stop = () => { running = false; cancelAnimationFrame(raf); ctx.clearRect(0, 0, W, H); };
   const sync = () => {
-    if (reduce.matches || !active() || document.hidden) {
+    if (disposed) return;
+    if (!active() || document.hidden || (reduce.matches && !opts.staticWhenReduced)) {
       stop();
-      if (reduce.matches && opts.staticWhenReduced && active()) { scene.step(0); scene.render(); }
+      return;
+    }
+    // 表示するテーマだけバッファを確保する。切り替え時に最新の寸法を反映する。
+    const resized = resize();
+    if (!W || !H) return;
+    if (reduce.matches) {
+      stop();
+      scene.step(0); scene.render();
     } else {
+      if (resized && running) scene.render();
       start();
     }
   };
   const offTheme = onThemeChange(sync);
-  const observer = new ResizeObserver(resize);
+  const observer = new ResizeObserver(sync);
   observer.observe(canvas);
   document.addEventListener('visibilitychange', sync);
   reduce.addEventListener('change', sync);
-  resize();
-  return { dispose() { stop(); offTheme(); observer.disconnect(); document.removeEventListener('visibilitychange', sync); reduce.removeEventListener('change', sync); } };
+  sync();
+  return { dispose() { disposed = true; stop(); offTheme(); observer.disconnect(); document.removeEventListener('visibilitychange', sync); reduce.removeEventListener('change', sync); } };
 }

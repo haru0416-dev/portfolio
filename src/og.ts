@@ -50,6 +50,8 @@ function sea() {
   return parts.join('');
 }
 
+const SEA = sea();
+
 const sprout = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${C.accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"/><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4M5 21h14"/></svg>`,
 )}`;
@@ -157,13 +159,15 @@ function page(els: El[], only?: string) {
     }
   }).join('');
   const card = `<div style="position:absolute;left:${L.card}px;top:${L.card}px;width:${W - 2 * L.card}px;height:${H - 2 * L.card}px;border:2px solid ${hide('card') ? 'transparent' : only ? '#000' : C.line};border-radius:${L.radius}px"></div>`;
-  return `<div style="display:flex;position:relative;width:${W}px;height:${H}px;${only ? 'background-color:#fff' : BG};font-family:Nunito,'Zen Maru Gothic';font-weight:700">${only ? '' : sea()}${card}${body}</div>`;
+  return `<div style="display:flex;position:relative;width:${W}px;height:${H}px;${only ? 'background-color:#fff' : BG};font-family:Nunito,'Zen Maru Gothic';font-weight:700">${only ? '' : SEA}${card}${body}</div>`;
 }
 
 const probes = new Map<string, Promise<Box>>();
+const MAX_PROBES = 64;
 function probe(e: El): Promise<Box> {
   const key = JSON.stringify({ ...e, x: 0, y: 0 });
   if (!probes.has(key)) {
+    if (probes.size >= MAX_PROBES) probes.delete(probes.keys().next().value!);
     probes.set(key, inkBox(page([{ ...e, x: 100, y: 100 }], e.key)).then((b) => {
       if (!b) throw new Error(`OG image: "${e.key}" has no ink`);
       return { left: b.left - 100, top: b.top - 100, right: b.right - 100, bottom: b.bottom - 100 };
@@ -231,16 +235,20 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
     iconW = i0 ? Math.round(size * L.titleIcon * (i0.right - i0.left) / (i0.bottom - i0.top)) + L.gap.icon : 0;
     const tw = fullW - iconW;
     const at = (w: number) => lineWidths(`<div style="width:${w}px;${style}">${content}</div>`);
-    const lines = (await at(tw)).length;
+    let widths = await at(tw);
+    const lines = widths.length;
+    const lastSize = size === L.titleSizes.at(-1);
+    if (lines > L.maxLines && !lastSize) continue;
     let lo = Math.floor(tw / lines), hi = tw;
     while (hi - lo > 4) {
       const w = (lo + hi) >> 1;
-      if ((await at(w)).length > lines) lo = w; else hi = w;
+      const measured = await at(w);
+      if (measured.length > lines) lo = w; else { hi = w; widths = measured; }
     }
-    const widths = await at(hi);
+    const even = Math.min(...widths) >= Math.max(...widths) / 2;
+    if (!even && !lastSize) continue;
     const e: El = { key: 'title', style, content, color: C.ink, w: hi, x: 0, y: 0 };
     chosen = { e, o: await probe(e) };
-    const even = Math.min(...widths) >= Math.max(...widths) / 2;
     if (lines <= L.maxLines && even && chosen.o.bottom - chosen.o.top + tagsH <= bandH) break;
   }
   const { e: te, o: to } = chosen!;
@@ -292,13 +300,13 @@ export async function layoutSite() {
   return { html: (only?: string) => page(els, only) };
 }
 
-export async function renderSiteImage(): Promise<Buffer> {
+export async function renderSiteImage(): Promise<Buffer<ArrayBuffer>> {
   const { html } = await layoutSite();
   const { node, css } = await prepare(html());
   return renderer.render(node, { ...OG_SIZE, css, lang: 'ja' });
 }
 
-export async function renderCardImage(card: CardImage): Promise<Buffer> {
+export async function renderCardImage(card: CardImage): Promise<Buffer<ArrayBuffer>> {
   const { html } = await layoutCard(card);
   const { node, css } = await prepare(html());
   return renderer.render(node, { ...OG_SIZE, css, lang: 'ja' });

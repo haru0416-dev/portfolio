@@ -1,10 +1,11 @@
 import { isDark, onThemeChange } from './theme';
+import type { PetalsControl } from './petals';
 
 const MAX = 8000;
 const FLOATS = 12; // Particle の f32 数
 const UNIFORM_BYTES = 96;
-// アダプタを GC させない(解放されると mapAsync などの Promise 系 API が失敗する)
-let keepAdapter: GPUAdapter | null = null;
+// デバイスが生きている間はアダプタも保持する(mapAsync などの Promise 系 API のため)。
+const deviceAdapters = new WeakMap<GPUDevice, GPUAdapter>();
 
 const WGSL = /* wgsl */ `
 struct Particle {
@@ -218,6 +219,8 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
 
   const uf = new Float32Array(UNIFORM_BYTES / 4);
   const uu = new Uint32Array(uf.buffer);
+  const data = new Float32Array(MAX * FLOATS);
+  const depths = new Float64Array(MAX);
   const st = { W: 0, H: 0, count: 0, t: 0 };
 
   const colors = () => {
@@ -230,8 +233,8 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
   const seed = (W: number, H: number, sizeMul = 1) => {
     st.W = W; st.H = H;
     st.count = Math.min(MAX, Math.round((W * H) / (1000 * dpr * dpr * sizeMul * sizeMul)));
-    const data = new Float32Array(MAX * FLOATS);
-    const depths = Array.from({ length: MAX }, () => 0.3 + 0.7 * Math.pow(Math.random(), 1.1)).sort((a, b) => a - b);
+    for (let i = 0; i < MAX; i++) depths[i] = 0.3 + 0.7 * Math.pow(Math.random(), 1.1);
+    depths.sort();
     for (let i = 0; i < MAX; i++) {
       const d = depths[i], o = i * FLOATS;
       data[o] = Math.random() * W; data[o + 1] = Math.random() * H * 1.2 - H * 0.2;
@@ -241,7 +244,7 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
       data[o + 8] = (16 + Math.random() * 28) * d * dpr * sizeMul; data[o + 9] = d;
       data[o + 10] = (Math.random() * 5) | 0; data[o + 11] = Math.random() * Math.PI * 2;
     }
-    device.queue.writeBuffer(storage, 0, data);
+    device.queue.writeBuffer(storage, 0, data, 0, st.count * FLOATS);
   };
 
   /** dt は秒。 */
@@ -269,95 +272,136 @@ function createRenderer(device: GPUDevice, module: GPUShaderModule, format: GPUT
 
 async function makeDevice(): Promise<{ device: GPUDevice; module: GPUShaderModule } | null> {
   if (!('gpu' in navigator)) return null;
-  const adapter = await navigator.gpu.requestAdapter().catch(() => null);
-  if (!adapter) return null;
-  keepAdapter = adapter;
-  const device = await adapter.requestDevice();
-  device.onuncapturederror = (e) => console.error('[petals-gpu]', e.error.message);
-  const module = device.createShaderModule({ code: WGSL });
-  const info = await module.getCompilationInfo();
-  for (const m of info.messages) if (m.type === 'error') { console.error('[petals-gpu] WGSL', m.lineNum, m.message); return null; }
-  return { device, module };
+  let device: GPUDevice | undefined;
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) return null;
+    device = await adapter.requestDevice();
+    deviceAdapters.set(device, adapter);
+    device.onuncapturederror = (e) => console.error('[petals-gpu]', e.error.message);
+    const module = device.createShaderModule({ code: WGSL });
+    const info = await module.getCompilationInfo();
+    for (const m of info.messages) if (m.type === 'error') {
+      console.error('[petals-gpu] WGSL', m.lineNum, m.message);
+      device.destroy(); deviceAdapters.delete(device);
+      return null;
+    }
+    return { device, module };
+  } catch (error) {
+    if (device) { device.destroy(); deviceAdapters.delete(device); }
+    console.error('[petals-gpu]', error);
+    return null;
+  }
 }
 
-export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ count: number } & import('./petals').PetalsControl) | null> {
+export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ count: number } & PetalsControl) | null> {
   const gpu = await makeDevice();
   if (!gpu) return null;
   const { device, module } = gpu;
-  const ctx = canvas.getContext('webgpu');
-  if (!ctx) return null;
-  const format = navigator.gpu.getPreferredCanvasFormat();
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  const dpr = Math.min(devicePixelRatio || 1, 2);
-  const r = createRenderer(device, module, format, dpr);
+  let dispose = () => { device.destroy(); deviceAdapters.delete(device); };
+  try {
+    const ctx = canvas.getContext('webgpu');
+    if (!ctx) { dispose(); return null; }
+    const format = navigator.gpu.getPreferredCanvasFormat();
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const r = createRenderer(device, module, format, dpr);
 
-  let raf = 0, visible = true, paused = false, last = 0;
-  const render = (dt: number) => {
-    if (!r.st.W || !r.st.H) return;
-    device.queue.submit([r.encodeFrame(dt, ctx.getCurrentTexture().createView()).finish()]);
-  };
-  const frame = (now: number) => {
-    if (reduce.matches || paused || !visible || document.hidden) return;
-    const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
-    last = now;
-    render(dt);
-    raf = requestAnimationFrame(frame);
-  };
-  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!reduce.matches && !paused && visible && !document.hidden) raf = requestAnimationFrame(frame); };
-
-  const resize = () => {
-    const b = canvas.getBoundingClientRect();
-    if (!b.width) return;
-    canvas.width = Math.round(b.width * dpr); canvas.height = Math.round(b.height * dpr);
-    ctx.configure({ device, format, alphaMode: 'opaque' });
-    r.seed(canvas.width, canvas.height);
-    if (reduce.matches) {
-      for (let i = 0; i < 90; i++) device.queue.submit([r.encodeFrame(1 / 30).finish()]);
-      render(1 / 30);
-    } else render(0);
-  };
-
-  const offTheme = onThemeChange(() => {
-    r.colors();
-    if (reduce.matches || paused || !visible || document.hidden) render(0);
-  });
-  const ro = new ResizeObserver(resize); ro.observe(canvas);
-  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }); io.observe(canvas);
-  const onMotion = () => { start(); if (reduce.matches) render(0); };
-  document.addEventListener('visibilitychange', start);
-  reduce.addEventListener('change', onMotion);
-  resize();
-  start();
-  if (location.search.includes('debug')) {
-    (window as any).__petalsCapture = async (steps = 240, sizeMul = 1): Promise<string> => {
-      const g2 = await makeDevice();
-      if (!g2) throw new Error('no device');
-      const W = canvas.width, H = canvas.height;
-      const r2 = createRenderer(g2.device, g2.module, 'rgba8unorm', dpr);
-      r2.seed(W, H, sizeMul);
-      for (let i = 0; i < steps; i++) g2.device.queue.submit([r2.encodeFrame(1 / 60).finish()]);
-      const tex = g2.device.createTexture({ size: [W, H], format: 'rgba8unorm', usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
-      const bpr = Math.ceil((W * 4) / 256) * 256;
-      const buf = g2.device.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
-      const enc = r2.encodeFrame(1 / 60, tex.createView());
-      enc.copyTextureToBuffer({ texture: tex }, { buffer: buf, bytesPerRow: bpr }, [W, H]);
-      g2.device.queue.submit([enc.finish()]);
-      await g2.device.queue.onSubmittedWorkDone();
-      await buf.mapAsync(GPUMapMode.READ);
-      const src = new Uint8Array(buf.getMappedRange());
-      const img = new ImageData(W, H);
-      for (let y = 0; y < H; y++) img.data.set(src.subarray(y * bpr, y * bpr + W * 4), y * W * 4);
-      for (let i = 3; i < img.data.length; i += 4) img.data[i] = 255;
-      buf.unmap(); tex.destroy();
-      const c = document.createElement('canvas'); c.width = W; c.height = H;
-      c.getContext('2d')!.putImageData(img, 0, 0);
-      return c.toDataURL('image/png');
+    let raf = 0, visible = true, paused = false, disposed = false, last = 0;
+    const render = (dt: number) => {
+      if (disposed || !r.st.W || !r.st.H) return;
+      device.queue.submit([r.encodeFrame(dt, ctx.getCurrentTexture().createView()).finish()]);
     };
+    const frame = (now: number) => {
+      if (disposed || reduce.matches || paused || !visible || document.hidden) return;
+      const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+      last = now;
+      render(dt);
+      raf = requestAnimationFrame(frame);
+    };
+    const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!disposed && !reduce.matches && !paused && visible && !document.hidden) raf = requestAnimationFrame(frame); };
+
+    const resize = () => {
+      if (disposed) return;
+      const b = canvas.getBoundingClientRect();
+      const W = Math.round(b.width * dpr), H = Math.round(b.height * dpr);
+      if (!W || !H || (W === r.st.W && H === r.st.H)) return;
+      canvas.width = W; canvas.height = H;
+      ctx.configure({ device, format, alphaMode: 'opaque' });
+      r.seed(W, H);
+      if (reduce.matches) {
+        for (let i = 0; i < 90; i++) device.queue.submit([r.encodeFrame(1 / 30).finish()]);
+        render(1 / 30);
+      } else render(0);
+    };
+
+    let offTheme: (() => void) | undefined;
+    let capture: ((steps?: number, sizeMul?: number) => Promise<string>) | undefined;
+    // このモジュールが登録するデバッグ用フック。
+    const debugWindow = window as Window & { __petalsCapture?: typeof capture };
+    const ro = new ResizeObserver(resize);
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); });
+    const onMotion = () => { if (disposed) return; start(); if (reduce.matches) render(0); };
+    dispose = () => {
+      if (disposed) return;
+      disposed = true;
+      cancelAnimationFrame(raf); offTheme?.(); ro.disconnect(); io.disconnect();
+      document.removeEventListener('visibilitychange', start); reduce.removeEventListener('change', onMotion);
+      if (capture && debugWindow.__petalsCapture === capture) delete debugWindow.__petalsCapture;
+      ctx.unconfigure(); device.destroy(); deviceAdapters.delete(device);
+    };
+    offTheme = onThemeChange(() => {
+      if (disposed) return;
+      r.colors();
+      if (reduce.matches || paused || !visible || document.hidden) render(0);
+    });
+    ro.observe(canvas); io.observe(canvas);
+    document.addEventListener('visibilitychange', start);
+    reduce.addEventListener('change', onMotion);
+    resize();
+    start();
+    if (location.search.includes('debug')) {
+      capture = async (steps = 240, sizeMul = 1): Promise<string> => {
+        if (disposed) throw new Error('petals disposed');
+        const g2 = await makeDevice();
+        if (!g2) throw new Error('no device');
+        try {
+          if (disposed) throw new Error('petals disposed');
+          const W = canvas.width, H = canvas.height;
+          const r2 = createRenderer(g2.device, g2.module, 'rgba8unorm', dpr);
+          r2.seed(W, H, sizeMul);
+          for (let i = 0; i < steps; i++) g2.device.queue.submit([r2.encodeFrame(1 / 60).finish()]);
+          const tex = g2.device.createTexture({ size: [W, H], format: 'rgba8unorm', usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
+          const bpr = Math.ceil((W * 4) / 256) * 256;
+          const buf = g2.device.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+          const enc = r2.encodeFrame(1 / 60, tex.createView());
+          enc.copyTextureToBuffer({ texture: tex }, { buffer: buf, bytesPerRow: bpr }, [W, H]);
+          g2.device.queue.submit([enc.finish()]);
+          await g2.device.queue.onSubmittedWorkDone();
+          await buf.mapAsync(GPUMapMode.READ);
+          const src = new Uint8Array(buf.getMappedRange());
+          const img = new ImageData(W, H);
+          for (let y = 0; y < H; y++) img.data.set(src.subarray(y * bpr, y * bpr + W * 4), y * W * 4);
+          for (let i = 3; i < img.data.length; i += 4) img.data[i] = 255;
+          buf.unmap();
+          const c = document.createElement('canvas'); c.width = W; c.height = H;
+          c.getContext('2d')!.putImageData(img, 0, 0);
+          return c.toDataURL('image/png');
+        } finally {
+          g2.device.destroy(); deviceAdapters.delete(g2.device);
+        }
+      };
+      debugWindow.__petalsCapture = capture;
+    }
+    return {
+      count: r.st.count,
+      pause() { paused = true; cancelAnimationFrame(raf); },
+      resume() { paused = false; start(); },
+      dispose,
+    };
+  } catch (error) {
+    dispose();
+    console.error('[petals-gpu]', error);
+    return null;
   }
-  return {
-    count: r.st.count,
-    pause() { paused = true; cancelAnimationFrame(raf); },
-    resume() { paused = false; start(); },
-    dispose() { cancelAnimationFrame(raf); offTheme(); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', start); reduce.removeEventListener('change', onMotion); device.destroy(); },
-  };
 }

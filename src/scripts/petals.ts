@@ -8,6 +8,7 @@ type Petal = {
 };
 
 const COLORS = ['#f9c9d8', '#f5b3c8', '#fbd9e4', '#f4a2bc', '#fde9f0'];
+const SIZES = [8, 10, 12];
 const LAYERS = [
   { depth: 0.55, blur: 1.6, alpha: 0.55 },
   { depth: 0.8, blur: 0.6, alpha: 0.8 },
@@ -59,28 +60,24 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const dpr = Math.min(devicePixelRatio || 1, 2);
 
-  let W = 0, H = 0, petals: Petal[] = [], raf = 0, visible = true, paused = false, last = 0, t = 0;
-  const sprites = new Map<string, HTMLCanvasElement>();
-  const sprite = (color: string, r: number, layer: (typeof LAYERS)[number]) => {
-    const key = `${color}/${r}/${layer.depth}`;
-    let s = sprites.get(key);
-    if (!s) { s = makeSprite(color, r, layer.blur, layer.alpha, dpr); sprites.set(key, s); }
-    return s;
-  };
-
-  const make = (fromTop: boolean): Petal => {
-    const layer = LAYERS[(Math.random() * LAYERS.length) | 0];
-    const r = [8, 10, 12][(Math.random() * 3) | 0] * layer.depth;
-    const s = sprite(COLORS[(Math.random() * COLORS.length) | 0], r, layer);
-    return {
-      x: Math.random() * W, y: fromTop ? -r * 3 : Math.random() * H,
-      sprite: s, half: s.width / dpr / 2,
-      rot: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 1.2,
-      tilt: Math.random() * Math.PI * 2, tiltSpeed: 1.5 + Math.random() * 2,
-      vy: (28 + Math.random() * 30) * layer.depth,
-      sway: 14 + Math.random() * 16, swaySpeed: 0.8 + Math.random() * 0.8, phase: Math.random() * Math.PI * 2,
-      depth: layer.depth,
-    };
+  let W = 0, H = 0, petals: Petal[] = [], raf = 0, visible = true, paused = false, disposed = false, last = 0, t = 0;
+  const sprites: HTMLCanvasElement[] = [];
+  const make = (fromTop: boolean, p = {} as Petal): Petal => {
+    const layerIndex = (Math.random() * LAYERS.length) | 0;
+    const layer = LAYERS[layerIndex];
+    const sizeIndex = (Math.random() * SIZES.length) | 0;
+    const r = SIZES[sizeIndex] * layer.depth;
+    const colorIndex = (Math.random() * COLORS.length) | 0;
+    const key = (layerIndex * SIZES.length + sizeIndex) * COLORS.length + colorIndex;
+    const s = sprites[key] ??= makeSprite(COLORS[colorIndex], r, layer.blur, layer.alpha, dpr);
+    p.x = Math.random() * W; p.y = fromTop ? -r * 3 : Math.random() * H;
+    p.sprite = s; p.half = s.width / dpr / 2;
+    p.rot = Math.random() * Math.PI * 2; p.spin = (Math.random() - 0.5) * 1.2;
+    p.tilt = Math.random() * Math.PI * 2; p.tiltSpeed = 1.5 + Math.random() * 2;
+    p.vy = (28 + Math.random() * 30) * layer.depth;
+    p.sway = 14 + Math.random() * 16; p.swaySpeed = 0.8 + Math.random() * 0.8; p.phase = Math.random() * Math.PI * 2;
+    p.depth = layer.depth;
+    return p;
   };
 
   const wind = (time: number) => 10 * Math.sin(time * 0.23) + 6 * Math.sin(time * 0.61 + 1.3);
@@ -95,7 +92,7 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
       p.x += (Math.sin(t * p.swaySpeed + p.phase) * p.sway + w) * p.depth * dt;
       p.rot += p.spin * dt;
       p.tilt += p.tiltSpeed * dt;
-      if (p.y > H + p.half * 2 || p.x < -p.half * 4 || p.x > W + p.half * 4) Object.assign(p, make(true));
+      if (p.y > H + p.half * 2 || p.x < -p.half * 4 || p.x > W + p.half * 4) make(true, p);
       const sx = 0.35 + 0.65 * Math.abs(Math.cos(p.tilt));
       const c = Math.cos(p.rot), s = Math.sin(p.rot);
       ctx.setTransform(c * sx * dpr, s * sx * dpr, -s * dpr, c * dpr, p.x * dpr, p.y * dpr);
@@ -104,17 +101,18 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
   };
 
   const frame = (now: number) => {
-    if (reduce.matches || paused || !visible || document.hidden) return;
+    if (disposed || reduce.matches || paused || !visible || document.hidden) return;
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016); // タブ復帰時の飛びを防ぐ
     last = now;
     step(dt);
     raf = requestAnimationFrame(frame);
   };
-  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!reduce.matches && !paused && visible && !document.hidden) raf = requestAnimationFrame(frame); };
+  const start = () => { cancelAnimationFrame(raf); last = performance.now(); if (!disposed && !reduce.matches && !paused && visible && !document.hidden) raf = requestAnimationFrame(frame); };
 
   const resize = () => {
+    if (disposed) return;
     const r = canvas.getBoundingClientRect();
-    if (!r.width) return;
+    if (!r.width || !r.height || (r.width === W && r.height === H)) return;
     const oldW = W, oldH = H;
     W = r.width; H = r.height;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
@@ -132,7 +130,7 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
 
   const ro = new ResizeObserver(resize); ro.observe(canvas);
   const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }); io.observe(canvas);
-  const onMotion = () => { start(); if (reduce.matches) step(0); };
+  const onMotion = () => { if (disposed) return; start(); if (reduce.matches) step(0); };
   document.addEventListener('visibilitychange', start);
   reduce.addEventListener('change', onMotion);
   resize();
@@ -140,6 +138,12 @@ export function startPetals(canvas: HTMLCanvasElement): PetalsControl {
   return {
     pause() { paused = true; cancelAnimationFrame(raf); },
     resume() { paused = false; start(); },
-    dispose() { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); document.removeEventListener('visibilitychange', start); reduce.removeEventListener('change', onMotion); },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      cancelAnimationFrame(raf); ro.disconnect(); io.disconnect();
+      document.removeEventListener('visibilitychange', start); reduce.removeEventListener('change', onMotion);
+      petals.length = 0; sprites.length = 0;
+    },
   };
 }

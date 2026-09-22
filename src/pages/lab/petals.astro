@@ -29,9 +29,26 @@ const meta = labBySlug('petals');
     const label = document.getElementById('renderer');
     const pause = document.getElementById('petals-pause') as HTMLButtonElement | null;
     if (!canvas || !label || !pause) return;
-    const gpuReady = ('gpu' in navigator) ? import('../../scripts/petals-gpu').then((m) => m.startPetalsGPU(canvas)) : Promise.resolve(null);
+    let disposed = false;
+    let ctl: PetalsControl | null = null;
+    const onPause = () => {
+      const paused = pause.getAttribute('aria-pressed') !== 'true';
+      pause.setAttribute('aria-pressed', String(paused));
+      pause.textContent = paused ? '再生' : '一時停止';
+      paused ? ctl?.pause() : ctl?.resume();
+    };
+    document.addEventListener('astro:before-swap', () => {
+      disposed = true;
+      pause.removeEventListener('click', onPause);
+      ctl?.dispose();
+      ctl = null;
+    }, { once: true });
+    const gpuReady = ('gpu' in navigator)
+      ? import('../../scripts/petals-gpu').then((m) => disposed ? null : m.startPetalsGPU(canvas)).catch(() => null)
+      : Promise.resolve(null);
     gpuReady.then((gpu) => {
-      let ctl: PetalsControl | null = gpu;
+      if (disposed) { gpu?.dispose(); return; }
+      ctl = gpu;
       if (gpu) { label.textContent = `WebGPU · ${gpu.count.toLocaleString()} petals`; }
       else {
         const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
@@ -41,13 +58,7 @@ const meta = labBySlug('petals');
           ? 'Canvas 2D (WebGPU には HTTPS が必要)'
           : !('gpu' in navigator) ? 'Canvas 2D (このブラウザは WebGPU 未対応)' : 'Canvas 2D (GPU アダプタなし)';
       }
-      pause.addEventListener('click', () => {
-        const paused = pause.getAttribute('aria-pressed') !== 'true';
-        pause.setAttribute('aria-pressed', String(paused));
-        pause.textContent = paused ? '再生' : '一時停止';
-        paused ? ctl?.pause() : ctl?.resume();
-      });
-      document.addEventListener('astro:before-swap', () => ctl?.dispose(), { once: true });
+      pause.addEventListener('click', onPause);
     });
   });
 </script>

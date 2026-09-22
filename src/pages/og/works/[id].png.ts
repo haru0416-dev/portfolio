@@ -9,5 +9,5 @@ export const getStaticPaths = (async () => {
 
 export const GET: APIRoute<{ work: CollectionEntry<'works'> }> = async ({ props: { work } }) => {
   const png = await renderCardImage({ eyebrow: 'WORKS', title: work.data.name, tags: work.data.stack, icon: await lucideIcon(work.data.icon) });
-  return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
+  return new Response(png, { headers: { 'Content-Type': 'image/png' } });
 };

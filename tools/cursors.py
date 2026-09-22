@@ -28,9 +28,7 @@ sprout_down = lucide([ARROW], 28, 1.0, 2, 2, fill=PINK)
 ibeam = lucide(TEXT, 28, 1.0, 2, 2)
 
 css = f"""
-/* =====================================================================
-   6. カーソル
-   ===================================================================== */
+/* カーソル */
 @media (hover: hover) and (pointer: fine) {{
   :root {{
     --cursor-arrow: {url('arrow', arrow, 6, 7, 'auto')};
@@ -39,8 +37,8 @@ css = f"""
     --cursor-text:  {url('text', ibeam, 14, 14, 'text')};
   }}
   html, body {{ cursor: var(--cursor-arrow); }}
-  a, button, [role="button"], summary, label, .press, .chip, .pill, .icon-btn {{ cursor: var(--cursor-hand); }}
-  :is(a, button, .press, .chip, .pill, .icon-btn):active {{ cursor: var(--cursor-hand-down); }}
+  a, button, [role="button"], summary, label {{ cursor: var(--cursor-hand); }}
+  :is(a, button):active {{ cursor: var(--cursor-hand-down); }}
   input, textarea, [contenteditable] {{ cursor: var(--cursor-text); }} /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * {{ cursor: inherit; }}
   canvas {{ cursor: var(--cursor-arrow); }}
@@ -48,7 +46,7 @@ css = f"""
 """
 p = os.path.join(ROOT, 'src/styles/global.css')
 s = open(p).read()
-a = s.index("/* =====================================================================\n   6. カーソル")
+a = s.index("/* カーソル */")
 open(p, 'w').write(s[:a].rstrip('\n') + '\n' + css)
 
 if os.environ.get('PREVIEW'):

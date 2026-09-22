@@ -64,13 +64,43 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const opts: DitherOptions = { ...initial };
   let W = 0, H = 0, img: ImageData | null = null, raf = 0, running = false, paused = false, last = 0, t = 0;
+  let xs = new Float64Array(0), ys = new Float64Array(0), geometry = new Float64Array(0);
+  // 3 値ずつ保存: 惑星は [法線 Z, 経度, 縁]、星は [-1, 速度, 位相]。
+  let pixels = new Uint32Array(0), count = 0;
+  let backgroundR = -1, backgroundG = -1, backgroundB = -1;
 
   const resize = () => {
     const w = Math.floor(canvas.clientWidth / opts.pixel), h = Math.floor(canvas.clientHeight / opts.pixel);
-    if (!w || !h) return;
+    if (!w || !h || (w === W && h === H)) return false;
     W = w; H = h; canvas.width = W; canvas.height = H;
     img = ctx.createImageData(W, H);
+    backgroundR = backgroundG = backgroundB = -1;
+    xs = new Float64Array(W); ys = new Float64Array(H);
+    pixels = new Uint32Array(W * H); geometry = new Float64Array(W * H * 3); count = 0;
+    // サイズだけで決まる球面と星の位置を保存する。Float64 で元の計算精度を保つ。
+    const cx = W * 1.18, cy = -H * 0.42, R = H * 1.15;
+    for (let x = 0; x < W; x++) xs[x] = (x + 0.5 - cx) / R;
+    for (let y = 0; y < H; y++) {
+      const dy = ys[y] = (y + 0.5 - cy) / R;
+      for (let x = 0; x < W; x++) {
+        const dx = xs[x], d = Math.hypot(dx, dy), j = count * 3;
+        if (d < 1) {
+          const nz = Math.sqrt(1 - d * d);
+          geometry[j] = nz;
+          geometry[j + 1] = Math.atan2(dx, nz) * 3;
+          geometry[j + 2] = smoothstep(0.965, 0.995, d);
+        } else {
+          const density = 0.006 + 0.09 * smoothstep(1.4, 1.02, d), h1 = hash(x, y);
+          if (h1 >= density) continue;
+          geometry[j] = -1;
+          geometry[j + 1] = 1.5 + hash(y, x) * 2;
+          geometry[j + 2] = h1 * 40;
+        }
+        pixels[count++] = y * W + x;
+      }
+    }
     render();
+    return true;
   };
 
   const render = () => {
@@ -79,42 +109,39 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
     const pal = PALETTES[opts.palette].colors;
     const mat = opts.pattern === 'noise' || opts.pattern === 'none' ? null : MATRIX[opts.pattern];
     const spread = pal.length === 2 ? 0.9 : 0.4;
-    // 惑星: 中心は右上の外、半径は高さの 1.15 倍。
-    const cx = W * 1.18, cy = -H * 0.42, R = H * 1.15;
     // 光源は見えている左下の面を照らす向きに置き、ゆっくり揺らす。
     const lx = -0.55 + Math.cos(t * 0.1) * 0.2, ly = 0.45 + Math.sin(t * 0.07) * 0.15, lz = 0.7;
     const ln = Math.hypot(lx, ly, lz);
-    const [bg, dark, light, rim, star] = pal.length === 2 ? [pal[0], pal[0], pal[1], pal[1], pal[1]] : pal;
-    let i = 0;
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++, i += 4) {
-        const dx = (x + 0.5 - cx) / R, dy = (y + 0.5 - cy) / R;
-        const d = Math.hypot(dx, dy);
+    const bg = pal[0], dark = pal.length === 2 ? pal[0] : pal[1], light = pal.length === 2 ? pal[1] : pal[2];
+    const rim = pal.length === 2 ? pal[1] : pal[3], star = pal.length === 2 ? pal[1] : pal[4];
+    // 何もない空は常にパレットの先頭色。サイズや色が変わるときだけ塗る。
+    if (backgroundR !== bg[0] || backgroundG !== bg[1] || backgroundB !== bg[2]) {
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = bg[0]; data[i + 1] = bg[1]; data[i + 2] = bg[2]; data[i + 3] = 255;
+      }
+      [backgroundR, backgroundG, backgroundB] = bg;
+    }
+    for (let p = 0; p < count; p++) {
+        const pixel = pixels[p], x = pixel % W, y = Math.floor(pixel / W), i = pixel * 4, j = p * 3;
+        const nz = geometry[j];
         let r = bg[0], g = bg[1], b = bg[2];
-        let flat = false; // 空はディザせず、地の色のまま置く
-        if (d < 1) {
-          const nz = Math.sqrt(1 - d * d);
+        if (nz >= 0) {
+          const dx = xs[x], dy = ys[y];
           const shade = clamp01((dx * lx + dy * ly + nz * lz) / ln);
           // 表面の模様: 球面の座標で値ノイズを重ねる。
-          const u = Math.atan2(dx, nz) * 3 + t * 0.02, v = dy * 4;
+          const u = geometry[j + 1] + t * 0.02, v = dy * 4;
           const tex = noise(u * 2, v * 2) * 0.6 + noise(u * 5, v * 5) * 0.4;
           const k = clamp01(Math.pow(shade, 0.8) * (0.45 + tex * 0.6));
           r = dark[0] + (light[0] - dark[0]) * k; g = dark[1] + (light[1] - dark[1]) * k; b = dark[2] + (light[2] - dark[2]) * k;
-          const edge = smoothstep(0.965, 0.995, d) * (0.5 + shade * 0.5);
+          const edge = geometry[j + 2] * (0.5 + shade * 0.5);
           r += (rim[0] - r) * edge; g += (rim[1] - g) * edge; b += (rim[2] - b) * edge;
         } else {
-          // 縁に寄るほど密になる星。
-          const density = 0.006 + 0.09 * smoothstep(1.4, 1.02, d);
-          const h1 = hash(x, y);
-          if (h1 < density) {
-            const tw = 0.55 + 0.45 * Math.sin(t * (1.5 + hash(y, x) * 2) + h1 * 40);
-            r += (star[0] - r) * tw; g += (star[1] - g) * tw; b += (star[2] - b) * tw;
-          } else flat = true;
+          const tw = 0.55 + 0.45 * Math.sin(t * geometry[j + 1] + geometry[j + 2]);
+          r += (star[0] - r) * tw; g += (star[1] - g) * tw; b += (star[2] - b) * tw;
         }
         // ディザ: 閾値のずれを足してから最も近いパレット色を選ぶ。
         let off = 0;
-        if (flat) off = 0;
-        else if (mat) off = mat.m[(y % mat.size) * mat.size + (x % mat.size)] * 255 * spread;
+        if (mat) off = mat.m[(y % mat.size) * mat.size + (x % mat.size)] * 255 * spread;
         else if (opts.pattern === 'noise') off = (hash(x * 7 + 1, y * 13 + 3) - 0.5) * 255 * spread;
         const rr = r + off, gg = g + off, bb = b + off;
         let best = 0, bestD = Infinity;
@@ -123,8 +150,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
           if (dd < bestD) { bestD = dd; best = p; }
         }
         const c = pal[best];
-        data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2]; data[i + 3] = 255;
-      }
+        data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2];
     }
     ctx.putImageData(img, 0, 0);
   };
@@ -139,7 +165,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
   };
   const start = () => { if (running || paused || reduce.matches || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
   const stop = () => { running = false; cancelAnimationFrame(raf); };
-  const sync = () => { if (paused || reduce.matches || document.hidden) { stop(); render(); } else start(); };
+  const sync = () => { if (paused || reduce.matches || document.hidden) stop(); else start(); };
 
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
@@ -151,7 +177,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
     set(next) {
       const pixelChanged = next.pixel !== undefined && next.pixel !== opts.pixel;
       Object.assign(opts, next);
-      if (pixelChanged) { W = 0; resize(); } else render();
+      if (!pixelChanged || !resize()) render();
     },
     pause() { paused = true; sync(); },
     resume() { paused = false; sync(); },
