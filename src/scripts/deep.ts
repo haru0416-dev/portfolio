@@ -27,12 +27,38 @@ function makeSprites(): HTMLCanvasElement[] {
 }
 type Bubble = { x: number; y: number; r: number; v: number; wob: number; phase: number; life: number };
 
+// 泡は輪郭線ではなく、縁が柔らかく光るガラス玉として描く。光は水面と同じく左上から当てる。
+const BUBBLE = 64, BUBBLE_R = 30;
+function makeBubble(): HTMLCanvasElement {
+  const c = document.createElement('canvas'); c.width = c.height = BUBBLE;
+  const g = c.getContext('2d')!, m = BUBBLE / 2, R = BUBBLE_R;
+  const rim = g.createRadialGradient(m, m, 0, m, m, R);
+  rim.addColorStop(0, 'rgba(190,215,255,0.04)');
+  rim.addColorStop(0.7, 'rgba(190,215,255,0.06)');
+  rim.addColorStop(0.9, 'rgba(205,228,255,0.4)');
+  rim.addColorStop(0.97, 'rgba(235,245,255,0.9)');
+  rim.addColorStop(1, 'rgba(235,245,255,0)');
+  g.fillStyle = rim; g.beginPath(); g.arc(m, m, R, 0, 6.2832); g.fill();
+  g.lineCap = 'round';
+  g.strokeStyle = 'rgba(255,255,255,0.45)'; g.lineWidth = R * 0.08;
+  g.beginPath(); g.arc(m, m, R * 0.9, Math.PI * 1.05, Math.PI * 1.6); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.28)'; g.lineWidth = R * 0.07;
+  g.beginPath(); g.arc(m, m, R * 0.78, 0.25, 1.35); g.stroke();
+  const hx = m - R * 0.42, hy = m - R * 0.42;
+  const spec = g.createRadialGradient(hx, hy, 0, hx, hy, R * 0.22);
+  spec.addColorStop(0, 'rgba(255,255,255,1)'); spec.addColorStop(1, 'rgba(255,255,255,0)');
+  g.save(); g.translate(hx, hy); g.rotate(-Math.PI / 4); g.scale(1, 0.6); g.translate(-hx, -hy);
+  g.fillStyle = spec; g.beginPath(); g.arc(hx, hy, R * 0.22, 0, 6.2832); g.fill(); g.restore();
+  return c;
+}
+
 export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
   return runBackground(canvas, { theme: 'dark', fps: 30, dpr: Math.min(devicePixelRatio || 1, 1.5), staticWhenReduced: true }, (ctx) => {
     let W = 0, H = 0, t = 0;
     let flakes: Flake[] = [];
     const bubbles: Bubble[] = [];
     let vent = { x: 0.5, until: 0, next: 3 };
+    const bubbleSprite = makeBubble();
     const sprites = makeSprites();
 
     const makeFlake = (anywhere: boolean): Flake => {
@@ -85,15 +111,21 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
           ctx.restore();
         }
         ctx.globalAlpha = 1;
+        // 大きく縮めて描くため、高品質の縮小にして縁のギザつきを抑える。
+        ctx.imageSmoothingQuality = 'high';
         for (const b of bubbles) {
-          const a = 0.55 * b.life;
-          ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.2832);
-          ctx.strokeStyle = `rgba(200,220,255,${a * 0.7})`; ctx.lineWidth = Math.max(0.6, b.r * 0.12); ctx.stroke();
-          ctx.beginPath(); ctx.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, Math.max(0.6, b.r * 0.22), 0, 6.2832);
-          ctx.fillStyle = `rgba(255,255,255,${a})`; ctx.fill();
-          ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.85, 0.3, 1.9);
-          ctx.strokeStyle = `rgba(255,255,255,${a * 0.25})`; ctx.lineWidth = Math.max(0.5, b.r * 0.1); ctx.stroke();
+          ctx.globalAlpha = 0.55 * b.life;
+          const size = (b.r * BUBBLE) / BUBBLE_R;
+          ctx.save(); ctx.translate(b.x, b.y);
+          // 大きい泡は少し潰れ、上がりながら揺れる。
+          if (b.r > 3.5) {
+            const q = 0.03 + 0.05 * Math.sin(t * 7 + b.phase) * Math.min(1, (b.r - 3.5) / 4);
+            ctx.scale(1 + q, 1 - q);
+          }
+          ctx.drawImage(bubbleSprite, -size / 2, -size / 2, size, size);
+          ctx.restore();
         }
+        ctx.globalAlpha = 1;
       },
     };
   });
