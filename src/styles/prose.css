@@ -7,20 +7,96 @@
 .prose ul { list-style: disc; padding-left: 1.4em; }
 .prose ul li::marker { color: var(--accent); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
+.prose ol li::marker { color: var(--accent-ink); font-weight: 700; font-variant-numeric: tabular-nums; } /* 番号は文字なので、コントラストの取れる accent-ink にする */
 .prose li + li { margin-top: .5rem; }
 .prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 行高を変えずにタップ領域を広げる */
 .prose strong { font-weight: 600; }
 .prose code { font-size: .8944em; line-height: 1; background: var(--paper-2); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
-.prose pre { padding: 1.5rem; border-radius: 1rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; border: 1px solid var(--line); }
 .prose pre code { background: none; padding: 0; }
+/* コードブロックは src/data/code-theme.ts の変換で figure.code-block に包まれる。背景と縁取りは枠が持ち、中の pre は横スクロールだけを受け持つ。 */
+.prose .code-block {
+  /* code-theme.ts の CODE_BG と同じ値 */
+  --code-bg: light-dark(oklch(94.5% 0.022 var(--h)), oklch(22% 0.028 var(--h)));
+  position: relative; margin-inline: 0; margin-bottom: 0;
+  background: var(--code-bg); border: 1px solid var(--line); border-radius: 1rem;
+}
+.prose .code-block pre { padding: 1.5rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; }
+/* 右上に言語名、ホバーかフォーカスでコピーボタン。言語名は上端の余白に置き、コードの 1 行目にかからないようにする。 */
+.prose .code-block pre { padding-top: 2.5rem; }
+.prose .code-block::before {
+  content: attr(data-lang); position: absolute; top: .75rem; left: 1.5rem;
+  font: 700 var(--text-xs)/1rem var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.prose .code-block[data-lang="plaintext"]::before, .prose .code-block[data-lang="text"]::before { content: none; }
+.code-copy {
+  position: absolute; top: .375rem; right: .375rem; display: grid; place-items: center; width: 2.5rem; height: 2.5rem;
+  border-radius: .75rem; color: var(--muted); transition: color 150ms ease, background-color 150ms ease, opacity 150ms ease;
+}
+.code-copy > * { grid-area: 1 / 1; transition: opacity 150ms ease, scale 200ms var(--ease-out); }
+.code-copy .icon-done { opacity: 0; scale: .6; color: var(--accent-ink); }
+.code-copy[data-state="done"] .icon-copy { opacity: 0; scale: .6; }
+.code-copy[data-state="done"] .icon-done { opacity: 1; scale: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .code-copy { opacity: 0; }
+  .code-block:hover .code-copy, .code-copy:focus-visible, .code-copy[data-state] { opacity: 1; }
+  .code-copy:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 8%, transparent); }
+}
+.prose pre.astro-code, .prose pre.astro-code span { color: light-dark(var(--shiki-light), var(--shiki-dark)); }
+/* 横にはみ出す行があるときだけ、続きのある側の端で文字を薄く消す。はみ出さなければスクロールのタイムラインが無効になり、消さない。 */
+@property --fade-l { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --fade-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@supports (animation-timeline: scroll()) {
+  .prose .code-block pre {
+    mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+    animation-name: code-fade; animation-fill-mode: both; animation-timing-function: linear;
+    animation-timeline: scroll(self inline);
+  }
+  @keyframes code-fade {
+    from { --fade-l: 0px; --fade-r: 2.5rem; }
+    6% { --fade-l: 2.5rem; }
+    94% { --fade-r: 2.5rem; }
+    to { --fade-l: 2.5rem; --fade-r: 0px; }
+  }
+}
 .prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
 .prose img { border-radius: 1rem; width: 100%; }
-.prose hr { border: 0; text-align: center; margin: 3rem 0; line-height: 2rem; }
+.prose figure:not(.code-block) { margin-inline: 0; }
+.prose figcaption { margin-top: .75rem; font-size: var(--text-sm); line-height: 1.5rem; color: var(--muted); text-align: center; text-wrap: balance; }
+.prose hr { height: auto; border: 0; text-align: center; margin: 3rem 0; line-height: 2rem; } /* Tailwind の初期化が height: 0 にするので戻す */
 .prose hr::before { content: "♡"; color: var(--muted); letter-spacing: .5em; }
 .prose table { width: 100%; font-size: .9em; border-collapse: collapse; }
 .prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
 
+/* 見出しのリンクは本文の左の余白に吊るし、見出しの文字位置を動かさない。狭い画面では余白がないので見出しの後ろに置く。 */
+.prose :is(h2, h3):not(.sr-only) { position: relative; } /* 脚注の読み上げ用見出し(sr-only)は absolute のままにする */
+.prose .heading-anchor {
+  position: absolute; right: 100%; top: 0; padding-inline: .5rem; margin-right: .125rem;
+  color: var(--muted); text-decoration: none; font-weight: 700; user-select: none; opacity: 0; transition: opacity 150ms ease, color 150ms ease;
+}
+.prose :is(h2, h3):hover .heading-anchor, .prose .heading-anchor:focus-visible, .prose :is(h2, h3):target .heading-anchor { opacity: 1; }
+.prose .heading-anchor:hover { color: var(--accent-ink); }
+@media (max-width: 48rem) {
+  .prose :is(h2, h3):not(.sr-only) { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: .5rem; }
+  .prose .heading-anchor { position: static; padding: 0; margin: 0; opacity: .5; }
+}
+/* 固定ヘッダー(4rem)の下に隠れないよう、リンク先を少し下げて止める。 */
+.prose :target { scroll-margin-top: 6rem; }
+/* 脚注。番号は小さくても押しやすいよう当たり判定を広げる。 */
+.prose sup { line-height: 0; }
+.prose sup a { font-size: .75em; font-weight: 700; text-decoration: none; padding: .5rem .3rem; margin-inline: -.3rem; } /* 見た目の位置は変えずに当たり判定だけ広げる */
+.prose sup a::before { content: "["; } .prose sup a::after { content: "]"; }
+.prose .footnotes { margin-top: 4rem; padding-top: 1.5rem; border-top: 2px dotted var(--line); font-size: var(--text-sm); line-height: 1.5rem; color: var(--ink-2); }
+.prose .footnotes ol { margin-top: 0; padding-left: 0; list-style-position: inside; }
+.prose .footnotes li > p { display: inline; }
+.prose .footnotes li { padding: .25rem .5rem; margin-inline: -.5rem; border-radius: .5rem; }
+/* 飛んできた脚注を一瞬だけ強調する。 */
+.prose .footnotes li:target { animation: fn-flash 2s ease-out; }
+@keyframes fn-flash { from, 30% { background: var(--accent-soft); } }
+.prose .footnotes li + li { margin-top: .25rem; }
+.prose .footnotes li::marker { color: var(--muted); }
+.prose .data-footnote-backref { text-decoration: none; margin-left: .25rem; padding: .25rem; }
+
 @supports (corner-shape: squircle) {
-  .prose pre, .prose blockquote, .prose img, .prose code { corner-shape: squircle; }
+  .prose .code-block, .prose blockquote, .prose img, .prose code { corner-shape: squircle; }
 }

@@ -4,7 +4,10 @@ import { getPublishedPosts } from '../../data/collections';
 import '../../styles/prose.css';
 import Base from '../../layouts/Base.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
+import { readingMinutes } from '../../scripts/reading';
 import { SITE } from '../../site';
+import Copy from '@lucide/astro/icons/copy';
+import Check from '@lucide/astro/icons/check';
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts();
@@ -14,7 +17,10 @@ export async function getStaticPaths() {
   }));
 }
 const { post, newer, older } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+// 章が 3 つ以上ある記事にだけ目次を出す。脚注の読み上げ用見出しは除く。
+const toc = headings.filter((h) => h.depth <= 3 && h.slug !== 'footnote-label');
+const showToc = toc.filter((h) => h.depth === 2).length >= 3;
 const url = new URL(`/blog/${post.id}/`, Astro.site).href;
 const image = new URL(`/og/blog/${post.id}.png`, Astro.site).href;
 const published = post.data.pubDate.toISOString();
@@ -48,15 +54,31 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   </Fragment>
   <article>
+    <a href="/blog/" data-vt-back class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Blog</a>
     <header class="mb-12">
-      <div class="text-xs text-muted flex flex-wrap gap-x-4 mb-4 tracking-[.05em]">
+      <div class="text-xs text-muted flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 tracking-[.05em]">
         <FormattedDate date={post.data.pubDate} />
         {post.data.updatedDate && <span>updated <FormattedDate date={post.data.updatedDate} /></span>}
-        {post.data.tags.map((t) => <span>#{t}</span>)}
+        <span>{readingMinutes(post.body)} min</span>
+        {post.data.tags.length > 0 && (
+          <ul role="list" aria-label="タグ" class="flex flex-wrap gap-2">
+            {post.data.tags.map((t) => <li><a href={`/blog/?tag=${encodeURIComponent(t)}`} class="tag tag-link">#{t}</a></li>)}
+          </ul>
+        )}
       </div>
       <h1 transition:name={`post-${post.id}`} transition:animate="initial" class="vt-swap display-jp text-2xl sm:text-3xl w-fit">{post.data.title}</h1>
       {post.data.description && <p class="phrase mt-4 text-base text-ink-2">{post.data.description}</p>}
     </header>
+    {showToc && (
+      <nav aria-labelledby="toc-heading" class="toc">
+        <details class="toc-box" open>
+          <summary id="toc-heading" class="eyebrow eyebrow-plain"><span>目次</span><i class="toc-mark" aria-hidden="true"></i></summary>
+          <ol role="list">
+            {toc.map((h) => <li class:list={[h.depth === 3 && 'toc-sub']}><a href={`#${h.slug}`}>{h.text}</a></li>)}
+          </ol>
+        </details>
+      </nav>
+    )}
     <div class="prose"><Content /></div>
   </article>
 
@@ -78,4 +100,120 @@ const jsonLd = {
       )}
     </div>
   </nav>}
+  <p class:list={['text-center', older || newer ? 'mt-12' : 'mt-16 pt-8 dotted']}>
+    <a href="/blog/" data-vt-back class="u-link text-sm text-muted hover:text-ink">すべての記事を見る</a>
+  </p>
+
+  <template id="code-copy">
+    <button type="button" class="code-copy" aria-label="コードをコピー">
+      <Copy size={16} stroke-width={2} aria-hidden="true" class="icon-copy" />
+      <Check size={16} stroke-width={2.5} aria-hidden="true" class="icon-done" />
+    </button>
+  </template>
 </Base>
+
+<style>
+  article { position: relative; }
+  .toc { margin-bottom: 3rem; }
+  .toc-box { background: var(--paper-2); border-radius: 1rem; padding: .75rem 1rem; }
+  .toc summary { list-style: none; cursor: var(--cursor-hand, pointer); height: 2rem; }
+  .toc summary::-webkit-details-marker { display: none; }
+  /* 開閉の印。閉じると下向き、開くと上向きの山形になる。 */
+  .toc-mark {
+    margin-left: auto; width: .5rem; height: .5rem; border: solid var(--muted); border-width: 0 2px 2px 0;
+    rotate: 45deg; translate: 0 -.125rem; transition: rotate 200ms var(--ease-out), translate 200ms var(--ease-out);
+  }
+  .toc details[open] .toc-mark { rotate: 225deg; translate: 0 .125rem; }
+  .toc ol { margin-top: .5rem; display: grid; gap: .125rem; }
+  .toc a {
+    display: block; padding: .375rem .5rem; border-radius: .5rem; font-size: var(--text-sm); line-height: 1.5rem;
+    color: var(--ink-2); text-wrap: pretty; word-break: auto-phrase; transition: color 150ms ease, background-color 150ms ease;
+  }
+  .toc .toc-sub a { padding-left: 1.5rem; color: var(--muted); }
+  .toc a[aria-current="true"] { color: var(--accent-ink); font-weight: 700; }
+  @media (hover: hover) and (pointer: fine) { .toc a:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 6%, transparent); } }
+  /* 本文の右に余白が取れる幅では、本文の横に固定し、開閉はさせない。 */
+  @media (min-width: 80rem) {
+    .toc { position: absolute; top: 0; bottom: 0; left: calc(100% + 3rem); width: 14rem; margin: 0; }
+    .toc-box { position: sticky; top: 6rem; background: none; padding: 0; }
+    .toc summary { pointer-events: none; }
+    .toc-mark { display: none; }
+  }
+</style>
+
+<script>
+  // 目次で、いま読んでいる章を示す。広い画面では目次を常に開いておく。
+  let offToc: (() => void) | undefined;
+  document.addEventListener('astro:before-swap', () => { offToc?.(); offToc = undefined; });
+  document.addEventListener('astro:page-load', () => {
+    offToc?.(); offToc = undefined;
+    const toc = document.querySelector<HTMLElement>('.toc');
+    if (!toc) return;
+    const wide = matchMedia('(min-width: 80rem)');
+    const details = toc.querySelector('details');
+    const syncOpen = () => { if (wide.matches && details) details.open = true; };
+    syncOpen();
+    wide.addEventListener('change', syncOpen);
+    const links = new Map([...toc.querySelectorAll<HTMLAnchorElement>('a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+    const headings = [...links.keys()].map((id) => document.getElementById(id)).filter((h): h is HTMLElement => !!h);
+    const update = () => {
+      // 画面の上から 3 割の線を越えた最後の見出しを、読んでいる章とみなす。
+      const line = innerHeight * 0.3;
+      let current = headings[0];
+      for (const h of headings) if (h.getBoundingClientRect().top <= line) current = h;
+      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) current = headings.at(-1)!;
+      links.forEach((a, id) => {
+        if (id === current?.id) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    };
+    let raf = 0;
+    const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
+    update();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    offToc = () => {
+      removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll);
+      wide.removeEventListener('change', syncOpen); cancelAnimationFrame(raf);
+    };
+  });
+
+  // 見出しに、その見出しへのリンクを付ける。読み上げで見出しの文言を二度読ませないよう、名前は短くする。
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.prose :is(h2, h3)[id]').forEach((heading) => {
+      if (heading.querySelector('.heading-anchor')) return;
+      const link = document.createElement('a');
+      link.className = 'heading-anchor';
+      link.href = `#${heading.id}`;
+      link.setAttribute('aria-label', 'この見出しへのリンク');
+      link.textContent = '#';
+      heading.prepend(link);
+    });
+  });
+  // コードブロックにコピーボタンを付ける。押すと 1.5 秒だけチェックに変わり、読み上げにも結果を伝える。
+  document.addEventListener('astro:page-load', () => {
+    const template = document.getElementById('code-copy');
+    if (!(template instanceof HTMLTemplateElement) || !navigator.clipboard) return;
+    document.querySelectorAll<HTMLElement>('.prose .code-block').forEach((block) => {
+      const code = block.querySelector('pre code');
+      if (!code || block.querySelector('.code-copy')) return;
+      const button = template.content.firstElementChild!.cloneNode(true) as HTMLButtonElement;
+      let timer = 0;
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(code.textContent ?? '');
+          button.dataset.state = 'done';
+          button.setAttribute('aria-label', 'コピーしました');
+        } catch {
+          button.setAttribute('aria-label', 'コピーできませんでした');
+        }
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          delete button.dataset.state;
+          button.setAttribute('aria-label', 'コードをコピー');
+        }, 1500);
+      });
+      block.append(button);
+    });
+  });
+</script>

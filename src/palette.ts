@@ -6,7 +6,7 @@ const PAPER = {
   dark: { l: 19, c: 0.02 },
 } as const;
 
-function oklchToHex(Lpct: number, C: number, H: number): string {
+export function oklchToHex(Lpct: number, C: number, H: number): string {
   const L = Lpct / 100;
   const h = (H * Math.PI) / 180;
   const a = C * Math.cos(h);
