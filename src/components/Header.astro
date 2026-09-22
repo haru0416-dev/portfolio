@@ -15,10 +15,10 @@ const path = Astro.url.pathname;
         <a
           href={n.href}
           aria-current={path.startsWith(n.href) ? 'page' : undefined}
-          class:list={['inline-flex shrink-0 items-center h-8 rounded-full px-1 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
+          class:list={['inline-flex shrink-0 items-center h-8 rounded-lg px-1 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
-      <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-muted hover:text-ink transition-colors">
+      <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-lg text-muted hover:text-ink transition-colors">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
       </button>
     </nav>
