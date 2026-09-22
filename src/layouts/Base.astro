@@ -97,11 +97,24 @@ const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、har
       import type { BackgroundControl } from '../scripts/background';
       import type { TransitionBeforePreparationEvent } from 'astro:transitions/client';
       installSmoothScroll();
+      // 作品ページが絡む遷移では、その作品だけをモーフさせる。一覧の他のカードが前後リンクへ飛ぶのを防ぐ。
+      let focusWork: string | undefined;
+      const workId = (url: URL) => url.pathname.match(/^\/works\/([^/]+)\/?$/)?.[1];
+      const isolateWork = () => {
+        if (!focusWork) return;
+        document.querySelectorAll<HTMLElement>('[data-astro-transition-scope]').forEach((el) => {
+          const id = getComputedStyle(el).viewTransitionName.match(/^work-(?:title-|caption-|icon-)?(.+)$/)?.[1];
+          if (id && id !== focusWork) el.style.viewTransitionName = 'none';
+        });
+      };
       // 「← Works」のような戻りリンクは、履歴の戻ると同じ向きで遷移させる。
       document.addEventListener('astro:before-preparation', (e) => {
         const ev = e as TransitionBeforePreparationEvent;
         if (ev.sourceElement?.closest('[data-vt-back]')) ev.direction = 'back';
+        focusWork = workId(ev.to) ?? workId(ev.from);
       });
+      document.addEventListener('astro:after-preparation', isolateWork);
+      document.addEventListener('astro:after-swap', () => { isolateWork(); focusWork = undefined; });
       let bg: BackgroundControl[] = [];
       const boot = () => {
         bg.forEach((b) => b.dispose());

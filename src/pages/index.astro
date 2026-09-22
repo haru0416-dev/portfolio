@@ -52,7 +52,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         {works.map((w, i) => (
           <li>
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
-              <span transition:name={`work-${w.id}`} transition:animate="initial" class="cover-thumb block mt-1.5"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+              <span transition:name={`work-${w.id}`} transition:animate="initial" class="cover-thumb block mt-1.5"><WorkCover id={w.id} icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
               <div class="min-w-0">
                 <div transition:name={`work-title-${w.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
                 <p class="phrase text-sm text-muted mt-2">{firstSentence(w.data.summary)}</p>

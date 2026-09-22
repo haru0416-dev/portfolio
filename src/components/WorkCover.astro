@@ -10,13 +10,15 @@ interface Props {
   sizes?: string;
   widths?: number[];
   loading?: 'lazy' | 'eager';
+  /** 作品ページ間でアイコンだけを別にモーフさせるための名前。 */
+  id: string;
 }
-const { icon, cover, hue, iconSize = 96, sizes = '(min-width: 64rem) 20rem, (min-width: 40rem) 50vw, 100vw', widths = [480, 800, 1200], loading = 'lazy' } = Astro.props;
+const { icon, cover, hue, iconSize = 96, sizes = '(min-width: 64rem) 20rem, (min-width: 40rem) 50vw, 100vw', widths = [480, 800, 1200], loading = 'lazy', id } = Astro.props;
 const Icon = ICONS[icon];
 if (!Icon) throw new Error(`未登録のアイコン: ${icon}`);
 ---
 <span class:list={['cover', `hue-${hue % 3}`]} aria-hidden="true">
   {cover
     ? <Image src={cover} alt="" widths={widths} sizes={sizes} loading={loading} class="cover-img" />
-    : <Icon size={iconSize} stroke-width={1.75} class="cover-icon" />}
+    : <span transition:name={`work-icon-${id}`} transition:animate="initial" class="cover-icon vt-swap"><Icon size={iconSize} stroke-width={1.75} /></span>}
 </span>
