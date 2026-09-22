@@ -14,7 +14,7 @@ const lab = LAB.slice(0, 3);
 const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 ---
 <Base wide>
-  <section class="min-h-[round(down,calc(61.8dvh-7rem),8px)] pb-16 flex items-center">
+  <section class="min-h-[round(down,calc(50dvh-4rem),8px)] pb-12 flex items-center">
     <div class="w-full lg:w-2/3 parallax">
       <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
       <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
@@ -33,13 +33,13 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
       </div>
     </div>
     <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-center">
-      <div class="hero-lead flex shrink-0 size-60 rounded-full glass border border-line items-center justify-center text-accent">
+      <div class="hero-lead hero-mark flex shrink-0 size-60 rounded-full items-center justify-center text-accent">
         <SiteIcon size={112} stroke-width={1.75} />
       </div>
     </div>
   </section>
 
-  <div class="grid gap-x-16 gap-y-16 lg:grid-cols-[1fr_21.5rem] lg:grid-rows-[auto_1fr] pt-16 dotted">
+  <div class="grid gap-x-12 gap-y-16 lg:grid-cols-[1fr_27rem] lg:grid-rows-[auto_1fr] pt-12 dotted">
     <section class="lg:col-start-1 lg:row-start-1">
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} compact />
@@ -54,7 +54,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
               <span transition:name={`work-${w.id}`} transition:animate="initial" class="cover-thumb block mt-1.5"><WorkCover id={w.id} icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
               <div class="min-w-0">
-                <div transition:name={`work-title-${w.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
+                <div transition:name={`work-title-${w.id}`} transition:animate="initial" class="vt-swap display-jp work-name w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
                 <p class="phrase text-sm text-muted mt-2">{firstSentence(w.data.summary)}</p>
               </div>
             </a>

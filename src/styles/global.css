@@ -20,6 +20,7 @@
   --accent-soft: light-dark(oklch(92%   0.060 var(--h-accent)), oklch(36% 0.070 var(--h-accent)));
   --on-accent:   light-dark(white, var(--paper));
   --mint:        light-dark(oklch(82%   0.100 var(--h-mint)),   oklch(78% 0.100 var(--h-mint)));
+  --lilac:       light-dark(oklch(74%   0.110 var(--h)),        oklch(76% 0.100 var(--h)));
   --glass-bg:    light-dark(oklch(96% 0.015 var(--h) / 55%), oklch(27% 0.03 var(--h) / 50%));
   --glass-hi:    light-dark(oklch(100% 0 0 / 45%), oklch(100% 0 0 / 9%));
   --glass-lo:    light-dark(oklch(40% 0.06 var(--h) / 5%), oklch(0% 0 0 / 18%));
@@ -64,7 +65,7 @@
   --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --font-display: var(--font-fredoka);
+  --font-display: var(--font-fredoka), var(--font-zen-maru);
   --font-display-jp: "Zen Maru Kana", var(--font-zen-maru);
   --font-sans: var(--font-nunito);
   --font-mono: var(--font-jetbrains);
@@ -107,6 +108,12 @@ time, .tabular-nums { white-space: nowrap; }
   unicode-range: U+3001-3002, U+3008-3011, U+3014-3015, U+3041-3096, U+309D-309E, U+30A1-30FB, U+30FD-30FE, U+FF01, U+FF08-FF09, U+FF0C, U+FF0E, U+FF1A-FF1B, U+FF1F;
 }
 .display-jp { font-family: var(--font-display-jp); font-weight: 700; }
+/* 作品名は英字の名前が多いため、欧文だけ見出しと同じ Fredoka にする。Fredoka は 600 のみ読み込むので太さを合わせる。 */
+.display-jp.work-name { font-family: "Zen Maru Kana", var(--font-fredoka), var(--font-zen-maru); font-weight: 600; }
+.hero-mark {
+  background: color-mix(in oklch, var(--accent-soft) 45%, var(--glass-bg));
+  box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px color-mix(in oklch, var(--accent) 30%, var(--line)), 0 0 0 12px color-mix(in oklch, var(--accent-soft) 25%, transparent);
+}
 
 .glass {
   isolation: isolate;
@@ -150,11 +157,13 @@ header.site.glass::before { content: none; }
 }
 .work-hero { border-radius: 2.5rem; }
 @media (min-width: 40rem) { .work-hero { aspect-ratio: 12 / 5; } }
+@media (min-width: 64rem) { .work-hero { aspect-ratio: 3 / 1; } }
 /* 高さを 8px に丸め、行送りをグリッドに乗せる。cqi は親を基準にする。 */
 @supports (height: round(1px, 8px)) {
   :has(> .work-card) { container-type: inline-size; }
   .work-card { aspect-ratio: auto; height: round(100cqi * 9 / 16, 8px); }
   @media (min-width: 40rem) { .work-hero { height: round(100cqi * 5 / 12, 8px); } }
+  @media (min-width: 64rem) { .work-hero { height: round(100cqi / 3, 8px); } }
 }
 .cover-thumb { position: relative; flex-shrink: 0; width: 6rem; height: 3.5rem; border-radius: .75rem; overflow: hidden; }
 .cover-thumb .cover { justify-content: center; }
@@ -165,7 +174,17 @@ header.site.glass::before { content: none; }
 }
 /* 題名は左下、バッジは左上に重なるため、アイコンは右寄りに置く。 */
 .work-card .cover { padding: 0 7% 14% 0; }
-.work-hero .cover { padding: 0 10% 0 0; }
+/* 題名は下端に置くため、アイコンは上に寄せて縦に分ける。 */
+.work-hero .cover { align-items: flex-start; padding: 2rem 10% 0 0; }
+/* アイコンは枠の幅に合わせて縮め、題名に重ならないようにする。 */
+.work-hero .cover-icon svg { width: min(10rem, 16.5cqi); height: min(10rem, 16.5cqi); }
+/* 狭い画面では枠が低いため、アイコンを右上に置き、その下に題名を流して枠の高さを中身に合わせる。 */
+@media (max-width: 39.99rem) {
+  .work-card.work-hero { height: auto; aspect-ratio: auto; }
+  .work-hero .cover { padding: 1.25rem 1.5rem 0 0; }
+  .work-hero .cover-icon svg { width: 6rem; height: 6rem; }
+  .work-card.work-hero .caption { position: relative; padding-top: 8.5rem; }
+}
 .cover::before {
   content: ""; position: absolute; inset: 0;
   background-image: radial-gradient(var(--cover-dot) 1.25px, transparent 1.5px); background-size: 1.5rem 1.5rem;
@@ -175,7 +194,7 @@ header.site.glass::before { content: none; }
 .cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hue-0 { --cover-bg: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); --cover-fg: var(--accent); --cover-dot: color-mix(in oklch, var(--accent) 35%, transparent); }
 .hue-1 { --cover-bg: color-mix(in oklch, var(--mint) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--mint) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--mint) 55%, transparent); }
-.hue-2 { --cover-bg: color-mix(in oklch, var(--paper-2) 60%, var(--paper)); --cover-fg: var(--ink-2); --cover-dot: color-mix(in oklch, var(--ink-2) 30%, transparent); }
+.hue-2 { --cover-bg: color-mix(in oklch, var(--lilac) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--lilac) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--lilac) 55%, transparent); }
 /* カバーは紙色に寄せてあるので、題名はインク色で直接置く。写真カバーのときだけ下端を紙色でぼかして読めるようにする。 */
 .work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.25rem; }
 .work-card:has(.cover-img) .caption { background: linear-gradient(to top, color-mix(in oklch, var(--paper) 85%, transparent), transparent); }
@@ -196,12 +215,12 @@ header.site.glass::before { content: none; }
 .pill-accent { background: var(--accent-btn); color: var(--on-accent); backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 .chip {
-  height: 2rem; padding: 0 1rem; border-radius: .5rem;
+  height: 2rem; padding: 0 .75rem; border-radius: .5rem;
   font-size: var(--text-xs); line-height: 1rem; color: var(--ink-2);
 }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 /* 絞り込みの件数。ボタンの文字より一段弱くし、数字の幅を揃える。 */
-.chip-count { margin-left: .375rem; font-weight: 500; font-variant-numeric: tabular-nums; opacity: .6; }
+.chip-count { margin-left: .25rem; font-weight: 500; font-variant-numeric: tabular-nums; opacity: .6; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
 :is(.pill, .chip).glass:not(.pill-accent, [aria-pressed="true"]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line); }
@@ -220,16 +239,16 @@ header.site.glass::before { content: none; }
 }
 .card-link { transition: background-color 150ms ease, transform 160ms var(--ease-out); }
 
-.tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .75rem; border-radius: .375rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); }
+.tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .75rem; border-radius: .375rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
 .on-paper .tag { background: var(--paper-2); }
 .tag-link { transition: background-color 150ms ease, color 150ms ease; }
-.tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); }
+.tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--accent) 30%, transparent); }
 
 .eyebrow {
   display: flex; align-items: center; gap: 1rem; height: 1.5rem;
   font-size: var(--text-xs); line-height: 1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700;
 }
-.eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: .375rem; }
+.eyebrow > span { background: var(--paper-2); padding: .25rem .75rem; border-radius: .375rem; box-shadow: inset 0 0 0 1px var(--line); }
 .eyebrow::after { content: ""; flex: 1; height: 0; border-top: 2px dotted var(--rule); }
 .eyebrow-plain::after { display: none; }
 
@@ -258,6 +277,14 @@ header.site.glass::before { content: none; }
 .scroll-row { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 1rem; overscroll-behavior-x: contain; padding-block: 6px; margin-block: -6px; }
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row > * { flex-shrink: 0; scroll-snap-align: start; }
+/* 横に続きがあるときだけ右端をぼかす。はみ出さない行ではタイムラインが無効になり、初期値 0 のまま残る。 */
+@property --fade-end { syntax: "<length>"; inherits: false; initial-value: 0rem; }
+@media (max-width: 39.99rem) {
+  @supports (animation-timeline: scroll(self inline)) {
+    .scroll-row { mask-image: linear-gradient(to right, #000 calc(100% - var(--fade-end)), transparent); animation: scroll-fade linear both; animation-timeline: scroll(self inline); }
+    @keyframes scroll-fade { from, 90% { --fade-end: 2.5rem; } to { --fade-end: 0rem; } }
+  }
+}
 @media (min-width: 40rem) { .scroll-row { overflow: visible; } }
 
 /* 100lvh で高さを固定し、アドレスバーの開閉による Canvas のリサイズを防ぐ。 */

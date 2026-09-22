@@ -137,7 +137,7 @@ const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、har
       document.addEventListener('astro:after-swap', boot);
     </script>
     <Header />
-    <main id="content" tabindex="-1" transition:name="main" transition:animate="initial" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-24', wide ? 'max-w-site' : 'max-w-reading']}>
+    <main id="content" tabindex="-1" transition:name="main" transition:animate="initial" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-16', wide ? 'max-w-site' : 'max-w-reading']}>
       <slot />
     </main>
     <Footer />

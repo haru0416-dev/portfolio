@@ -56,17 +56,13 @@ const jsonLd = {
         <p class="text-xs leading-4 tracking-[.1em] uppercase opacity-85 mb-2">
           {WORK_STATUS_LABELS[d.status] && <span class="font-bold">{WORK_STATUS_LABELS[d.status]} · </span>}{d.stack.join(' · ')}
         </p>
-        <h1 transition:name={`work-title-${work.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-2xl sm:text-4xl">{d.name}</h1>
+        <h1 transition:name={`work-title-${work.id}`} transition:animate="initial" class="vt-swap display-jp work-name w-fit text-2xl sm:text-4xl">{d.name}</h1>
       </div>
     </header>
 
     <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
       <div class="max-w-reading">
         <p class="phrase text-base sm:text-lg text-ink">{d.summary}</p>
-        <div class="mt-6 flex flex-wrap gap-2 on-paper">
-          {WORK_STATUS_LABELS[d.status] && <span class="tag badge tracking-[.1em] uppercase">{WORK_STATUS_LABELS[d.status]}</span>}
-          {d.stack.map((s) => <span class="tag">{s}</span>)}
-        </div>
         {hasBody && <div class="prose mt-12"><Content /></div>}
       </div>
 
@@ -86,7 +82,7 @@ const jsonLd = {
               </li>
             ))}
           </ul>
-          {d.issues && <p class="mt-4 text-xs text-muted">感想・不具合は GitHub Issues で受け付けています（投稿には GitHub へのログインが必要で、内容は公開されます）。</p>}
+          {d.issues && <p class="phrase mt-4 px-1 text-xs leading-5 text-muted">感想・不具合は GitHub Issues で受け付けています。投稿には GitHub へのログインが必要で、内容は公開されます。</p>}
         </aside>
       )}
     </div>
@@ -99,7 +95,7 @@ const jsonLd = {
           <span transition:name={`work-${prev.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover id={prev.work.id} icon={prev.work.data.icon} cover={prev.work.data.cover} hue={prev.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
           <span class="min-w-0">
             <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">← Prev</span>
-            <span transition:name={`work-title-${prev.work.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
+            <span transition:name={`work-title-${prev.work.id}`} transition:animate="initial" class="vt-swap display-jp work-name block w-fit text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
           </span>
         </a>
       )}
@@ -110,7 +106,7 @@ const jsonLd = {
           <span transition:name={`work-${next.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover id={next.work.id} icon={next.work.data.icon} cover={next.work.data.cover} hue={next.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
           <span class="min-w-0">
             <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">Next →</span>
-            <span transition:name={`work-title-${next.work.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit ml-auto text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>
+            <span transition:name={`work-title-${next.work.id}`} transition:animate="initial" class="vt-swap display-jp work-name block w-fit ml-auto text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>
           </span>
         </a>
       )}
