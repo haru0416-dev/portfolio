@@ -8,7 +8,9 @@ import { readingMinutes } from '../../scripts/reading';
 
 const posts = await getPublishedPosts();
 const [latest, ...rest] = posts;
-const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+const tagCounts = new Map<string, number>();
+for (const t of posts.flatMap((p) => p.data.tags)) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+const tags = [...tagCounts.keys()].sort();
 const years = new Map<number, typeof rest>();
 for (const post of rest) {
   const year = post.data.pubDate.getFullYear();
@@ -24,8 +26,8 @@ for (const post of rest) {
     {posts.length > 0 && (
       <search aria-label="タグで絞り込む">
         <div id="tag-filter" class="flex flex-wrap gap-2 mb-4">
-          <button type="button" class="chip glass press" data-tag="" aria-pressed="true" aria-controls="blog-results">すべて</button>
-          {tags.map((t) => <button type="button" class="chip glass press" data-tag={t} aria-pressed="false" aria-controls="blog-results">#{t}</button>)}
+          <button type="button" class="chip glass press" data-tag="" aria-pressed="true" aria-controls="blog-results">すべて<span class="chip-count">{posts.length}</span></button>
+          {tags.map((t) => <button type="button" class="chip glass press" data-tag={t} aria-pressed="false" aria-controls="blog-results">#{t}<span class="chip-count"><span class="sr-only">、</span>{tagCounts.get(t)}<span class="sr-only"> 件</span></span></button>)}
         </div>
       </search>
     )}
@@ -35,11 +37,12 @@ for (const post of rest) {
   <div id="blog-results">
     {latest && (
       <div data-post data-tags={JSON.stringify(latest.data.tags)}>
-        <a href={`/blog/${latest.id}/`} class="card glass reveal block group mb-8">
+        <a href={`/blog/${latest.id}/`} class="card card-link glass reveal block group mb-8 sm:-mx-6">
           <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent-ink mb-2">
-            <span>Latest</span><span class="text-muted">·</span>
+            <span>Latest</span><span class="text-muted" aria-hidden="true">·</span>
             <FormattedDate date={latest.data.pubDate} class="text-muted" />
-            <span class="text-muted">· {readingMinutes(latest.body)} min</span>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <span class="text-muted">{readingMinutes(latest.body)} min</span>
           </div>
           <h2 transition:name={`post-${latest.id}`} transition:animate="initial" class="vt-swap display-jp text-xl sm:text-2xl w-fit group-hover:text-accent-ink transition-colors">{latest.data.title}</h2>
           {latest.data.description && <p class="phrase mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}

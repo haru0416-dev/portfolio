@@ -11,7 +11,7 @@
   --ink:         light-dark(oklch(32%   0.050 var(--h)),        oklch(94% 0.012 var(--h)));
   --ink-2:       light-dark(oklch(47%   0.040 var(--h)),        oklch(80% 0.022 var(--h)));
   --muted:       light-dark(oklch(50%   0.035 var(--h)),        oklch(66% 0.030 var(--h)));
-  --line:        light-dark(oklch(91%   0.030 var(--h)),        oklch(32% 0.030 var(--h)));
+  --line:        light-dark(oklch(86%   0.035 var(--h)),        oklch(32% 0.030 var(--h)));
   --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
   --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
   --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
@@ -198,6 +198,8 @@ header.site.glass::before { content: none; }
   font-size: var(--text-xs); line-height: 1rem; color: var(--ink-2);
 }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
+/* 絞り込みの件数。ボタンの文字より一段弱くし、数字の幅を揃える。 */
+.chip-count { margin-left: .375rem; font-weight: 500; font-variant-numeric: tabular-nums; opacity: .6; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
 :is(.pill, .chip).glass:not(.pill-accent, [aria-pressed="true"]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line); }
@@ -208,6 +210,13 @@ header.site.glass::before { content: none; }
   transition: background-color 150ms ease, transform 160ms var(--ease-out);
 }
 .link-row-accent { background: var(--accent-btn); color: var(--on-accent); }
+/* 一覧の行。ホバーすると、本文の列からはみ出した淡い面が出る。文字の位置は動かさない。 */
+.row-link { position: relative; isolation: isolate; }
+.row-link::before {
+  content: ""; position: absolute; inset: 0 -.75rem; z-index: -1; border-radius: 1rem;
+  background: color-mix(in oklch, var(--ink) 5%, transparent); opacity: 0; transition: opacity 150ms ease;
+}
+.card-link { transition: background-color 150ms ease, transform 160ms var(--ease-out); }
 
 .tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .75rem; border-radius: .375rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); }
 .on-paper .tag { background: var(--paper-2); }
@@ -232,6 +241,8 @@ header.site.glass::before { content: none; }
 @media (hover: hover) and (pointer: fine) {
   .pill:not(.pill-accent):hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
   .link-row:not(.link-row-accent):hover { background: var(--accent-soft); }
+  .row-link:hover::before { opacity: 1; }
+  .card-link:hover { background: color-mix(in oklch, var(--glass-bg) 60%, var(--accent-soft)); }
   /* ダークでは暗くすると押せないように見えるため、明るくする。 */
   :is(.pill-accent, .link-row-accent):hover { background: color-mix(in oklch, var(--accent-btn) 88%, light-dark(black, white)); }
   .chip:not([aria-pressed="true"]):hover { background: var(--accent-soft); color: var(--ink); }
