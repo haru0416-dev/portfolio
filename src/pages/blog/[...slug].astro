@@ -1,12 +1,13 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import { getPublishedPosts } from '../../data/collections';
+import '../../styles/prose.css';
 import Base from '../../layouts/Base.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import { SITE } from '../../site';
 
 export async function getStaticPaths() {
-  const posts = (await getCollection('blog', ({ data }) => !data.draft))
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  const posts = await getPublishedPosts();
   return posts.map((post, i) => ({
     params: { slug: post.id },
     props: { post, newer: posts[i - 1], older: posts[i + 1] },
@@ -53,7 +54,7 @@ const jsonLd = {
         {post.data.updatedDate && <span>updated <FormattedDate date={post.data.updatedDate} /></span>}
         {post.data.tags.map((t) => <span>#{t}</span>)}
       </div>
-      <h1 transition:name={`post-${post.id}`} class="vt-swap display-jp text-2xl sm:text-3xl w-fit">{post.data.title}</h1>
+      <h1 transition:name={`post-${post.id}`} transition:animate="initial" class="vt-swap display-jp text-2xl sm:text-3xl w-fit">{post.data.title}</h1>
       {post.data.description && <p class="mt-4 text-base text-ink-2">{post.data.description}</p>}
     </header>
     <div class="prose"><Content /></div>

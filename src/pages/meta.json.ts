@@ -1,16 +1,14 @@
-// curl 向けの応答(functions/_middleware.ts)が読む、サイトの要約。ビルド時に静的に出す
-import { getCollection } from 'astro:content';
+// functions/_middleware.ts の CLI 向け応答が読む。
+import { getPublishedPosts, getWorks } from '../data/collections';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
 import { formatDate } from '../date';
 
 export async function GET() {
-  const posts = (await getCollection('blog', ({ data }) => !data.draft))
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  const posts = (await getPublishedPosts())
     .slice(0, 5)
     .map((p) => ({ title: p.data.title, date: formatDate(p.data.pubDate), path: `/blog/${p.id}/` }));
-  const works = (await getCollection('works'))
-    .sort((a, b) => a.data.order - b.data.order)
+  const works = (await getWorks())
     .map((w) => ({ name: w.data.name, status: w.data.status, url: w.data.status === 'soon' ? null : (w.data.url ?? w.data.repo ?? null) }));
   const lab = LAB.map((l) => ({ title: l.title, description: l.description, path: `/lab/${l.slug}/` }));
   return new Response(JSON.stringify({ name: SITE.name, tagline: SITE.description, github: SITE.github, posts, works, lab }), {

@@ -1,9 +1,10 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import { getWorks } from '../../../data/collections';
 import { lucideIcon, renderCardImage } from '../../../og';
 
 export const getStaticPaths = (async () => {
-  const works = await getCollection('works');
+  const works = await getWorks();
   return works.map((work) => ({ params: { id: work.id }, props: { work } }));
 }) satisfies GetStaticPaths;
 

@@ -1,12 +1,14 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import { getWorks, WORK_STATUS_LABELS } from '../../data/collections';
+import '../../styles/prose.css';
 import Base from '../../layouts/Base.astro';
 import WorkCover from '../../components/WorkCover.astro';
 import { ICONS } from '../../data/icons';
 import { SITE } from '../../site';
 
 export async function getStaticPaths() {
-  const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
+  const works = await getWorks();
   return works.map((work, i) => ({
     params: { id: work.id },
     props: { work, hue: i, prev: works[i - 1] && { work: works[i - 1], hue: i - 1 }, next: works[i + 1] && { work: works[i + 1], hue: i + 1 } },
@@ -16,7 +18,6 @@ const { work, hue, prev, next } = Astro.props;
 const { Content } = await render(work);
 const d = work.data;
 const hasBody = Boolean(work.body?.trim());
-const badge = { active: '', wip: 'Work in progress', soon: 'Coming soon', archived: 'Archived' } as const;
 const showRepo = d.repo && d.status !== 'soon';
 const Ext = ICONS['external-link'], Code = ICONS.code, Bug = ICONS.bug;
 const links = [
@@ -49,22 +50,22 @@ const jsonLd = {
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   <article>
     <a href="/works/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Works</a>
-    <header transition:name={`work-${work.id}`} class="work-card work-hero mb-12">
+    <header transition:name={`work-${work.id}`} transition:animate="initial" class="work-card work-hero mb-12">
       <WorkCover icon={d.icon} cover={d.cover} hue={hue} iconSize={160} loading="eager" sizes="(min-width: 68rem) 60rem, 100vw" widths={[640, 1200, 1920]} />
       <span class="shade" aria-hidden="true"></span>
-      <div class="caption p-6 sm:p-8">
+      <div class="caption">
         <p class="text-xs leading-4 tracking-[.1em] uppercase opacity-85 mb-2">
-          {badge[d.status] && <span class="font-bold">{badge[d.status]} · </span>}{d.stack.join(' · ')}
+          {WORK_STATUS_LABELS[d.status] && <span class="font-bold">{WORK_STATUS_LABELS[d.status]} · </span>}{d.stack.join(' · ')}
         </p>
-        <h1 transition:name={`work-title-${work.id}`} class="vt-swap display-jp w-fit text-2xl sm:text-4xl">{d.name}</h1>
+        <h1 transition:name={`work-title-${work.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-2xl sm:text-4xl">{d.name}</h1>
       </div>
     </header>
 
     <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
-      <div class="max-w-[41rem]">
+      <div class="max-w-reading">
         <p class="text-base sm:text-lg text-ink">{d.summary}</p>
         <div class="mt-6 flex flex-wrap gap-2 on-paper">
-          {badge[d.status] && <span class="tag badge tracking-[.1em] uppercase">{badge[d.status]}</span>}
+          {WORK_STATUS_LABELS[d.status] && <span class="tag badge tracking-[.1em] uppercase">{WORK_STATUS_LABELS[d.status]}</span>}
           {d.stack.map((s) => <span class="tag">{s}</span>)}
         </div>
         {hasBody && <div class="prose mt-12"><Content /></div>}
@@ -96,7 +97,7 @@ const jsonLd = {
     <div>
       {prev && (
         <a href={`/works/${prev.work.id}/`} class="group flex items-center gap-4">
-          <span transition:name={`work-${prev.work.id}`} class="cover-thumb hidden sm:block"><WorkCover icon={prev.work.data.icon} cover={prev.work.data.cover} hue={prev.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+          <span transition:name={`work-${prev.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover icon={prev.work.data.icon} cover={prev.work.data.cover} hue={prev.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
           <span class="min-w-0">
             <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">← Prev</span>
             <span class="display-jp block text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
@@ -107,7 +108,7 @@ const jsonLd = {
     <div class="text-right">
       {next && (
         <a href={`/works/${next.work.id}/`} class="group flex flex-row-reverse items-center gap-4">
-          <span transition:name={`work-${next.work.id}`} class="cover-thumb hidden sm:block"><WorkCover icon={next.work.data.icon} cover={next.work.data.cover} hue={next.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+          <span transition:name={`work-${next.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover icon={next.work.data.icon} cover={next.work.data.cover} hue={next.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
           <span class="min-w-0">
             <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">Next →</span>
             <span class="display-jp block text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>

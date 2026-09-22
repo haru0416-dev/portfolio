@@ -1,16 +1,21 @@
 ---
-import { getCollection } from 'astro:content';
+import { getPublishedPosts } from '../../data/collections';
 import Base from '../../layouts/Base.astro';
 import Hero from '../../components/Hero.astro';
 import PostList from '../../components/PostList.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import { readingMinutes } from '../../scripts/reading';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = await getPublishedPosts();
 const [latest, ...rest] = posts;
 const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
-const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
+const years = new Map<number, typeof rest>();
+for (const post of rest) {
+  const year = post.data.pubDate.getFullYear();
+  const group = years.get(year);
+  if (group) group.push(post);
+  else years.set(year, [post]);
+}
 ---
 <Base title="Blog">
   <Hero title="Blog" lead="開発中に試したことを書いています。" />
@@ -36,17 +41,17 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
             <FormattedDate date={latest.data.pubDate} class="text-muted" />
             <span class="text-muted">· {readingMinutes(latest.body)} min</span>
           </div>
-          <h2 transition:name={`post-${latest.id}`} class="vt-swap display-jp text-xl sm:text-2xl w-fit group-hover:text-accent-ink transition-colors">{latest.data.title}</h2>
+          <h2 transition:name={`post-${latest.id}`} transition:animate="initial" class="vt-swap display-jp text-xl sm:text-2xl w-fit group-hover:text-accent-ink transition-colors">{latest.data.title}</h2>
           {latest.data.description && <p class="mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}
           <div class="mt-4 flex flex-wrap gap-2">{latest.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
         </a>
       </div>
     )}
 
-    {years.map((y) => (
-      <section class="mb-8" data-year={y}>
-        <h2 class="eyebrow mb-2"><span>{y}</span></h2>
-        <PostList posts={rest.filter((p) => p.data.pubDate.getFullYear() === y)} />
+    {[...years].map(([year, posts]) => (
+      <section class="mb-8" data-year={year}>
+        <h2 class="eyebrow mb-2"><span>{year}</span></h2>
+        <PostList posts={posts} />
       </section>
     ))}
     <div id="tag-empty" hidden={posts.length > 0}>
@@ -57,73 +62,5 @@ const years = [...new Set(rest.map((p) => p.data.pubDate.getFullYear()))];
 </Base>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    const box = document.getElementById('tag-filter');
-    const results = document.getElementById('blog-results');
-    const status = document.getElementById('tag-status');
-    const empty = document.getElementById('tag-empty');
-    if (!box || !results || !status || !empty) return;
-
-    const buttons = [...box.querySelectorAll<HTMLButtonElement>('button[data-tag]')];
-    const items = [...results.querySelectorAll<HTMLElement>('[data-post]')].map((element) => ({
-      element,
-      tags: JSON.parse(element.dataset.tags ?? '[]') as string[],
-    }));
-    const groups = [...results.querySelectorAll<HTMLElement>('section[data-year]')].map((element) => ({
-      element,
-      items: [...element.querySelectorAll<HTMLElement>('[data-post]')],
-    }));
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let selectedTag = '';
-
-    const selectTag = (tag: string, animate: boolean) => {
-      if (tag === selectedTag) return;
-      selectedTag = tag;
-      const apply = () => {
-        // 連続して選び直した場合、古い遷移で選択を戻さない。
-        if (tag !== selectedTag) return;
-        buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.tag === tag)));
-        let count = 0;
-        items.forEach(({ element, tags }) => {
-          element.hidden = tag !== '' && !tags.includes(tag);
-          if (!element.hidden) count++;
-        });
-        groups.forEach(({ element, items }) => {
-          element.hidden = !items.some((item) => !item.hidden);
-        });
-        empty.hidden = count > 0;
-        status.textContent = `${tag ? `#${tag} · ` : ''}${count} 件の記事`;
-      };
-      if (!animate || reducedMotion.matches || !document.startViewTransition ||
-          !CSS.supports('selector(:active-view-transition-type(filter))')) {
-        apply();
-        return;
-      }
-      // 記事と見出しに名前を付け、本文から切り離して位置だけを補間する。
-      const named = [...results.querySelectorAll<HTMLElement>('[data-post], [data-post] [data-astro-transition-scope]')];
-      named.forEach((element, i) => {
-        element.style.setProperty('view-transition-class', 'item');
-        if (element.matches('[data-post]')) element.style.setProperty('view-transition-name', `filter-post-${i}`);
-      });
-      document.startViewTransition({ update: apply, types: ['filter'] }).finished.finally(() => {
-        // 次の遷移が始まっていれば、名前はそちらが使う。
-        if (tag !== selectedTag) return;
-        named.forEach((element) => {
-          element.style.removeProperty('view-transition-class');
-          element.style.removeProperty('view-transition-name');
-        });
-      });
-    };
-
-    box.addEventListener('click', (event) => {
-      const button = (event.target as Element).closest<HTMLButtonElement>('button[data-tag]');
-      if (!button || !box.contains(button)) return;
-      selectTag(button.dataset.tag ?? '', event.detail > 0);
-    });
-    document.getElementById('tag-reset')?.addEventListener('click', (event) => {
-      // リセット後に隠れるボタンから、残る「すべて」へフォーカスを戻す。
-      buttons.find((button) => button.dataset.tag === '')?.focus({ preventScroll: true });
-      selectTag('', event.detail > 0);
-    });
-  });
+  import '../../scripts/filter';
 </script>

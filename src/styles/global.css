@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* トークン */
 :root {
   --h-accent: 356;
   --h-mint: 175;
@@ -31,6 +30,9 @@
 :root.dark  { color-scheme: dark; }
 
 @theme {
+  --container-site: 64rem;
+  --container-reading: 41rem;
+
   /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
   --text-xs: 0.8rem;       --text-xs--line-height: 1rem;
   --text-sm: 0.8944rem;    --text-sm--line-height: 1.5rem;   /* 16 ÷ √1.25 */
@@ -62,7 +64,6 @@
   --font-sans: var(--font-nunito);
 }
 
-/* ベース */
 html { background: var(--paper); }
 body {
   color: var(--ink);
@@ -91,7 +92,6 @@ time, .tabular-nums { white-space: nowrap; }
 .skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 50; }
 .skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-/* 書体 */
 .display { font-family: var(--font-display); font-weight: 600; }
 /* palt 非対応のため、かな・約物を詰めた生成フォントを優先する。 */
 @font-face {
@@ -101,7 +101,6 @@ time, .tabular-nums { white-space: nowrap; }
 }
 .display-jp { font-family: var(--font-display-jp); font-weight: 700; }
 
-/* 面と区切り */
 .glass {
   isolation: isolate;
   background: var(--glass-bg);
@@ -127,16 +126,15 @@ header.site.glass::before { content: none; }
 .line-top::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 1px solid var(--line); pointer-events: none; }
 
 .card { border-radius: 2.5rem; padding: 1.5rem; }
-.card:where(:not(.glass)) { background: var(--paper-2); }
+:is(.card, .pill, .chip):where(:not(.glass)) { background: var(--paper-2); }
 .golden { aspect-ratio: 1.618; }
 @supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
 .petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
 @supports (corner-shape: squircle) {
-  .card, .work-card, .cover-thumb, .pill, .chip, .link-row, .prose pre, .prose blockquote, .prose img, .prose code, .petal-sky { corner-shape: squircle; }
+  .card, .work-card, .cover-thumb, .pill, .chip, .link-row, .petal-sky { corner-shape: squircle; }
 }
 
-/* 作品カード: 16:9 のカバーに題名を重ねる。カバーはアイコンか cover 画像で、色は hue-0〜2 で回す。 */
 .work-card {
   display: block; position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 1.5rem; color: white;
   box-shadow: 0 1px 2px var(--shadow), 0 4px 12px -4px var(--shadow), inset 0 0 0 1px var(--glass-hi);
@@ -151,7 +149,7 @@ header.site.glass::before { content: none; }
   @media (min-width: 40rem) { .work-hero { height: round(100cqi * 5 / 12, 8px); } }
 }
 .cover-thumb { position: relative; flex-shrink: 0; width: 6rem; height: 3.5rem; border-radius: .75rem; overflow: hidden; }
-.cover-thumb .cover { padding: 0; justify-content: center; }
+.cover-thumb .cover { justify-content: center; }
 .cover-thumb .cover-icon { filter: none; }
 .cover {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden;
@@ -173,25 +171,25 @@ header.site.glass::before { content: none; }
 .work-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, oklch(18% 0.03 var(--h) / .82), oklch(18% 0.03 var(--h) / .35) 30%, transparent 60%); }
 .work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.25rem; text-shadow: 0 1px 2px oklch(0% 0 0 / .3); }
 
-/* 操作部品。押し込みの transition は各部品の transition に含める。 */
+/* 押し込みの transform は各部品の transition に含める。 */
 .press:active { transform: scale(0.94); }
 .press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out); }
 
-.pill {
-  display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem;
-  padding: 0 1.25rem; border-radius: .75rem; font-size: var(--text-sm); line-height: 1.5rem; font-weight: 700;
-  color: var(--ink);
+.pill, .chip {
+  display: inline-flex; align-items: center; font-weight: 700;
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 }
-.pill:where(:not(.glass)) { background: var(--paper-2); }
+.pill {
+  gap: .5rem; height: 2.5rem;
+  padding: 0 1.25rem; border-radius: .75rem; font-size: var(--text-sm); line-height: 1.5rem;
+  color: var(--ink);
+}
 .pill-accent { background: var(--accent-btn); color: var(--on-accent); backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 .chip {
-  display: inline-flex; align-items: center; height: 2rem; padding: 0 1rem; border-radius: .5rem;
-  font-size: var(--text-xs); line-height: 1rem; font-weight: 700; color: var(--ink-2);
-  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+  height: 2rem; padding: 0 1rem; border-radius: .5rem;
+  font-size: var(--text-xs); line-height: 1rem; color: var(--ink-2);
 }
-.chip:where(:not(.glass)) { background: var(--paper-2); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
@@ -205,7 +203,7 @@ header.site.glass::before { content: none; }
 .link-row-accent { background: var(--accent-btn); color: var(--on-accent); }
 
 .tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .75rem; border-radius: .375rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--paper); }
-:is(ol, .on-paper) .tag { background: var(--paper-2); }
+.on-paper .tag { background: var(--paper-2); }
 .tag.badge { color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper)); }
 
 .eyebrow {
@@ -233,37 +231,11 @@ header.site.glass::before { content: none; }
   .work-card:hover .cover { transform: scale(1.05); }
 }
 
-/* 横に流れる絞り込みの行。狭い画面ではスクロールし、広い画面では折り返す。 */
 .scroll-row { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-block: 4px; margin-block: -4px; }
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row > * { flex-shrink: 0; scroll-snap-align: start; }
 @media (min-width: 40rem) { .scroll-row { overflow: visible; } }
 
-/* 記事本文 */
-.prose { font-size: var(--text-base); line-height: 2rem; color: var(--ink); }
-.prose > * + * { margin-top: 1.5rem; }
-.prose :is(h2, h3) { font-family: var(--font-display-jp); font-weight: 700; color: var(--ink); }
-.prose h2 { font-size: var(--text-xl); line-height: 2rem; margin-top: 4rem; }
-.prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
-.prose h2 + *, .prose h3 + * { margin-top: 1rem; }
-.prose ul { list-style: disc; padding-left: 1.4em; }
-.prose ul li::marker { color: var(--accent); }
-.prose ol { list-style: decimal; padding-left: 1.6em; }
-.prose li + li { margin-top: .5rem; }
-.prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 行高を変えずにタップ領域を広げる */
-.prose strong { font-weight: 600; }
-.prose code { font-size: .8944em; line-height: 1; background: var(--paper-2); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
-.prose pre { padding: 1.5rem; border-radius: 1rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; border: 1px solid var(--line); }
-.prose pre code { background: none; padding: 0; }
-.prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
-.prose img { border-radius: 1rem; width: 100%; }
-.prose hr { border: 0; text-align: center; margin: 3rem 0; line-height: 2rem; }
-.prose hr::before { content: "♡"; color: var(--muted); letter-spacing: .5em; }
-.prose table { width: 100%; font-size: .9em; border-collapse: collapse; }
-.prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
-.prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
-
-/* 背景の海 */
 /* 100lvh で高さを固定し、アドレスバーの開閉による Canvas のリサイズを防ぐ。 */
 .sea {
   position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
@@ -284,7 +256,6 @@ header.site.glass::before { content: none; }
 .sea .deep, .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sea .surface { opacity: .65; }
 
-/* 登場と流れのアニメーション */
 .wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
 .hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
 @keyframes wm-in { to { opacity: 1; transform: none; } }
@@ -304,16 +275,9 @@ header.site.glass::before { content: none; }
       animation-range: 0 480px;
     }
     @keyframes drift { to { transform: translateY(-24px); opacity: 0.6; } }
-    header.site {
-      animation-name: header-line; animation-fill-mode: both; animation-timing-function: linear;
-      animation-timeline: scroll(root);
-      animation-range: 0 64px;
-    }
-    @keyframes header-line { to { border-color: color-mix(in oklch, var(--line) 60%, var(--ink)); } }
   }
 }
 
-/* 動きを減らす設定 */
 @media (prefers-reduced-motion: reduce) {
   .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
   .sea i { animation: none; }
@@ -322,7 +286,15 @@ header.site.glass::before { content: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
 }
 
-/* ページ遷移: 本文は短く沈んで浮かび、名前を持つ要素(題名・カバー)は位置と大きさを補間して移動する。 */
+/* transition:animate="initial" で要素ごとの既定CSSを省き、遷移をここで定義する。 */
+[data-astro-transition-fallback] :is(main, main [data-astro-transition-scope]) {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  animation-fill-mode: both;
+}
+[data-astro-transition-fallback="old"] :is(main, main [data-astro-transition-scope]) { animation-name: astroFadeOut; }
+[data-astro-transition-fallback="new"] :is(main, main [data-astro-transition-scope]) { animation-name: astroFadeIn; }
+
 ::view-transition-old(main) { animation: vt-out 160ms cubic-bezier(0.4, 0, 0.6, 1) both; }
 ::view-transition-new(main) { animation: vt-in 360ms var(--ease-out) 40ms both; }
 ::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
@@ -338,19 +310,18 @@ html[data-astro-transition="back"]::view-transition-new(main) { animation-name: 
 ::view-transition-new(*) { animation: vt-title-in 240ms ease-out 80ms both; mix-blend-mode: normal; }
 @keyframes vt-title-out { to { opacity: 0; } }
 @keyframes vt-title-in { from { opacity: 0; } }
-/* 作品ブロックは影と題名の帯ごと動かす。新旧を同じ枠に cover で収め、縦横比が違っても引き伸ばさない。 */
+/* カバーの縦横比が変わっても、スナップショットを引き伸ばさない。 */
 .work-card, .cover-thumb { view-transition-class: cover swap; }
 .vt-swap { view-transition-class: swap; }
 ::view-transition-old(.cover), ::view-transition-new(.cover) { width: 100%; height: 100%; object-fit: cover; }
-/* 小さい方のスナップショットを拡大すると滲むため、長く重ねず、大きい方(進むときは新、戻るときは旧)を主に見せる。 */
+/* 拡大時の滲みを避け、大きい方のスナップショットを長く見せる。 */
 ::view-transition-old(.swap) { animation: vt-title-out 120ms ease-out both; }
 ::view-transition-new(.swap) { animation: vt-title-in 120ms ease-out both; }
 html[data-astro-transition="back"]::view-transition-old(.swap), html[data-astro-transition="back"]::view-transition-new(.swap) { animation-delay: 240ms; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
 ::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
-/* 絞り込み(同一ページ内)では本文は切り替えるだけで、項目(.item)だけが詰まる。
-   本文を重ねたり高さを補間したりすると、新旧の本文が引き伸ばされて二重に見える。 */
+/* 絞り込みでは項目だけを補間し、本文の伸縮と二重表示を避ける。 */
 html:active-view-transition-type(filter)::view-transition-group(main) { animation: none; }
 html:active-view-transition-type(filter)::view-transition-old(main) { display: none; }
 html:active-view-transition-type(filter)::view-transition-new(main) { animation: none; height: auto; }

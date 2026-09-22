@@ -1,8 +1,6 @@
 ---
-import Base from '../../layouts/Base.astro';
-import { labBySlug } from '../../data/lab';
+import Lab from '../../layouts/Lab.astro';
 import { PALETTES, PATTERNS } from '../../scripts/dither';
-const meta = labBySlug('dither');
 const pixels = [2, 3, 4, 6];
 const groups = [
   { id: 'pixel', label: 'ピクセル', items: pixels.map((p) => ({ value: String(p), label: `${p}px` })), initial: '3' },
@@ -10,13 +8,7 @@ const groups = [
   { id: 'pattern', label: 'ディザ', items: Object.entries(PATTERNS).map(([value, label]) => ({ value, label })), initial: 'bayer8' },
 ];
 ---
-<Base title={meta.title} description={meta.description} wide jpHeadings={false}>
-  <header class="mb-12">
-    <a href="/lab/" class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Lab</a>
-    <h1 transition:name={`lab-${meta.slug}`} class="vt-swap display w-fit text-2xl sm:text-3xl">{meta.title}</h1>
-    <p class="mt-4 text-base text-ink-2 max-w-[36rem]">{meta.description}</p>
-    <p class="mt-2 text-xs leading-4 tracking-[.08em] text-muted tabular-nums">{meta.date.replaceAll('-', '.')}</p>
-  </header>
+<Lab slug="dither">
   <div class="@container">
     <canvas id="dither" role="img" aria-label="惑星の縁と星空をディザで描いたアニメーション" class="w-full rounded-3xl golden bg-black pixelated"></canvas>
   </div>
@@ -34,7 +26,7 @@ const groups = [
   <p class="mt-8 text-sm text-ink-2 max-w-[44rem]">
     画面を数ピクセル単位に落として描き、各ピクセルの色に閾値行列のずれを足してから、パレットの中で最も近い色を選んでいます。行列が細かいほど中間調が滑らかに見え、None にすると単純な二値化になります。すべて CPU の Canvas 2D で計算しています。
   </p>
-</Base>
+</Lab>
 
 <style>
   .pixelated { image-rendering: pixelated; }

@@ -1,4 +1,4 @@
-// --paper と theme-color の唯一の定義。OKLCH から sRGB を計算する。
+// --paper と theme-color を同じ配色から生成する。
 export const HUE = 300;
 
 const PAPER = {

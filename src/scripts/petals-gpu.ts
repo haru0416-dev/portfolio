@@ -337,7 +337,6 @@ export async function startPetalsGPU(canvas: HTMLCanvasElement): Promise<({ coun
 
     let offTheme: (() => void) | undefined;
     let capture: ((steps?: number, sizeMul?: number) => Promise<string>) | undefined;
-    // このモジュールが登録するデバッグ用フック。
     const debugWindow = window as Window & { __petalsCapture?: typeof capture };
     const ro = new ResizeObserver(resize);
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); });

@@ -55,7 +55,7 @@ bun run pages:dev
 
 ### Lab
 
-`src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。
+`src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。ページは `src/layouts/Lab.astro` の `<Lab slug="...">` で囲む。題名・説明・日付・OG情報は登録内容から表示される。
 
 ## 主なファイル
 
@@ -64,16 +64,22 @@ bun run pages:dev
 | `src/site.ts` | サイト名、説明、GitHub URL |
 | `astro.config.mjs` | 公開URL、フォント、Astroの設定 |
 | `src/layouts/Base.astro` | 共通レイアウト、メタ情報、テーマ、ページ遷移 |
+| `src/layouts/Lab.astro` | Lab詳細ページの見出しとメタ情報 |
+| `src/data/collections.ts` | 記事の公開条件、記事・作品の並び順、作品ステータスの表示名 |
 | `src/components/` | ヘッダー、記事一覧などの共通部品 |
-| `src/styles/global.css` | 色・寸法の変数、部品、記事本文、アニメーション |
-| `src/scripts/` | テーマ判定、スクロール、背景・花びらの描画 |
+| `src/styles/global.css` | 色・寸法の変数、共通部品、アニメーション |
+| `src/styles/prose.css` | 記事・作品の詳細ページだけで読む本文スタイル |
+| `src/scripts/filter.ts` | Blog・Works共通の絞り込みと遷移処理 |
+| `src/scripts/` | テーマ判定、スクロール、背景・Labの描画 |
 | `src/og.ts` | TakumiによるOG画像生成 |
 | `functions/_middleware.ts` | CLI向け応答と追加ヘッダー |
 | `public/_headers` | 静的ファイルの応答ヘッダーとキャッシュ設定 |
 
 ## スタイルと生成アセット
 
-色と寸法は `src/styles/global.css` にまとめている。色は OKLCH と `light-dark()` で指定し、ヘッダーで端末設定・ライト・ダークを切り替える。レイアウトの最大幅は通常 `41rem`、`wide` 指定時は `64rem`。
+色と寸法は `src/styles/global.css` にまとめている。色は OKLCH と `light-dark()` で指定し、ヘッダーで端末設定・ライト・ダークを切り替える。レイアウトの最大幅は `--container-reading`（通常、`41rem`）と `--container-site`（`wide`、`64rem`）で定義する。
+
+本文内の `transition:name` には `transition:animate="initial"` を併記する。要素ごとのフェードCSSを生成せず、通常の遷移と非対応ブラウザ向けのフェードを `global.css` で定義している。
 
 背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面のCanvasを隠す。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
 

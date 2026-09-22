@@ -3,7 +3,7 @@ import { SITE } from '../site';
 import Logo from './Logo.astro';
 ---
 <footer transition:name="footer" transition:animate="none" class="relative line-top">
-  <div class="max-w-[64rem] mx-auto px-4 sm:px-8 py-12 flex flex-col sm:flex-row sm:flex-wrap sm:items-end justify-between gap-6">
+  <div class="max-w-site mx-auto px-4 sm:px-8 py-12 flex flex-col sm:flex-row sm:flex-wrap sm:items-end justify-between gap-6">
     <div>
       <Logo iconSize={26} />
       <p class="text-xs text-muted mt-2">© {new Date().getFullYear()} {SITE.name}. Built with Astro ♡</p>

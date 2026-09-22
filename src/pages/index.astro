@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getPublishedPosts, getWorks } from '../data/collections';
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import WorkCover from '../components/WorkCover.astro';
@@ -8,10 +8,8 @@ import { SITE } from '../site';
 import { LAB } from '../data/lab';
 import { SITE_ICON as SiteIcon } from '../data/icons';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 5);
-const works = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
+const posts = (await getPublishedPosts()).slice(0, 5);
+const works = await getWorks();
 const lab = LAB.slice(0, 3);
 const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 ---
@@ -54,9 +52,9 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         {works.map((w, i) => (
           <li>
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
-              <span transition:name={`work-${w.id}`} class="cover-thumb block"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+              <span transition:name={`work-${w.id}`} transition:animate="initial" class="cover-thumb block"><WorkCover icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
               <div class="min-w-0">
-                <div transition:name={`work-title-${w.id}`} class="vt-swap display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
+                <div transition:name={`work-title-${w.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-base leading-6 group-hover:text-accent-ink transition-colors">{w.data.name}</div>
                 <p class="text-sm text-muted">{firstSentence(w.data.summary)}</p>
               </div>
             </a>
@@ -72,7 +70,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         {lab.map((l) => (
           <li>
             <a href={`/lab/${l.slug}/`} class="group block">
-              <div transition:name={`lab-${l.slug}`} class="vt-swap display w-fit text-lg group-hover:text-accent-ink transition-colors">{l.title}</div>
+              <div transition:name={`lab-${l.slug}`} transition:animate="initial" class="vt-swap display w-fit text-lg group-hover:text-accent-ink transition-colors">{l.title}</div>
               <p class="text-sm text-muted">{l.description}</p>
             </a>
           </li>

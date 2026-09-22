@@ -1,6 +1,3 @@
-// 低解像度で描いた惑星の縁と星空を、組織的ディザで少数色に落とす。
-// 色は「元の色 + 閾値行列のずれ」に最も近いパレット色を選ぶ。行列が細かいほど中間調が滑らかに見える。
-
 export type DitherOptions = {
   pixel: number;            // 1 ピクセルの大きさ(CSS px)
   palette: PaletteName;
@@ -22,7 +19,6 @@ export const PALETTES: Record<PaletteName, { label: string; colors: RGB[] }> = {
 export const PATTERNS: Record<PatternName, string> = { bayer8: 'Bayer 8×8', bayer4: 'Bayer 4×4', bayer2: 'Bayer 2×2', noise: 'Noise', none: 'None' };
 
 function bayer(n: number): Float32Array {
-  // 2×2 を再帰的に拡張する。
   let m = [0, 2, 3, 1], size = 2;
   while (size < n) {
     const next = new Array(size * size * 4);
@@ -77,7 +73,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
     backgroundR = backgroundG = backgroundB = -1;
     xs = new Float64Array(W); ys = new Float64Array(H);
     pixels = new Uint32Array(W * H); geometry = new Float64Array(W * H * 3); count = 0;
-    // サイズだけで決まる球面と星の位置を保存する。Float64 で元の計算精度を保つ。
+    // Float64 を使い、色の量子化境界がキャッシュ前の計算とずれないようにする。
     const cx = W * 1.18, cy = -H * 0.42, R = H * 1.15;
     for (let x = 0; x < W; x++) xs[x] = (x + 0.5 - cx) / R;
     for (let y = 0; y < H; y++) {
@@ -109,7 +105,6 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
     const pal = PALETTES[opts.palette].colors;
     const mat = opts.pattern === 'noise' || opts.pattern === 'none' ? null : MATRIX[opts.pattern];
     const spread = pal.length === 2 ? 0.9 : 0.4;
-    // 光源は見えている左下の面を照らす向きに置き、ゆっくり揺らす。
     const lx = -0.55 + Math.cos(t * 0.1) * 0.2, ly = 0.45 + Math.sin(t * 0.07) * 0.15, lz = 0.7;
     const ln = Math.hypot(lx, ly, lz);
     const bg = pal[0], dark = pal.length === 2 ? pal[0] : pal[1], light = pal.length === 2 ? pal[1] : pal[2];

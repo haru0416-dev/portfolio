@@ -42,11 +42,8 @@ const onKey = (e: KeyboardEvent) => {
   if (SCROLL_KEYS.includes(e.key)) stop();
 };
 
-// 履歴の書き換えを間引く。滑らかスクロール中は 1 フレームごとの scrollTo がそれぞれ scrollend を起こし、
-// Astro のルーターがそのたびに history.replaceState でスクロール位置を保存する。Chrome は履歴の書き換えを
-// 10 秒に 200 回までに制限し、超えると「Throttling navigation」の警告を出す(実測: 25 秒で 289 回 → 間引き後 57 回)。
-// 同じ履歴項目への replaceState は最後の 1 回だけ意味があるので、直前の実行から 150ms 以内なら保留して最後の分だけ流す。
-// pushState と popstate の前には保留分を先に流し、Astro の履歴の順番を崩さない。
+// Astro のスクロール位置保存を間引き、ブラウザの history 更新制限を避ける。
+// 保留分は pushState・popstate・pagehide で流し、履歴項目の順序を保つ。
 const HISTORY_INTERVAL = 150;
 function throttleHistory() {
   const replace = history.replaceState.bind(history), push = history.pushState.bind(history);
