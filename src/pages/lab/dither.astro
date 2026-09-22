@@ -1,11 +1,8 @@
 ---
 import Lab from '../../layouts/Lab.astro';
-import { PALETTES, PATTERNS } from '../../scripts/dither';
-const pixels = [2, 3, 4, 6];
+import { PALETTES } from '../../scripts/dither';
 const groups = [
-  { id: 'pixel', label: 'ピクセル', items: pixels.map((p) => ({ value: String(p), label: `${p}px` })), initial: '3' },
   { id: 'palette', label: 'パレット', items: Object.entries(PALETTES).map(([value, p]) => ({ value, label: p.label })), initial: 'violet' },
-  { id: 'pattern', label: 'ディザ', items: Object.entries(PATTERNS).map(([value, label]) => ({ value, label })), initial: 'bayer8' },
 ];
 ---
 <Lab slug="dither">
@@ -24,7 +21,7 @@ const groups = [
     <button type="button" id="dither-pause" class="chip glass press" aria-pressed="false">一時停止</button>
   </div>
   <p class="mt-8 text-sm text-ink-2 max-w-[44rem]">
-    画面を数ピクセル単位に落として描き、各ピクセルの色に閾値行列のずれを足してから、パレットの中で最も近い色を選んでいます。行列が細かいほど中間調が滑らかに見え、None にすると単純な二値化になります。すべて CPU の Canvas 2D で計算しています。
+    画面を 2px 単位に落として描き、各ピクセルの色に Bayer 2×2 の閾値行列のずれを足してから、パレットの中で最も近い色を選んでいます。すべて CPU の Canvas 2D で計算しています。
   </p>
 </Lab>
 
@@ -41,7 +38,7 @@ const groups = [
     const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
     const read = (): DitherOptions => {
       const pick = (id: string) => groups.find((g) => g.dataset.group === id)?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.dataset.value;
-      return { pixel: Number(pick('pixel') ?? 3), palette: (pick('palette') ?? 'violet') as DitherOptions['palette'], pattern: (pick('pattern') ?? 'bayer8') as DitherOptions['pattern'] };
+      return { palette: (pick('palette') ?? 'violet') as DitherOptions['palette'] };
     };
     const ctl = startDither(canvas, read());
     groups.forEach((g) => g.addEventListener('click', (event) => {

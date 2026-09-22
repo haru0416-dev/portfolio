@@ -1,11 +1,11 @@
-export type DitherOptions = {
-  pixel: number;            // 1 ピクセルの大きさ(CSS px)
-  palette: PaletteName;
-  pattern: PatternName;
-};
+export type DitherOptions = { palette: PaletteName };
 export type PaletteName = 'violet' | 'sakura' | 'mono';
-export type PatternName = 'bayer8' | 'bayer4' | 'bayer2' | 'noise' | 'none';
 export type DitherControl = { set(opts: Partial<DitherOptions>): void; pause(): void; resume(): void; dispose(): void };
+
+/** 1 ピクセルの大きさ(CSS px)。 */
+const PIXEL = 2;
+/** Bayer 2×2 の閾値を -0.5〜0.5 に正規化したもの。 */
+const BAYER2 = [0, 2, 3, 1].map((v) => (v + 0.5) / 4 - 0.5);
 
 type RGB = [number, number, number];
 const hex = (s: string): RGB => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
@@ -15,30 +15,6 @@ export const PALETTES: Record<PaletteName, { label: string; colors: RGB[] }> = {
   violet: { label: 'Violet', colors: ['#05050a', '#3b1d6e', '#9b6ff5', '#52c8ff', '#f4f4ff'].map(hex) },
   sakura: { label: 'Sakura', colors: ['#171320', '#5a2c4a', '#f27ba7', '#9be0d0', '#fff6f9'].map(hex) },
   mono:   { label: 'Mono',   colors: ['#000000', '#ffffff'].map(hex) },
-};
-export const PATTERNS: Record<PatternName, string> = { bayer8: 'Bayer 8×8', bayer4: 'Bayer 4×4', bayer2: 'Bayer 2×2', noise: 'Noise', none: 'None' };
-
-function bayer(n: number): Float32Array {
-  let m = [0, 2, 3, 1], size = 2;
-  while (size < n) {
-    const next = new Array(size * size * 4);
-    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-      const v = m[y * size + x] * 4;
-      next[(y) * size * 2 + x] = v;
-      next[(y) * size * 2 + x + size] = v + 2;
-      next[(y + size) * size * 2 + x] = v + 3;
-      next[(y + size) * size * 2 + x + size] = v + 1;
-    }
-    m = next; size *= 2;
-  }
-  const out = new Float32Array(size * size);
-  for (let i = 0; i < out.length; i++) out[i] = (m[i] + 0.5) / (size * size) - 0.5;
-  return out;
-}
-const MATRIX: Record<Exclude<PatternName, 'noise' | 'none'>, { size: number; m: Float32Array }> = {
-  bayer2: { size: 2, m: bayer(2) },
-  bayer4: { size: 4, m: bayer(4) },
-  bayer8: { size: 8, m: bayer(8) },
 };
 
 const hash = (x: number, y: number) => {
@@ -66,7 +42,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
   let backgroundR = -1, backgroundG = -1, backgroundB = -1;
 
   const resize = () => {
-    const w = Math.floor(canvas.clientWidth / opts.pixel), h = Math.floor(canvas.clientHeight / opts.pixel);
+    const w = Math.floor(canvas.clientWidth / PIXEL), h = Math.floor(canvas.clientHeight / PIXEL);
     if (!w || !h || (w === W && h === H)) return false;
     W = w; H = h; canvas.width = W; canvas.height = H;
     img = ctx.createImageData(W, H);
@@ -103,7 +79,6 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
     if (!img) return;
     const data = img.data;
     const pal = PALETTES[opts.palette].colors;
-    const mat = opts.pattern === 'noise' || opts.pattern === 'none' ? null : MATRIX[opts.pattern];
     const spread = pal.length === 2 ? 0.9 : 0.4;
     const lx = -0.55 + Math.cos(t * 0.1) * 0.2, ly = 0.45 + Math.sin(t * 0.07) * 0.15, lz = 0.7;
     const ln = Math.hypot(lx, ly, lz);
@@ -135,9 +110,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
           r += (star[0] - r) * tw; g += (star[1] - g) * tw; b += (star[2] - b) * tw;
         }
         // ディザ: 閾値のずれを足してから最も近いパレット色を選ぶ。
-        let off = 0;
-        if (mat) off = mat.m[(y % mat.size) * mat.size + (x % mat.size)] * 255 * spread;
-        else if (opts.pattern === 'noise') off = (hash(x * 7 + 1, y * 13 + 3) - 0.5) * 255 * spread;
+        const off = BAYER2[(y & 1) * 2 + (x & 1)] * 255 * spread;
         const rr = r + off, gg = g + off, bb = b + off;
         let best = 0, bestD = Infinity;
         for (let p = 0; p < pal.length; p++) {
@@ -169,11 +142,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
   resize(); sync();
 
   return {
-    set(next) {
-      const pixelChanged = next.pixel !== undefined && next.pixel !== opts.pixel;
-      Object.assign(opts, next);
-      if (!pixelChanged || !resize()) render();
-    },
+    set(next) { Object.assign(opts, next); render(); },
     pause() { paused = true; sync(); },
     resume() { paused = false; sync(); },
     dispose() { stop(); observer.disconnect(); document.removeEventListener('visibilitychange', sync); reduce.removeEventListener('change', sync); },
