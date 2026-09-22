@@ -24,7 +24,11 @@ export default defineConfig({
     // 脚注の見出しと戻るリンクを日本語にする。「↩」は絵文字で表示される環境があるため矢印を使う。
     processor: satteri({
       hastPlugins: [figureFromTitledImage],
-      features: { gfm: { footnotes: { label: '脚注', backLabel: '本文の脚注 {reference} へ戻る', backContent: '↑' } } },
+      features: {
+        gfm: { footnotes: { label: '脚注', backLabel: '本文の脚注 {reference} へ戻る', backContent: '↑' } },
+        // Astro は既定で有効にするが、日本語の直後の ' を閉じ引用符にし、--> を –> に変えてしまう。
+        smartPunctuation: false,
+      },
     }),
   },
   fonts: [
