@@ -245,18 +245,26 @@ header.site.glass::before { content: none; }
   position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%);
 }
+/* 光の筋やグラデーションに出る段(バンディング)を、最前面の薄いノイズでぼかすディザ。 */
+.sea::after {
+  content: ""; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 .sea i { position: absolute; display: block; }
-.sea .rays {
-  inset: -20% -30%;
-  background: repeating-linear-gradient(104deg, transparent 0 9%, var(--sea-ray) 11.5%, transparent 14% 23%);
-  mask-image: linear-gradient(to bottom, black, transparent 65%);
-  animation: rays-sway 46s ease-in-out infinite alternate;
+/* 筋ごとに周期の違う揺れと明滅を与える。上端を支点に傾け、下に行くほど薄くする。 */
+.sea .ray {
+  top: -5%; height: 80%; left: var(--x); width: max(var(--w), 3.5rem);
+  background: linear-gradient(to right in oklch, transparent, var(--sea-ray) 35% 65%, transparent);
+  mask-image: linear-gradient(to bottom, black 10%, transparent);
+  transform-origin: top; opacity: calc(var(--a) * .75);
+  animation: ray-sway var(--d) ease-in-out var(--o) infinite alternate;
 }
-.sea .rays-2 {
-  background: repeating-linear-gradient(98deg, transparent 0 13%, var(--sea-ray) 16%, transparent 19% 31%);
-  opacity: .6; animation-duration: 71s; animation-delay: -30s; animation-direction: alternate-reverse;
+/* 狭い画面では筋が詰まって雨のように見えるため、細い 2 本を省く。 */
+@media (max-width: 40rem) { .sea .ray:is(:nth-of-type(2), :nth-of-type(6)) { display: none; } }
+@keyframes ray-sway {
+  from { transform: translateX(-1.5vw) skewX(12deg); opacity: calc(var(--a) * .35); }
+  to   { transform: translateX(1.5vw) skewX(16deg); opacity: calc(var(--a) * .75); }
 }
-@keyframes rays-sway { from { transform: translateX(-2vw) skewX(0deg); } to { transform: translateX(2vw) skewX(1.5deg); } }
 .sea .deep, .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sea .surface { opacity: .65; }
 

@@ -21,6 +21,16 @@ const { title, description = SITE.description, wide = false, image, type = 'webs
 const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const lab = labFromPath(Astro.url.pathname);
+// 光の筋は位置・幅・濃さ・揺れの周期をばらばらにし、等間隔に見えないようにする。
+const RAYS = [
+  { x: 6, w: 9, a: 0.55, d: 41, o: 7 },
+  { x: 19, w: 5, a: 0.9, d: 29, o: 18 },
+  { x: 27, w: 12, a: 0.7, d: 53, o: 31 },
+  { x: 46, w: 6, a: 1, d: 37, o: 4 },
+  { x: 63, w: 10, a: 0.6, d: 47, o: 22 },
+  { x: 71, w: 4, a: 0.8, d: 33, o: 12 },
+  { x: 86, w: 8, a: 0.65, d: 59, o: 40 },
+];
 const social = image ?? (lab ? { src: `/og/lab/${lab.slug}.png`, alt: `実験「${lab.title}」の題名と haru0416.dev` } : undefined);
 const socialImage = new URL(social?.src ?? '/og.png', Astro.site);
 const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、haru0416.dev';
@@ -85,7 +95,7 @@ const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、har
   </head>
   <body class="min-h-dvh flex flex-col">
     <div class="sea" aria-hidden="true">
-      <i class="rays"></i><i class="rays rays-2"></i>
+      {RAYS.map((r) => <i class="ray" style={`--x:${r.x}%;--w:${r.w}%;--a:${r.a};--d:${r.d}s;--o:-${r.o}s`}></i>)}
       <canvas class="deep"></canvas>
       <canvas class="surface"></canvas>
     </div>
