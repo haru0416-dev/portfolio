@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { SITE } from './site';
 import { THEME_COLOR, oklchToHex, HUE } from './palette';
 import { formatDate } from './date';
+import { RAYS } from './data/sea';
 
 const W = 1200, H = 630;
 export const OG_SIZE = { width: W, height: H } as const;
@@ -31,14 +32,24 @@ const DISPLAY_JP = `font-family:'Zen Maru Kana',Fredoka,'Zen Maru Gothic';font-w
 const chip = (text: string, tracking = 0) =>
   `<span style="display:flex;align-items:center;height:${L.chip.h}px;padding:0 ${L.chip.px}px;border-radius:${L.chip.radius}px;background-color:${C.paper2};border:2px solid ${C.line};letter-spacing:${tracking}em">${text}</span>`;
 const PAPER = THEME_COLOR.dark;
+const rgba = (l: number, c: number, h: number, a: number) => {
+  const hex = oklchToHex(l, c, h);
+  return `rgba(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',')},${a})`;
+};
+// global.css の .sea(ダーク)を 1200×630 の画面として描く。vmax は 12px。
+const SEA_H = 225;
 const BG = [
   `background-color:${PAPER}`,
-  'background-image:' + [
-    'linear-gradient(to bottom, rgba(0,94,125,0) 25%, rgba(0,94,125,.18))',
-    `linear-gradient(to bottom, rgba(21,18,28,0), ${PAPER} 65%)`,
-    'repeating-linear-gradient(104deg, transparent 0 16%, rgba(101,186,225,.16) 20%, transparent 24% 40%)',
-  ].join(','),
+  `background-image:linear-gradient(to bottom, ${rgba(45, 0.09, SEA_H, 0)} 25%, ${rgba(45, 0.09, SEA_H, 0.18)})`,
 ].join(';');
+// .sea .ray。揺れの途中(傾き 14°、濃さは a × 0.35〜0.75 の中間)で止めた形。
+const RAYS_HTML = RAYS.map(({ x, w, a }) => {
+  const ray = rgba(75, 0.1, SEA_H, 0.18);
+  return `<div style="position:absolute;left:${(W * x) / 100}px;top:${-0.05 * H}px;width:${Math.max((W * w) / 100, 56)}px;height:${0.8 * H}px;background-image:linear-gradient(to right, transparent, ${ray} 35%, ${ray} 65%, transparent);mask-image:linear-gradient(to bottom, black 10%, transparent);transform-origin:top;transform:skewX(14deg);opacity:${(a * 0.55).toFixed(3)}"></div>`;
+}).join('');
+// .sea .sun。左上(12%, -6%)を中心に 2 / 5 / 22 / 50vmax で広がる光。
+const SUN_R = 600;
+const SUN_HTML = `<div style="position:absolute;left:${W * 0.12 - SUN_R}px;top:${-0.06 * H - SUN_R}px;width:${SUN_R * 2}px;height:${SUN_R * 2}px;background-image:radial-gradient(circle, ${rgba(90, 0.04, 220, 0.3)} 0px, ${rgba(90, 0.04, 220, 0.3)} 24px, ${rgba(70, 0.08, 220, 0.12)} 60px, ${rgba(55, 0.07, 225, 0.05)} 264px, transparent 600px)"></div>`;
 
 // ビルドごとに絵が変わらないよう、乱数列を固定する。
 function rng(seed: number) {
@@ -59,7 +70,7 @@ function sea() {
     const hr = Math.max(0.8, rad * 0.22);
     parts.push(`<div style="position:absolute;left:${(x - rad * 0.35 - hr).toFixed(1)}px;top:${(y - rad * 0.35 - hr).toFixed(1)}px;width:${(hr * 2).toFixed(1)}px;height:${(hr * 2).toFixed(1)}px;border-radius:50%;background-color:rgba(255,255,255,${a.toFixed(2)})"></div>`);
   }
-  return parts.join('');
+  return SUN_HTML + RAYS_HTML + parts.join('');
 }
 
 const SEA = sea();
