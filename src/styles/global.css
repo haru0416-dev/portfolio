@@ -273,7 +273,7 @@ header.site.glass::before { content: none; }
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row > * { flex-shrink: 0; scroll-snap-align: start; }
 /* 横に続きがあるときだけ右端をぼかす。はみ出さない行ではタイムラインが無効になり、初期値 0 のまま残る。 */
-@property --fade-end { syntax: "<length>"; inherits: false; initial-value: 0rem; }
+@property --fade-end { syntax: "<length>"; inherits: false; initial-value: 0px; } /* rem は登録できない値なので px で書く */
 @media (max-width: 39.99rem) {
   @supports (animation-timeline: scroll(self inline)) {
     .scroll-row { mask-image: linear-gradient(to right, #000 calc(100% - var(--fade-end)), transparent); animation: scroll-fade linear both; animation-timeline: scroll(self inline); }
