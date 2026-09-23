@@ -64,9 +64,9 @@
 .prose figcaption { margin-top: .75rem; font-size: var(--text-sm); line-height: 1.5rem; color: var(--muted); text-align: center; text-wrap: balance; }
 .prose hr { height: auto; border: 0; text-align: center; margin: 3rem 0; line-height: 2rem; } /* Tailwind の初期化が height: 0 にするので戻す */
 .prose hr::before { content: "♡"; color: var(--muted); letter-spacing: .5em; }
-.prose table { width: 100%; font-size: .9em; border-collapse: collapse; }
+.prose table { width: 100%; font-size: var(--text-sm); line-height: 1.5rem; border-collapse: collapse; }
 .prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
-.prose th { font-weight: 600; color: var(--muted); font-size: .8em; letter-spacing: .05em; }
+.prose th { font-weight: 600; color: var(--muted); font-size: var(--text-xs); letter-spacing: .04em; }
 
 /* 見出しのリンクは本文の左の余白に吊るし、見出しの文字位置を動かさない。狭い画面では余白がないので見出しの後ろに置く。 */
 .prose :is(h2, h3):not(.sr-only) { position: relative; } /* 脚注の読み上げ用見出し(sr-only)は absolute のままにする */

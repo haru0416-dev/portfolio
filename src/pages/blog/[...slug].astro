@@ -56,7 +56,7 @@ const jsonLd = {
   <article>
     <a href="/blog/" data-vt-back class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← Blog</a>
     <header class="mb-12">
-      <div class="text-xs text-muted flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 tracking-[.05em]">
+      <div class="text-xs text-muted flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 tracking-[.04em]">
         <FormattedDate date={post.data.pubDate} />
         {post.data.updatedDate && <span>updated <FormattedDate date={post.data.updatedDate} /></span>}
         <span>{readingMinutes(post.body)} min</span>
@@ -100,8 +100,8 @@ const jsonLd = {
       )}
     </div>
   </nav>}
-  <p class:list={[older || newer ? 'mt-12' : 'mt-16 pt-8 dotted']}>
-    <a href="/blog/" data-vt-back class="u-link text-sm text-muted hover:text-ink">すべての記事を見る</a>
+  <p class:list={['text-sm', older || newer ? 'mt-12' : 'mt-16 pt-8 dotted']}>
+    <a href="/blog/" data-vt-back class="u-link text-muted hover:text-ink">すべての記事を見る</a>
   </p>
 
   <template id="code-copy">

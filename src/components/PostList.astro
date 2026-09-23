@@ -8,7 +8,7 @@ const { posts, compact = false } = Astro.props;
 <ol role="list" class="on-paper">
   {posts.map((p) => (
     <li class="reveal" data-post data-tags={JSON.stringify(p.data.tags)}>
-      <a href={`/blog/${p.id}/`} class="row-link group grid sm:grid-cols-[6rem_1fr] sm:items-baseline gap-x-4 gap-y-1 py-4">
+      <a href={`/blog/${p.id}/`} class="row-link group grid sm:grid-cols-[6rem_1fr] sm:items-baseline gap-x-4 gap-y-2 py-4">
         <div class="flex gap-3 sm:block text-xs text-muted">
           <FormattedDate date={p.data.pubDate} class="block leading-4" />
           {!compact && <span class="block leading-4 sm:mt-1">{readingMinutes(p.body)} min</span>}

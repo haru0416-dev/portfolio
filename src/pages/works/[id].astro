@@ -53,7 +53,7 @@ const jsonLd = {
     <header transition:name={`work-${work.id}`} transition:animate="initial" class="work-card work-hero mb-12">
       <WorkCover id={work.id} icon={d.icon} cover={d.cover} hue={hue} iconSize={160} loading="eager" sizes="(min-width: 68rem) 60rem, 100vw" widths={[640, 1200, 1920]} />
       <div transition:name={`work-caption-${work.id}`} transition:animate="initial" class="caption vt-caption">
-        <p class="text-xs leading-4 tracking-[.1em] uppercase opacity-85 mb-2">
+        <p class="text-xs leading-4 tracking-[.12em] uppercase opacity-85 mb-2">
           {WORK_STATUS_LABELS[d.status] && <span class="font-bold">{WORK_STATUS_LABELS[d.status]} · </span>}{d.stack.join(' · ')}
         </p>
         <h1 transition:name={`work-title-${work.id}`} transition:animate="initial" class="vt-swap display-jp w-fit text-2xl sm:text-4xl">{d.name}</h1>
@@ -75,14 +75,14 @@ const jsonLd = {
                 <a href={href} class:list={['link-row press', accent && 'link-row-accent']}>
                   <Icon size={16} stroke-width={2.5} aria-hidden="true" class="shrink-0" />
                   <span class="min-w-0">
-                    <span class="block text-sm leading-5 font-bold">{label}</span>
+                    <span class="block text-sm leading-6 font-bold">{label}</span>
                     <span class="block text-xs leading-4 truncate opacity-75">{shortUrl(href)}</span>
                   </span>
                 </a>
               </li>
             ))}
           </ul>
-          {d.issues && <p class="phrase mt-4 px-1 text-xs leading-5 text-muted">感想・不具合は GitHub Issues で受け付けています。投稿には GitHub へのログインが必要で、内容は公開されます。</p>}
+          {d.issues && <p class="phrase mt-4 px-1 text-xs leading-6 text-muted">感想・不具合は GitHub Issues で受け付けています。投稿には GitHub へのログインが必要で、内容は公開されます。</p>}
         </aside>
       )}
     </div>
