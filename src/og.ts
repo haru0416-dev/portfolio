@@ -4,7 +4,7 @@ import { googleFonts, subsetFonts, type FontSubset } from '@takumi-rs/helpers';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { SITE } from './site';
-import { THEME_COLOR } from './palette';
+import { THEME_COLOR, oklchToHex, HUE } from './palette';
 import { formatDate } from './date';
 
 const W = 1200, H = 630;
@@ -12,12 +12,24 @@ export const OG_SIZE = { width: W, height: H } as const;
 
 const U = 24;
 const L = {
-  margin: 4 * U, card: 1.5 * U, radius: 1.5 * U,
+  // 外枠の余白と角丸はサイトの角丸の段(最大 32px)と 8px グリッドに合わせる。
+  margin: 4 * U, card: 32, radius: 32,
   small: U, logo: 1.5 * U, titleSizes: [81, 66, 54, 44], lineHeight: 4 / 3, maxLines: 3,
-  gap: { band: 2 * U, tags: 1.5 * U, footer: U, icon: U },
+  gap: { band: 40, tags: U, footer: U, icon: U },
   titleIcon: 0.8, // インクの高さ / 文字サイズ
+  // サイトの .eyebrow と .tag(12.8px の文字で高さ 24px)を、24px の文字に合わせて拡大した札。
+  chip: { h: 40, px: 16, radius: 12, gap: 16, tracking: 0.12 },
 };
-const C = { ink: '#ece9f2', ink2: '#c0bbca', muted: '#958ea2', accent: '#fe89b7', line: '#352f40' };
+// global.css のダークテーマと同じ値から作る。
+const C = {
+  ink: oklchToHex(94, 0.012, HUE), ink2: oklchToHex(80, 0.022, HUE), muted: oklchToHex(66, 0.03, HUE),
+  line: oklchToHex(32, 0.03, HUE), rule: oklchToHex(45, 0.04, HUE), paper2: oklchToHex(25, 0.028, HUE),
+  accent: oklchToHex(77, 0.15, 356),
+};
+// サイトの和文見出しと同じく、かなは詰めた生成フォント、英字は Fredoka、漢字は Zen Maru Gothic で描く。
+const DISPLAY_JP = `font-family:'Zen Maru Kana',Fredoka,'Zen Maru Gothic';font-weight:600`;
+const chip = (text: string, tracking = 0) =>
+  `<span style="display:flex;align-items:center;height:${L.chip.h}px;padding:0 ${L.chip.px}px;border-radius:${L.chip.radius}px;background-color:${C.paper2};border:2px solid ${C.line};letter-spacing:${tracking}em">${text}</span>`;
 const PAPER = THEME_COLOR.dark;
 const BG = [
   `background-color:${PAPER}`,
@@ -123,17 +135,22 @@ export async function inkBox(html: string): Promise<Box | null> {
 async function lineWidths(html: string) {
   const { node, css } = await prepare(`<div style="display:flex;width:${W}px;height:${H}px">${html}</div>`);
   const measured = await renderer.measure(node, { width: W, height: H, css });
-  const lines = new Map<number, [number, number]>();
+  // フォントが混ざると同じ行でも run の上端がずれるため、縦の中心が run の高さの半分以内なら同じ行とみなす。
+  const runs: { cy: number; h: number; left: number; right: number }[] = [];
   const walk = (node: typeof measured) => {
-    for (const run of node.runs) {
-      if (!run.text.trim()) continue;
-      const y = Math.round(run.y), [left, right] = lines.get(y) ?? [Infinity, -Infinity];
-      lines.set(y, [Math.min(left, run.x), Math.max(right, run.x + run.width)]);
-    }
+    for (const run of node.runs) if (run.text.trim()) runs.push({ cy: run.y + run.height / 2, h: run.height, left: run.x, right: run.x + run.width });
     node.children.forEach(walk);
   };
   walk(measured);
-  return [...lines.values()].map(([left, right]) => right - left);
+  const lines: { cy: number; h: number; left: number; right: number }[] = [];
+  for (const run of runs.sort((a, b) => a.cy - b.cy)) {
+    const line = lines.at(-1);
+    if (line && Math.abs(run.cy - line.cy) < Math.min(run.h, line.h) / 2) {
+      line.left = Math.min(line.left, run.left);
+      line.right = Math.max(line.right, run.right);
+    } else lines.push({ ...run });
+  }
+  return lines.map((l) => l.right - l.left);
 }
 
 type El = {
@@ -150,7 +167,7 @@ function page(els: El[], only?: string) {
       case 'img':
         return `<img src="${e.src}" width="${e.size}" height="${e.size}" style="${pos}${hide(e.key) ? 'opacity:0' : ''}" />`;
       case 'rule':
-        return `<div style="${pos}height:0;border-top:2px dashed ${hide(e.key) ? 'transparent' : only ? '#000' : C.line}"></div>`;
+        return `<div style="${pos}height:0;border-top:2px dotted ${hide(e.key) ? 'transparent' : only ? '#000' : C.rule}"></div>`;
       default: {
         // 子の色指定が残ると、非計測要素を透明にできない。
         const content = only ? (e.content ?? '').replace(/color:#[0-9a-f]{6}/gi, 'color:inherit') : e.content;
@@ -194,6 +211,20 @@ export async function lucideIcon(name: string) {
   return `data:image/svg+xml,${encodeURIComponent(svg.replace(/<!--.*?-->/s, '').replaceAll('currentColor', C.accent))}`;
 }
 
+type Place = (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => Promise<Box>;
+
+/** サイトの .eyebrow と同じく、札の右に点線を伸ばす。札の下端の y を返す。 */
+async function placeEyebrow(place: Place, text: string) {
+  const M = L.margin, R = W - M;
+  const eb = await place(
+    { key: 'eyebrow', style: `font-size:${L.small}px;white-space:nowrap`, content: chip(text, L.chip.tracking), color: C.muted },
+    (o) => [M - o.left, M - o.top],
+  );
+  const ebW = eb.right - eb.left, ebH = eb.bottom - eb.top;
+  await place({ key: 'eyebrow-rule', kind: 'rule', w: R - M - ebW - U }, (o) => [M + ebW + U - o.left, M + ebH / 2 - (o.top + o.bottom) / 2]);
+  return M + ebH;
+}
+
 export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   const M = L.margin, R = W - M, B = H - M;
   const els: El[] = [];
@@ -204,11 +235,7 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
     return o;
   };
 
-  const eb = await place(
-    { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: esc(eyebrow), color: C.muted },
-    (o) => [M - o.left, M - o.top],
-  );
-  const eyebrowBottom = M + (eb.bottom - eb.top);
+  const eyebrowBottom = await placeEyebrow(place, esc(eyebrow));
 
   const logoEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${L.logo}px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
   const logo = await probe({ ...logoEl, x: 0, y: 0 });
@@ -223,7 +250,7 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   const fullW = R - M;
   const i0 = icon ? await probe({ key: 'icon', kind: 'img', src: icon, size: 100, x: 0, y: 0 }) : null;
   const bandH = ruleY - eyebrowBottom - 2 * L.gap.band;
-  const tagsEl = { key: 'tags', style: `font-size:${L.small}px;gap:${L.small / 2}px;flex-wrap:wrap`, content: tags.map((t) => `<span>#${esc(t)}</span>`).join(''), color: C.muted, w: fullW };
+  const tagsEl = { key: 'tags', style: `font-size:${L.small}px;gap:${L.chip.gap}px;flex-wrap:wrap`, content: tags.map((t) => chip(`#${esc(t)}`, 0.04)).join(''), color: C.muted, w: fullW };
   const tg = tags.length ? await probe({ ...tagsEl, x: 0, y: 0 }) : null;
   const tagsH = tg ? L.gap.tags + (tg.bottom - tg.top) : 0;
 
@@ -231,7 +258,7 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   let chosen: { e: El; o: Box } | undefined;
   let iconW = 0;
   for (const size of L.titleSizes) {
-    const style = `display:block;font-family:'Zen Maru Kana','Zen Maru Gothic';font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
+    const style = `display:block;${DISPLAY_JP};font-size:${size}px;line-height:${Math.round(size * L.lineHeight)}px;word-break:keep-all`;
     iconW = i0 ? Math.round(size * L.titleIcon * (i0.right - i0.left) / (i0.bottom - i0.top)) + L.gap.icon : 0;
     const tw = fullW - iconW;
     const at = (w: number) => lineWidths(`<div style="width:${w}px;${style}">${content}</div>`);
@@ -275,21 +302,17 @@ export async function layoutSite() {
     els.push({ ...e, x, y });
     return o;
   };
-  const eb = await place(
-    { key: 'eyebrow', style: `font-size:${L.small}px;letter-spacing:${L.small / 6}px;white-space:nowrap`, content: 'NOTES &amp; EXPERIMENTS', color: C.muted },
-    (o) => [M - o.left, M - o.top],
-  );
-  const eyebrowBottom = M + (eb.bottom - eb.top);
+  const eyebrowBottom = await placeEyebrow(place, 'NOTES &amp; EXPERIMENTS');
 
   const dom = await place({ key: 'domain', style: `font-size:${L.logo}px;white-space:nowrap`, content: 'haru0416.dev', color: C.ink2 }, (o) => [M - o.left, B - o.bottom]);
-  await place({ key: 'nav', style: `font-size:${L.small}px;white-space:nowrap`, content: 'Blog · Works · Lab', color: C.muted }, (o) => [R - o.right, B - o.bottom]);
+  await place({ key: 'nav', style: `font-size:${L.small}px;white-space:nowrap`, content: 'About · Blog · Works · Lab', color: C.muted }, (o) => [R - o.right, B - o.bottom]);
   const ruleY = B - (dom.bottom - dom.top) - L.gap.footer - 2;
   await place({ key: 'rule', kind: 'rule', w: R - M }, (o) => [M - o.left, ruleY - o.top]);
 
   const mid = (eyebrowBottom + ruleY) / 2;
   const markEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:160px;line-height:1;letter-spacing:-4px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
   const mark = await probe({ ...markEl, x: 0, y: 0 });
-  const leadEl = { key: 'lead', style: `font-size:36px;white-space:nowrap`, content: 'Rust / TypeScript', color: C.ink2 };
+  const leadEl = { key: 'lead', style: `${DISPLAY_JP};font-size:36px;white-space:nowrap`, content: esc(SITE.description), color: C.ink2 };
   const lead = await probe({ ...leadEl, x: 0, y: 0 });
   const markH = mark.bottom - mark.top, leadH = lead.bottom - lead.top;
   const top = mid - (markH + U + leadH) / 2;
