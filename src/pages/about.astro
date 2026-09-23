@@ -5,6 +5,7 @@ import Wordmark from '../components/Wordmark.astro';
 import { getPublishedPosts, getWorks } from '../data/collections';
 import { LAB } from '../data/lab';
 import { formatDate } from '../date';
+import { LANGUAGES } from '../data/stack';
 import { SITE } from '../site';
 import Sticker from '../components/Sticker.astro';
 import { SITE_ICON } from '../data/icons';
@@ -18,7 +19,6 @@ import GitHubMark from '../assets/icons/github.svg';
 
 const works = await getWorks();
 // 作品の stack を集計し、言語とそれ以外に分ける。言語は定義順、それ以外は使っている作品の多い順。このサイト自体も Astro の使用例として数える。
-const LANGUAGES = ['Rust', 'TypeScript', 'Python', 'C'];
 const uses = new Map<string, number>([['Astro', 1]]);
 for (const s of works.flatMap((w) => w.data.stack)) uses.set(s, (uses.get(s) ?? 0) + 1);
 const skills = [

@@ -3,13 +3,18 @@ import { getWorks, WORK_STATUS_LABELS } from '../../data/collections';
 import Base from '../../layouts/Base.astro';
 import Hero from '../../components/Hero.astro';
 import WorkCover from '../../components/WorkCover.astro';
+import { LANGUAGES } from '../../data/stack';
+import { SITE } from '../../site';
 const works = await getWorks();
-const stacks = [...new Set(works.flatMap((w) => w.data.stack))].sort((a, b) => a.localeCompare(b, 'en'));
+// 技術ごとに絞ると大半が 1 件になるため、言語だけで絞る。
+const stacks = LANGUAGES.filter((l) => works.some((w) => w.data.stack.includes(l)));
 ---
 <Base title="Works" wide>
-  <Hero title="Works" lead="作ったツールをいくつか紹介しています。ほかのプロジェクトは GitHub にあります。" />
+  <Hero title="Works">
+    <Fragment slot="lead">作ったツールをいくつか紹介しています。ほかのプロジェクトは <a href={SITE.github} class="text-accent-ink underline decoration-1 underline-offset-4">GitHub</a> にあります。</Fragment>
+  </Hero>
 
-  <search aria-label="技術で絞り込む" class="mb-6">
+  <search aria-label="言語で絞り込む" class="mb-6">
     <div id="stack-filter" class="scroll-row -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 sm:flex-wrap">
       <button type="button" class="chip glass press" data-stack="" aria-pressed="true" aria-controls="work-results">すべて</button>
       {stacks.map((s) => <button type="button" class="chip glass press" data-stack={s} aria-pressed="false" aria-controls="work-results">#{s}</button>)}
@@ -33,7 +38,7 @@ const stacks = [...new Set(works.flatMap((w) => w.data.stack))].sort((a, b) => a
       ))}
     </ul>
     <div id="stack-empty" hidden={works.length > 0}>
-      <p class="text-sm text-muted">{works.length === 0 ? 'まだ作品がありません。' : 'この技術を使った作品はありません。'}</p>
+      <p class="text-sm text-muted">{works.length === 0 ? 'まだ作品がありません。' : 'この言語を使った作品はありません。'}</p>
       {works.length > 0 && <button id="stack-reset" type="button" class="chip glass press mt-4" aria-controls="work-results">すべての作品を表示</button>}
     </div>
   </div>

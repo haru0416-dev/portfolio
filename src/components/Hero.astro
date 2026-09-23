@@ -2,8 +2,10 @@
 import Wordmark from './Wordmark.astro';
 interface Props { title: string; lead?: string }
 const { title, lead } = Astro.props;
+// リンクを含む説明文は lead スロットで渡す。
+const hasLead = Boolean(lead) || Astro.slots.has('lead');
 ---
 <header class="pt-4 pb-12 mb-4">
   <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text={title} /></h1>
-  {lead && <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead phrase">{lead}</p>}
+  {hasLead && <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead phrase">{lead}<slot name="lead" /></p>}
 </header>
