@@ -39,7 +39,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
     </div>
   </section>
 
-  <div class="grid gap-x-12 gap-y-16 lg:grid-cols-[1fr_27rem] lg:grid-rows-[auto_1fr] pt-12 dotted">
+  <div class="grid gap-x-12 gap-y-16 lg:grid-cols-[1fr_27rem] lg:grid-rows-[auto_1fr] pt-12">
     <section class="lg:col-start-1 lg:row-start-1">
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} compact />
