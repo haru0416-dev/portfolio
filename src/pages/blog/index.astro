@@ -5,6 +5,11 @@ import Hero from '../../components/Hero.astro';
 import PostList from '../../components/PostList.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import { readingMinutes } from '../../scripts/reading';
+import Sticker from '../../components/Sticker.astro';
+import { SITE_ICON } from '../../data/icons';
+import { SITE } from '../../site';
+import Rss from '@lucide/astro/icons/rss';
+import ArrowRight from '@lucide/astro/icons/arrow-right';
 
 const posts = await getPublishedPosts();
 const [latest, ...rest] = posts;
@@ -19,51 +24,88 @@ for (const post of rest) {
   else years.set(year, [post]);
 }
 ---
-<Base title="Blog">
+<Base title="Blog" wide>
   <Hero title="Blog" lead="開発中に試したことを書いています。" />
 
-  <div class="mb-8">
-    {posts.length > 0 && (
-      <search aria-label="タグで絞り込む">
-        <div id="tag-filter" class="flex flex-wrap gap-2 mb-4">
-          <button type="button" class="chip glass press" data-tag="" aria-pressed="true" aria-controls="blog-results">すべて<span class="chip-count">{posts.length}</span></button>
-          {tags.map((t) => <button type="button" class="chip glass press" data-tag={t} aria-pressed="false" aria-controls="blog-results">#{t}<span class="chip-count"><span class="sr-only">、</span>{tagCounts.get(t)}<span class="sr-only"> 件</span></span></button>)}
+  {/* 広い画面では本文幅の一覧の右に、自己紹介・タグ・RSS の列を固定する。狭い画面では絞り込みを一覧の上、残りを下に並べる。 */}
+  <div class="blog-layout">
+    <div id="blog-results" class="blog-list">
+      {latest && (
+        <div data-post data-tags={JSON.stringify(latest.data.tags)}>
+          <a href={`/blog/${latest.id}/`} class="card card-link glass reveal block group mb-8 sm:-mx-6">
+            <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent-ink mb-2">
+              <span>Latest</span><span class="text-muted" aria-hidden="true">·</span>
+              <FormattedDate date={latest.data.pubDate} class="text-muted" />
+              <span class="text-muted" aria-hidden="true">·</span>
+              <span class="text-muted">{readingMinutes(latest.body)} min</span>
+            </div>
+            <h2 transition:name={`post-${latest.id}`} transition:animate="initial" class="vt-swap display-jp text-xl sm:text-2xl w-fit group-hover:text-accent-ink transition-colors">{latest.data.title}</h2>
+            {latest.data.description && <p class="phrase mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}
+            <div class="mt-4 flex flex-wrap gap-2 on-paper">{latest.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
+          </a>
         </div>
-      </search>
-    )}
-    <p id="tag-status" class="text-sm text-muted" role="status" aria-live="polite" aria-atomic="true">{posts.length} 件の記事</p>
-  </div>
+      )}
 
-  <div id="blog-results">
-    {latest && (
-      <div data-post data-tags={JSON.stringify(latest.data.tags)}>
-        <a href={`/blog/${latest.id}/`} class="card card-link glass reveal block group mb-8 sm:-mx-6">
-          <div class="flex items-center gap-2 text-xs font-bold tracking-[.12em] uppercase text-accent-ink mb-2">
-            <span>Latest</span><span class="text-muted" aria-hidden="true">·</span>
-            <FormattedDate date={latest.data.pubDate} class="text-muted" />
-            <span class="text-muted" aria-hidden="true">·</span>
-            <span class="text-muted">{readingMinutes(latest.body)} min</span>
-          </div>
-          <h2 transition:name={`post-${latest.id}`} transition:animate="initial" class="vt-swap display-jp text-xl sm:text-2xl w-fit group-hover:text-accent-ink transition-colors">{latest.data.title}</h2>
-          {latest.data.description && <p class="phrase mt-2 text-base text-ink-2 max-w-[36rem]">{latest.data.description}</p>}
-          <div class="mt-4 flex flex-wrap gap-2 on-paper">{latest.data.tags.map((t) => <span class="tag">#{t}</span>)}</div>
-        </a>
+      {[...years].map(([year, posts]) => (
+        <section class="mb-8" data-year={year}>
+          <h2 class="eyebrow mb-2"><span>{year}</span></h2>
+          <PostList posts={posts} />
+        </section>
+      ))}
+      <div id="tag-empty" hidden={posts.length > 0}>
+        <p class="text-sm text-muted">{posts.length === 0 ? 'まだ記事がありません。' : 'このタグの記事はありません。'}</p>
+        {posts.length > 0 && <button id="tag-reset" type="button" class="chip glass press mt-4" aria-controls="blog-results">すべての記事を表示</button>}
       </div>
-    )}
-
-    {[...years].map(([year, posts]) => (
-      <section class="mb-8" data-year={year}>
-        <h2 class="eyebrow mb-2"><span>{year}</span></h2>
-        <PostList posts={posts} />
-      </section>
-    ))}
-    <div id="tag-empty" hidden={posts.length > 0}>
-      <p class="text-sm text-muted">{posts.length === 0 ? 'まだ記事がありません。' : 'このタグの記事はありません。'}</p>
-      {posts.length > 0 && <button id="tag-reset" type="button" class="chip glass press mt-4" aria-controls="blog-results">すべての記事を表示</button>}
     </div>
+    <aside class="blog-aside" aria-label="ブログについて">
+      <section aria-labelledby="blog-author" class="blog-profile">
+        <a href="/about/" class="flex items-center gap-4 group">
+          <span class="text-accent shrink-0 size-16"><Sticker icon={SITE_ICON} /></span>
+          <span id="blog-author" class="display text-2xl leading-8 group-hover:text-accent-ink transition-colors">{SITE.name}<span class="text-accent">.</span></span>
+        </a>
+        <p class="phrase mt-4 text-sm text-ink-2">Rust や TypeScript でツールや研究的なものを作ったりしてます。</p>
+        <a href="/about/" class="u-link mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-ink">About<ArrowRight size={16} stroke-width={2} aria-hidden="true" /></a>
+      </section>
+      <section aria-labelledby="blog-tags-heading" class="blog-tags">
+        <h2 id="blog-tags-heading" class="eyebrow mb-4"><span>Tags</span></h2>
+        {posts.length > 0 && (
+          <search aria-label="タグで絞り込む">
+            <div id="tag-filter" class="flex flex-wrap gap-2 mb-4">
+              <button type="button" class="chip glass press" data-tag="" aria-pressed="true" aria-controls="blog-results">すべて<span class="chip-count">{posts.length}</span></button>
+              {tags.map((t) => <button type="button" class="chip glass press" data-tag={t} aria-pressed="false" aria-controls="blog-results">#{t}<span class="chip-count"><span class="sr-only">、</span>{tagCounts.get(t)}<span class="sr-only"> 件</span></span></button>)}
+            </div>
+          </search>
+        )}
+        <p id="tag-status" class="text-sm text-muted" role="status" aria-live="polite" aria-atomic="true">{posts.length} 件の記事</p>
+      </section>
+      <a href="/rss.xml" class="blog-rss link-row press">
+        <Rss size={16} stroke-width={2.5} aria-hidden="true" class="shrink-0" />
+        <span class="min-w-0">
+          <span class="block text-sm leading-6 font-bold">RSS</span>
+          <span class="block text-xs leading-4 opacity-75">記事の更新を受け取る</span>
+        </span>
+      </a>
+    </aside>
   </div>
 </Base>
 
 <script>
   import '../../scripts/filter';
 </script>
+
+<style>
+  .blog-layout { display: flex; flex-direction: column; }
+  .blog-list { order: 1; }
+  .blog-aside { display: contents; }
+  .blog-tags { order: 0; margin-bottom: 2rem; }
+  .blog-profile { order: 2; margin-top: 4rem; }
+  .blog-rss { order: 3; margin-top: 1.5rem; }
+  .blog-tags .eyebrow { display: none; }
+  /* 64rem で列は 960px。一覧 656px(本文幅)+ 間 48px + 右 256px がちょうど収まる。 */
+  @media (min-width: 64rem) {
+    .blog-layout { display: grid; grid-template-columns: var(--container-reading) minmax(0, 1fr); gap: 3rem; align-items: start; }
+    .blog-aside { display: flex; flex-direction: column; gap: 2rem; position: sticky; top: 6rem; }
+    .blog-list, .blog-tags, .blog-profile, .blog-rss { order: 0; margin: 0; }
+    .blog-tags .eyebrow { display: flex; }
+  }
+</style>
