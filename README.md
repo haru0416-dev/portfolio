@@ -29,7 +29,7 @@ bun run build
 bun run preview
 ```
 
-出力先は `dist/`。`preview` は静的出力の確認用で、Cloudflare Pages Functions は実行しない。418 や curl 向けテキストは次で確認する。
+出力先は `dist/`。`preview` は静的出力の確認用で、Cloudflare Pages Functions は実行しない。418 や curl 向けテキストは以下で確認する。
 
 ```sh
 bun run pages:dev
@@ -47,15 +47,15 @@ bun run pages:dev
 
 `src/content/works/<id>.md` に登録する。必須項目は `name`、`summary`、`stack`。本文を書けば `/works/<id>/` の説明として表示される。
 
-任意項目は `icon`、`cover`、`repo`、`url`、`issues`、`status`、`order`。`cover` は一覧と作品ページのサムネイルに使う画像で、`src/content/works/` からの相対パスで指定する。指定がなければ `icon` を使ったカバーを描く。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
+任意項目は `icon`、`cover`、`repo`、`url`、`issues`、`status`、`order`。`cover` は一覧と作品ページのサムネイルに使う画像で、`src/content/works/` からの相対パスで指定する。指定がなければ `icon` を使ったカバー画像を生成する。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
 
-`issues` には、受付を有効にした公開 GitHub Issues のURLを指定する。作品ページに掲載される。アイコンを追加するときは `src/data/icons.ts` にも登録する。
+`issues` には、受付を有効にした公開 GitHub Issues の URL を指定する。作品ページに掲載される。アイコンを追加するときは `src/data/icons.ts` にも登録する。
 
 項目の型とデフォルト値は `src/content.config.ts` で定義している。
 
 ### Lab
 
-`src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。ページは `src/layouts/Lab.astro` の `<Lab slug="...">` で囲む。題名・説明・日付・OG情報は登録内容から表示される。
+`src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。ページは `src/layouts/Lab.astro` の `<Lab slug="...">` で囲む。題名・説明・日付・OG 情報は登録内容から表示される。
 
 ## 主なファイル
 
@@ -81,11 +81,11 @@ bun run pages:dev
 
 本文内の `transition:name` には `transition:animate="initial"` を併記する。要素ごとのフェードCSSを生成せず、通常の遷移と非対応ブラウザ向けのフェードを `global.css` で定義している。
 
-背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面のCanvasを隠す。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
+背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面の Canvas を隠す。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
 
 ### フォント
 
-ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito とOSの日本語フォントを使う。フォントは自前配信し、`/fonts.css` に `@font-face` をまとめる。
+ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、`/fonts.css` に `@font-face` をまとめる。
 
 和文見出しには、かなと約物を詰めた派生フォントを優先して当てる。再生成には uv と Python 3.12 以上が必要。
 
@@ -95,21 +95,21 @@ uv run scripts/zen-maru-kana.py
 
 出力は `public/fonts/zen-maru-kana-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと先読みを省ける。
 
-### OG画像とカーソル
+### OG 画像とカーソル
 
-OG画像はビルド時に1200×630のPNGとして生成する。サイト共通は `/og.png`、記事用は `/og/blog/<slug>.png`、作品用は `/og/works/<id>.png`。配色はダークテーマに合わせ、作品のアイコンは題名の左に置く。
+OG 画像はビルド時に 1200×630 の PNG として生成する。サイト共通は `/og.png`、記事用は `/og/blog/<slug>.png`、作品用は `/og/works/<id>.png`。配色はダークテーマに合わせ、作品のアイコンは題名の左に置く。
 
-カーソルは `tools/cursors.py` で定義する。次のコマンドは `public/cursors/` のSVGと `global.css` のカーソル設定を更新する。
+カーソルは `tools/cursors.py` で定義する。次のコマンドは `public/cursors/` の SVG と `global.css` のカーソル設定を更新する。
 
 ```sh
 python3 tools/cursors.py
 ```
 
-## Cloudflare固有の応答
+## Cloudflare 固有の応答
 
-curl・wget・HTTPieなどでトップページを取得すると、サイト紹介をテキストで返す。`?html` または `Accept: text/html` でHTML、`?plain` で色なしのテキストになる。紹介内容はビルド時に生成する `/meta.json` から読む。
+curl・wget・HTTPie などでトップページを取得すると、サイト紹介をテキストで返す。`?html` または `Accept: text/html` で HTML、`?plain` で色なしのテキストになる。紹介内容はビルド時に生成する `/meta.json` から読む。
 
-ミドルウェアは応答に `X-Sprout` ヘッダーを追加する。`/coffee` は418、POST・PUT・PATCH・DELETEは405を返す。ローカルでこれらを確認する場合は、Astroではなく Wrangler で起動する。
+ミドルウェアは応答に `X-Sprout` ヘッダーを追加する。`/coffee` は 418、POST・PUT・PATCH・DELETE は 405 を返す。ローカルでこれらを確認する場合は、Astro ではなく Wrangler で起動する。
 
 ```sh
 bun run pages:dev
@@ -117,7 +117,7 @@ bun run pages:dev
 
 ## デプロイ
 
-Cloudflare Pages の `haru0416-portfolio` にCLIから直接アップロードする。初回は `bunx wrangler login` で認証する。SSH先などでブラウザから localhost に戻れない場合は `bunx wrangler login --device --browser=false` を使う。
+Cloudflare Pages の `haru0416-portfolio` に CLI から直接アップロードする。初回は `bunx wrangler login` で認証する。SSH 先などでブラウザから localhost に戻れない場合は `bunx wrangler login --device --browser=false` を使う。
 
 ```sh
 bun run deploy
@@ -125,4 +125,4 @@ bun run deploy
 
 このコマンドは本番ブランチ `main` に公開する。未コミットの変更があるときは止める。作業ツリーのまま上げるときは `ALLOW_DIRTY=1 bun run deploy` を使う。`functions/` は Wrangler が一緒に配信する。
 
-Pages側の配信先は https://haru0416-portfolio.pages.dev/ 。`public/_headers` では `*.pages.dev` に `noindex` を指定している。独自ドメインを変更するときは Pages の登録とDNSを確認し、メール用のMX・TXTレコードは変更しない。
+Pages 側の配信先は https://haru0416-portfolio.pages.dev/ 。`public/_headers` では `*.pages.dev` に `noindex` を指定している。独自ドメインを変更するときは Pages の登録と DNS を確認し、メール用の MX・TXT レコードは変更しない。

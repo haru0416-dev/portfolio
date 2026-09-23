@@ -33,7 +33,7 @@ const stacks = [...new Set(works.flatMap((w) => w.data.stack))].sort((a, b) => a
       ))}
     </ul>
     <div id="stack-empty" hidden={works.length > 0}>
-      <p class="text-sm text-muted">{works.length === 0 ? 'まだ作品がありません。' : 'この技術の作品はありません。'}</p>
+      <p class="text-sm text-muted">{works.length === 0 ? 'まだ作品がありません。' : 'この技術を使った作品はありません。'}</p>
       {works.length > 0 && <button id="stack-reset" type="button" class="chip glass press mt-4" aria-controls="work-results">すべての作品を表示</button>}
     </div>
   </div>
