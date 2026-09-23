@@ -1,21 +1,49 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import Hero from '../../components/Hero.astro';
 import { LAB } from '../../data/lab';
+
+// サムネイルは実験の画面を撮ったもの。テーマで見た目が変わる実験は <slug>-light / <slug>-dark、変わらないものは <slug> を置く。
+const shots = import.meta.glob<{ default: ImageMetadata }>('../../assets/lab/*.png', { eager: true });
+const shot = (name: string) => shots[`../../assets/lab/${name}.png`]?.default;
+const thumbs = LAB.map((l) => {
+  const light = shot(`${l.slug}-light`) ?? shot(l.slug);
+  const dark = shot(`${l.slug}-dark`) ?? light;
+  if (!light || !dark) throw new Error(`Lab「${l.slug}」のサムネイルがありません。src/assets/lab/${l.slug}.png を置いてください。`);
+  return { light, dark };
+});
 ---
-<Base title="Lab" jpHeadings={false}>
+<Base title="Lab" wide>
   <Hero title="Lab" lead="ブラウザで動かせる実験を置いています。" />
-  <ol role="list" class="divide-line">
-    {LAB.map((l) => (
+  <ul role="list" class="grid gap-x-6 gap-y-8 sm:grid-cols-2">
+    {LAB.map((l, i) => (
       <li class="reveal">
-        <a href={`/lab/${l.slug}/`} class="group grid sm:grid-cols-[6rem_1fr] sm:items-baseline gap-x-4 gap-y-2 py-4">
-          <span class="text-xs leading-4 text-muted tabular-nums">{l.date.replaceAll('-', '.')}</span>
-          <div>
-            <h2 transition:name={`lab-${l.slug}`} transition:animate="initial" class="vt-swap display w-fit text-lg leading-6 group-hover:text-accent-ink transition-colors">{l.title}</h2>
-            <p class="phrase text-sm text-ink-2 mt-2">{l.description}</p>
-          </div>
+        <a href={`/lab/${l.slug}/`} class:list={['work-card group', l.darkScene && 'on-dark']}>
+          <span class="cover" aria-hidden="true">
+            <Image src={thumbs[i].light} alt="" widths={[480, 960]} sizes="(min-width: 40rem) 50vw, 100vw" loading={i < 2 ? 'eager' : 'lazy'} class="cover-img lab-light" />
+            {thumbs[i].dark !== thumbs[i].light && <Image src={thumbs[i].dark} alt="" widths={[480, 960]} sizes="(min-width: 40rem) 50vw, 100vw" loading={i < 2 ? 'eager' : 'lazy'} class="cover-img lab-dark" />}
+          </span>
+          <span class="caption">
+            <span transition:name={`lab-${l.slug}`} transition:animate="initial" class="vt-swap display block w-fit text-lg leading-6">{l.title}</span>
+            <time datetime={l.date} class="block text-xs leading-4 mt-1 opacity-80 tabular-nums">{l.date.replaceAll('-', '.')}</time>
+          </span>
         </a>
+        <p class="phrase mt-4 text-sm text-ink-2">{l.description}</p>
       </li>
     ))}
-  </ol>
+  </ul>
 </Base>
+
+<style>
+  .on-dark :global(.caption) { color: white; background: linear-gradient(to top, rgb(0 0 0 / 55%), transparent) !important; }
+  /* 表示中のテーマの画面だけを見せる。明示の選択は html のクラス、「端末の設定」では OS の設定に従う。 */
+  .lab-dark { display: none; }
+  :global(:root.dark) .lab-dark { display: block; }
+  :global(:root.dark) .lab-light:has(~ .lab-dark) { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not(.light)) .lab-dark { display: block; }
+    :global(:root:not(.light)) .lab-light:has(~ .lab-dark) { display: none; }
+  }
+</style>

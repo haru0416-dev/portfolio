@@ -3,6 +3,8 @@ export type LabEntry = {
   title: string;
   description: string;
   date: string;
+  /** テーマに関係なく暗い画面を描く実験。一覧のカードで題名を白くする。 */
+  darkScene?: boolean;
 };
 
 export const LAB: LabEntry[] = [
@@ -11,6 +13,7 @@ export const LAB: LabEntry[] = [
     title: 'Dither',
     description: '惑星の縁と星空を、組織的ディザで数色に落として描いています。',
     date: '2026-09-22',
+    darkScene: true,
   },
   {
     slug: 'petals',
