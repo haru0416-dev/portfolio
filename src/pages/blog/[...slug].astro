@@ -9,21 +9,34 @@ import { readingMinutes } from '../../scripts/reading';
 import { SITE } from '../../site';
 import Copy from '@lucide/astro/icons/copy';
 import Check from '@lucide/astro/icons/check';
+import LinkIcon from '@lucide/astro/icons/link';
+import Share from '@lucide/astro/icons/share-2';
+import PostList from '../../components/PostList.astro';
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts();
+  // 関連記事は、共有するタグが多い順、同数なら新しい順に 3 件まで。
+  const related = (post: (typeof posts)[number]) => posts
+    .filter((p) => p.id !== post.id)
+    .map((p) => ({ p, shared: p.data.tags.filter((t) => post.data.tags.includes(t)).length }))
+    .filter(({ shared }) => shared > 0)
+    .sort((a, b) => b.shared - a.shared || b.p.data.pubDate.valueOf() - a.p.data.pubDate.valueOf())
+    .slice(0, 3)
+    .map(({ p }) => p);
   return posts.map((post, i) => ({
     params: { slug: post.id },
-    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+    props: { post, newer: posts[i - 1], older: posts[i + 1], related: related(post) },
   }));
 }
-const { post, newer, older } = Astro.props;
+const { post, newer, older, related } = Astro.props;
 const { Content, headings } = await render(post);
 // 章が 3 つ以上ある記事にだけ目次を出す。脚注の読み上げ用見出しは除く。
 const toc = headings.filter((h) => h.depth <= 3 && h.slug !== 'footnote-label');
 const showToc = toc.filter((h) => h.depth === 2).length >= 3;
 const url = new URL(`/blog/${post.id}/`, Astro.site).href;
 const image = new URL(`/og/blog/${post.id}.png`, Astro.site).href;
+const shareUrl = `https://x.com/intent/post?text=${encodeURIComponent(post.data.title)}&url=${encodeURIComponent(url)}`;
+const reportUrl = `${SITE.repo}/issues/new?title=${encodeURIComponent(`記事「${post.data.title}」について`)}&body=${encodeURIComponent(`${url}\n\n`)}`;
 const published = post.data.pubDate.toISOString();
 const modified = (post.data.updatedDate ?? post.data.pubDate).toISOString();
 const jsonLd = {
@@ -55,6 +68,7 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   </Fragment>
   <article>
+    <div class="read-progress" aria-hidden="true"></div>
     <BackLink href="/blog/" label="Blog" />
     <header class="mb-12">
       <div class="text-xs text-muted flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 tracking-[.04em]">
@@ -82,6 +96,23 @@ const jsonLd = {
     )}
     <div class="prose"><Content /></div>
   </article>
+
+  <div class="mt-12">
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="pill glass press" data-copy-link aria-live="polite">
+        <LinkIcon size={16} stroke-width={2.25} aria-hidden="true" /><span>リンクをコピー</span>
+      </button>
+      <a href={shareUrl} class="pill glass press"><Share size={16} stroke-width={2.25} aria-hidden="true" />X で共有</a>
+    </div>
+    <p class="phrase mt-4 text-xs leading-6 text-muted">誤りや感想は <a href={reportUrl} class="u-link text-ink-2 hover:text-ink">GitHub Issues</a> で受け付けています。投稿には GitHub へのログインが必要で、内容は公開されます。</p>
+  </div>
+
+  {related.length > 0 && (
+    <section aria-labelledby="related-heading" class="mt-16">
+      <h2 id="related-heading" class="eyebrow mb-2"><span>Related</span></h2>
+      <PostList posts={related} compact />
+    </section>
+  )}
 
   {(older || newer) && <nav aria-label="前後の記事" class="mt-16 pt-8 dotted grid grid-cols-2 gap-4 sm:gap-8 text-sm">
     <div>
@@ -114,9 +145,24 @@ const jsonLd = {
 </Base>
 
 <style>
-  article { position: relative; }
+  article { position: relative; view-timeline: --post block; }
+  /* 本文の上端が画面の上に来てから、下端が画面の下に来るまでを 0〜100% とする。 */
+  .read-progress { position: fixed; top: 4rem; left: 0; right: 0; z-index: 11; height: 2px; background: var(--accent); transform-origin: left; pointer-events: none; }
+  @supports (animation-timeline: view()) {
+    .read-progress { animation: read-progress linear both; animation-timeline: --post; animation-range: contain; }
+    @keyframes read-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  }
+  @supports not (animation-timeline: view()) { .read-progress { display: none; } }
+  /* プレビューは script で作るため、Astro の属性が付かない。 */
+  :global(.fn-preview) {
+    position: absolute; z-index: 20; width: min(20rem, calc(100vw - 2rem)); padding: .75rem 1rem; border-radius: .75rem;
+    font-size: var(--text-sm); line-height: 1.5rem; color: var(--ink-2); background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line), 0 8px 24px var(--glass-lo);
+  }
+  :global(.fn-preview[hidden]) { display: none; }
+  :global(.fn-preview p) { display: inline; }
   .toc { margin-bottom: 3rem; }
-  .toc-box { background: var(--paper-2); border-radius: 1rem; padding: .75rem 1rem; }
+  .toc-box { background: var(--paper-2); border-radius: 1rem; padding: .5rem 1rem; }
   .toc summary { list-style: none; cursor: var(--cursor-hand, pointer); height: 2rem; }
   .toc summary::-webkit-details-marker { display: none; }
   .toc-mark {
@@ -124,16 +170,16 @@ const jsonLd = {
     rotate: 45deg; translate: 0 -.125rem; transition: rotate 200ms var(--ease-out), translate 200ms var(--ease-out);
   }
   .toc details[open] .toc-mark { rotate: 225deg; translate: 0 .125rem; }
-  .toc ol { margin-top: .5rem; display: grid; gap: .125rem; }
+  .toc ol { margin-top: .5rem; display: grid; }
   .toc a {
-    display: block; padding: .375rem .5rem; border-radius: .5rem; font-size: var(--text-sm); line-height: 1.5rem;
+    display: block; padding: .25rem .5rem; border-radius: .5rem; font-size: var(--text-sm); line-height: 1.5rem;
     color: var(--ink-2); text-wrap: pretty; word-break: auto-phrase; transition: color 150ms ease, background-color 150ms ease;
   }
   .toc .toc-sub a { padding-left: 1.5rem; color: var(--muted); }
   .toc a[aria-current="true"] { color: var(--accent-ink); font-weight: 700; }
   @media (hover: hover) and (pointer: fine) { .toc a:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 6%, transparent); } }
-  /* 本文の右に余白が取れる幅では、本文の横に固定し、開閉はさせない。 */
-  @media (min-width: 80rem) {
+  /* 本文は左寄せなので、64rem 以上なら右に 3rem 空けて 14rem の目次が列の中に収まる。 */
+  @media (min-width: 64rem) {
     .toc { position: absolute; top: 0; bottom: 0; left: calc(100% + 3rem); width: 14rem; margin: 0; }
     .toc-box { position: sticky; top: 6rem; background: none; padding: 0; }
     .toc summary { pointer-events: none; }
@@ -149,7 +195,7 @@ const jsonLd = {
     offToc?.(); offToc = undefined;
     const toc = document.querySelector<HTMLElement>('.toc');
     if (!toc) return;
-    const wide = matchMedia('(min-width: 80rem)');
+    const wide = matchMedia('(min-width: 64rem)');
     const details = toc.querySelector('details');
     const syncOpen = () => { if (wide.matches && details) details.open = true; };
     syncOpen();
@@ -214,5 +260,67 @@ const jsonLd = {
       });
       block.append(button);
     });
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    const button = document.querySelector<HTMLButtonElement>('[data-copy-link]');
+    if (!button || !navigator.clipboard) return;
+    const label = button.querySelector('span')!;
+    let timer = 0;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(location.href.split('#')[0]);
+        label.textContent = 'コピーしました';
+      } catch {
+        label.textContent = 'コピーできませんでした';
+      }
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { label.textContent = 'リンクをコピー'; }, 1500);
+    });
+  });
+
+  // 脚注の番号に重ねると、ページ下へ移らずに中身を出す。タッチでは 1 回目のタップで出し、2 回目で移る。
+  let offFootnotes: (() => void) | undefined;
+  document.addEventListener('astro:before-swap', () => { offFootnotes?.(); offFootnotes = undefined; });
+  document.addEventListener('astro:page-load', () => {
+    offFootnotes?.(); offFootnotes = undefined;
+    const refs = [...document.querySelectorAll<HTMLAnchorElement>('.prose a[data-footnote-ref]')];
+    if (refs.length === 0) return;
+    const preview = document.createElement('div');
+    preview.className = 'fn-preview';
+    preview.setAttribute('aria-hidden', 'true');
+    preview.hidden = true;
+    document.querySelector('article')!.append(preview);
+    let shown: HTMLAnchorElement | undefined;
+    const show = (a: HTMLAnchorElement) => {
+      const note = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+      if (!note) return;
+      const body = note.cloneNode(true) as HTMLElement;
+      body.querySelectorAll('[data-footnote-backref]').forEach((b) => b.remove());
+      preview.innerHTML = body.innerHTML;
+      preview.hidden = false;
+      const art = preview.offsetParent!.getBoundingClientRect(), r = a.getBoundingClientRect();
+      const left = Math.min(Math.max(0, r.left - art.left - 16), art.width - preview.offsetWidth);
+      preview.style.left = `${Math.max(0, left)}px`;
+      preview.style.top = `${r.bottom - art.top + 8}px`;
+      shown = a;
+    };
+    const hide = () => { preview.hidden = true; shown = undefined; };
+    const ctrl = new AbortController();
+    const opts = { signal: ctrl.signal };
+    for (const a of refs) {
+      a.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') show(a); }, opts);
+      a.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hide(); }, opts);
+      a.addEventListener('focus', () => show(a), opts);
+      a.addEventListener('blur', hide, opts);
+      a.addEventListener('click', (e) => {
+        if ((e as PointerEvent).pointerType !== 'touch' || shown === a) return;
+        e.preventDefault();
+        show(a);
+      }, opts);
+    }
+    document.addEventListener('pointerdown', (e) => { if (!(e.target as Element).closest('a[data-footnote-ref], .fn-preview')) hide(); }, opts);
+    addEventListener('scroll', () => { if (shown && !shown.matches(':focus')) hide(); }, { passive: true, signal: ctrl.signal });
+    offFootnotes = () => { ctrl.abort(); preview.remove(); };
   });
 </script>
