@@ -47,8 +47,8 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
     </section>
 
     <section class="reveal lg:col-start-2 lg:row-start-1 lg:row-span-2">
-      <h2 class="eyebrow mb-4"><span>Works</span></h2>
-      <ul role="list" class="space-y-4">
+      <h2 class="eyebrow mb-2"><span>Works</span></h2>
+      <ul role="list" class="space-y-4 pt-4">
         {works.map((w, i) => (
           <li>
             <a href={`/works/${w.id}/`} class="group flex gap-4 items-start">
@@ -65,8 +65,8 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
     </section>
 
     <section class="reveal lg:col-start-1 lg:row-start-2">
-      <h2 class="eyebrow mb-4"><span>Lab</span></h2>
-      <ul role="list" class="space-y-4">
+      <h2 class="eyebrow mb-2"><span>Lab</span></h2>
+      <ul role="list" class="space-y-4 pt-4">
         {lab.map((l) => (
           <li>
             <a href={`/lab/${l.slug}/`} class="group block">

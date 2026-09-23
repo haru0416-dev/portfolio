@@ -68,7 +68,7 @@ const jsonLd = {
 
       {links.length > 0 && (
         <aside aria-labelledby="links-heading">
-          <h2 id="links-heading" class="eyebrow mb-4"><span>Links</span></h2>
+          <h2 id="links-heading" class="eyebrow mb-4 lg:mt-1 lg:mb-3"><span>Links</span></h2>
           <ul role="list" class="space-y-2">
             {links.map(({ href, label, Icon, accent }) => (
               <li>
@@ -82,7 +82,7 @@ const jsonLd = {
               </li>
             ))}
           </ul>
-          {d.issues && <p class="phrase mt-4 px-1 text-xs leading-6 text-muted">感想・不具合は GitHub Issues で受け付けています。投稿には GitHub へのログインが必要で、内容は公開されます。</p>}
+          {d.issues && <p class="phrase mt-4 text-xs leading-6 text-muted">感想・不具合は GitHub Issues で受け付けています。投稿には GitHub へのログインが必要で、内容は公開されます。</p>}
         </aside>
       )}
     </div>
