@@ -8,7 +8,7 @@ const TYPE_STEPS: [string, number][] = [
 ];
 const RADII = [4, 6, 8, 12, 16, 24, 32];
 const UNIT = 8;
-const KEY = 'design-grid';
+const KEY = 'design-grid'; // Base.astro もこのキーで、読み込み前に復元するかを決める。
 
 let on = false;
 let root: HTMLElement | undefined;
@@ -79,7 +79,6 @@ function build() {
   document.documentElement.append(root, legend, card);
 }
 
-/** 本文の列の端と、文書全体の高さを測り直す。 */
 function measure() {
   if (!root) return;
   // html の scrollHeight は重ねた層自身を含んで縮まなくなるため、body で測る。
@@ -149,7 +148,6 @@ function inspect(target: Element | null) {
     if (!pill) document.querySelector(`.dg-radii [data-r="${rad}"]`)?.setAttribute('data-hit', '');
   }
   card!.innerHTML = rows.join('');
-  // 要素の下に置き、画面からはみ出すときは上に回す。
   const cw = card!.offsetWidth, ch = card!.offsetHeight;
   let x = Math.min(Math.max(8, r.left), innerWidth - cw - 8);
   let y = r.bottom + m[2] + 8;
@@ -166,7 +164,6 @@ const onMove = (ev: PointerEvent) => {
 };
 const onScroll = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => inspect(lastTarget)); };
 const onLeave = () => { lastTarget = null; inspect(null); };
-const onSwap = () => { observe(); measure(); onLeave(); syncButtons(); };
 
 function observe() {
   sizeObserver?.disconnect();
@@ -206,4 +203,7 @@ function set(next: boolean) {
 
 export const toggleDesignGrid = () => set(!on);
 export const showDesignGrid = () => set(true);
-document.addEventListener('astro:after-swap', () => { if (on) onSwap(); else syncButtons(); });
+document.addEventListener('astro:after-swap', () => {
+  if (on) { observe(); measure(); onLeave(); }
+  syncButtons();
+});

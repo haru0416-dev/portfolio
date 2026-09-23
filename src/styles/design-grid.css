@@ -10,7 +10,6 @@
   position: absolute; top: 0; left: 0; width: 100%; z-index: 40; pointer-events: none;
 }
 .dg-root[hidden], .dg-legend[hidden], .dg-card[hidden] { display: none; }
-/* 文書の上端から 8px ごとに 1px の線。32px ごとに少し濃くする。 */
 .dg-grid {
   position: absolute; inset: 0;
   background:

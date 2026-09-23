@@ -59,4 +59,3 @@ export const CODE_TRANSFORMERS = [
     },
   },
 ];
-export const CODE_TONES = TONES;

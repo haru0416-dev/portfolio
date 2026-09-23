@@ -1,6 +1,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { LAB, type LabEntry } from '../../../data/lab';
 import { renderCardImage } from '../../../og';
+import { dotted } from '../../../date';
 
 export const getStaticPaths = (() => {
   return LAB.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
@@ -8,7 +9,7 @@ export const getStaticPaths = (() => {
 
 export const GET: APIRoute<{ entry: LabEntry }> = async ({ props: { entry } }) => {
   const png = await renderCardImage({
-    eyebrow: `LAB · ${entry.date.replaceAll('-', '.')}`,
+    eyebrow: `LAB · ${dotted(entry.date)}`,
     title: entry.title,
     tags: [],
   });

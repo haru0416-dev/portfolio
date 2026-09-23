@@ -1,0 +1,5 @@
+---
+interface Props { href: string; label: string }
+const { href, label } = Astro.props;
+---
+<a href={href} data-vt-back class="u-link flex w-fit items-center min-h-6 text-xs tracking-[.08em] uppercase text-muted hover:text-ink mb-6">← {label}</a>

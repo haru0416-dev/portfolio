@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
 import { getPublishedPosts, getWorks } from '../data/collections';
 import { LAB } from '../data/lab';
-import { formatDate } from '../date';
+import { dotted, formatDate } from '../date';
 import { LANGUAGES } from '../data/stack';
 import { SITE } from '../site';
 import Sticker from '../components/Sticker.astro';
@@ -18,7 +18,7 @@ import Flask from '@lucide/astro/icons/flask-conical';
 import GitHubMark from '../assets/icons/github.svg';
 
 const works = await getWorks();
-// 作品の stack を集計し、言語とそれ以外に分ける。言語は定義順、それ以外は使っている作品の多い順。このサイト自体も Astro の使用例として数える。
+// このサイト自体も Astro の使用例として数える。
 const uses = new Map<string, number>([['Astro', 1]]);
 for (const s of works.flatMap((w) => w.data.stack)) uses.set(s, (uses.get(s) ?? 0) + 1);
 const skills = [
@@ -27,7 +27,7 @@ const skills = [
 ];
 const githubUser = SITE.github.replace(/^https:\/\/github\.com\//, '');
 
-// 記事と Lab を日付の新しい順に並べ、年ごとにまとめる。作品は公開日を持たないため含めない。
+// 作品は公開日を持たないため含めない。
 const KINDS = {
   blog: { label: 'Blog', action: 'Blog に記事を公開', Icon: Notebook },
   lab: { label: 'Lab', action: 'Lab に実験を公開', Icon: Flask },
@@ -88,14 +88,14 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
         <section aria-labelledby={`cl-${year}`} class="cl-year">
           <h3 id={`cl-${year}`} class="display text-xl leading-8">{year}</h3>
           <ol role="list" class="cl-list mt-4">
-            {entries.map((e, i) => {
+            {entries.map((e) => {
               const { action, Icon } = KINDS[e.kind];
               return (
-                <li class="cl-item" data-kind={e.kind} data-last={i === entries.length - 1 ? '' : undefined}>
+                <li class="cl-item" data-kind={e.kind}>
                   <div class="flex items-center gap-2 h-6 text-sm text-muted">
                     <span class="cl-dot" aria-hidden="true"><Icon size={14} stroke-width={2.25} /></span>
                     {action}
-                    <time datetime={e.date} class="tag tabular-nums">{e.date.slice(5).replace('-', '.')}</time>
+                    <time datetime={e.date} class="tag tabular-nums">{dotted(e.date.slice(5))}</time>
                   </div>
                   <a href={e.href} class="cl-card press">
                     <span class="display-jp block text-base leading-6">{e.title}</span>
@@ -155,7 +155,6 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
 </Base>
 
 <script>
-  // 絞り込みは見た目だけを切り替える。項目のない年は見出しごと隠す。
   document.addEventListener('astro:page-load', () => {
     const group = document.querySelector<HTMLElement>('[data-changelog-filter]');
     const list = document.getElementById('changelog-list');
@@ -167,11 +166,7 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
       const kind = btn.dataset.kind!;
       buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
       list.querySelectorAll<HTMLElement>('.cl-item').forEach((li) => { li.hidden = kind !== '' && li.dataset.kind !== kind; });
-      list.querySelectorAll<HTMLElement>('.cl-year').forEach((y) => {
-        const shown = [...y.querySelectorAll<HTMLElement>('.cl-item:not([hidden])')];
-        y.querySelectorAll('.cl-item').forEach((li) => li.toggleAttribute('data-last', li === shown.at(-1)));
-        y.hidden = shown.length === 0;
-      });
+      list.querySelectorAll<HTMLElement>('.cl-year').forEach((y) => { y.hidden = !y.querySelector('.cl-item:not([hidden])'); });
     });
   });
 </script>
@@ -182,17 +177,18 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
   @media (min-width: 40rem) { .about-hero-art { width: 15rem; height: 15rem; } }
   @supports (corner-shape: squircle) { .tile, .cl-card { corner-shape: squircle; } }
 
-  /* アイコンの列に沿って点線を引き、項目を 1 本の時系列につなぐ。 */
   .cl-list { display: flex; flex-direction: column; gap: 1.5rem; }
   .cl-item { position: relative; padding-left: 2rem; }
-  .cl-item:not([data-last])::before { content: ""; position: absolute; left: .6875rem; top: 1.5rem; bottom: -1.5rem; border-left: 2px dotted var(--rule); }
+  /* 後ろに見えている項目があるときだけ、次のアイコンまで線を伸ばす。 */
+  .cl-item:has(~ .cl-item:not([hidden]))::before { content: ""; position: absolute; left: .6875rem; top: 1.5rem; bottom: -1.5rem; border-left: 2px dotted var(--rule); }
   .cl-dot { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; color: var(--muted); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); }
-  .cl-card {
-    display: block; margin-top: .5rem; padding: 1rem 1.5rem; border-radius: 1rem; color: var(--ink); background: var(--paper-2);
-    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
+  .cl-card { display: block; margin-top: .5rem; padding: 1rem 1.5rem; border-radius: 1rem; }
+  .cl-card, .tile {
+    color: var(--ink); background: var(--paper-2); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
     transition: background-color 150ms ease, transform 160ms var(--ease-out);
   }
-  @media (hover: hover) and (pointer: fine) { .cl-card:hover { background: var(--accent-soft); } }
+  .tile[aria-pressed="true"] { background: var(--accent-soft); }
+  @media (hover: hover) and (pointer: fine) { :is(.cl-card, .tile):hover { background: var(--accent-soft); } }
 
   .about-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 3rem; margin-bottom: 1.5rem; }
   .skill-group + .skill-group { margin-top: 2rem; }
@@ -204,14 +200,7 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
     .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; }
     .bento-lg { grid-row: span 2; }
   }
-  .tile {
-    display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; padding: 1.5rem;
-    border-radius: 1.5rem; text-align: left; color: var(--ink); background: var(--paper-2);
-    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
-    transition: background-color 150ms ease, transform 160ms var(--ease-out);
-  }
+  .tile { display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; padding: 1.5rem; border-radius: 1.5rem; text-align: left; }
   .tile-text { display: flex; flex-direction: column; }
   .tile kbd { font: 700 var(--text-xs)/1rem var(--font-mono); padding: 0 .25rem; border-radius: .25rem; box-shadow: inset 0 0 0 1px var(--line); }
-  .tile[aria-pressed="true"] { background: var(--accent-soft); }
-  @media (hover: hover) and (pointer: fine) { .tile:hover { background: var(--accent-soft); } }
 </style>

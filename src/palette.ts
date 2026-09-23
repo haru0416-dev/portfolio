@@ -6,7 +6,8 @@ const PAPER = {
   dark: { l: 19, c: 0.02 },
 } as const;
 
-export function oklchToHex(Lpct: number, C: number, H: number): string {
+/** 0〜255 の [r, g, b]。 */
+export function oklchToRgb(Lpct: number, C: number, H: number): [number, number, number] {
   const L = Lpct / 100;
   const h = (H * Math.PI) / 180;
   const a = C * Math.cos(h);
@@ -21,8 +22,12 @@ export function oklchToHex(Lpct: number, C: number, H: number): string {
   const g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
   const bl = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
   const gamma = (x: number) => (x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055);
-  const byte = (x: number) => Math.round(Math.min(1, Math.max(0, gamma(x))) * 255).toString(16).padStart(2, '0');
-  return `#${byte(r)}${byte(g)}${byte(bl)}`;
+  const byte = (x: number) => Math.round(Math.min(1, Math.max(0, gamma(x))) * 255);
+  return [byte(r), byte(g), byte(bl)];
+}
+
+export function oklchToHex(Lpct: number, C: number, H: number): string {
+  return `#${oklchToRgb(Lpct, C, H).map((v) => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
 export const THEME_COLOR = {

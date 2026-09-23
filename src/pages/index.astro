@@ -18,12 +18,12 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
   <section class="min-h-[round(down,calc(50dvh-4rem),8px)] pb-12 flex items-center">
     <div class="w-full lg:w-2/3 parallax">
       <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
-      {/* 大きなシールを出さない幅では、名前の行と同じ高さの小さなシールを名前の右に置く。 */}
+      {/* 小さなシールは名前の行の高さ(80 / 96px)に合わせる。 */}
       <div class="flex items-end justify-between gap-4">
         <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
           <Wordmark text={SITE.name} /><span class="text-accent">.</span>
         </h1>
-        <div aria-hidden="true" class="lg:hidden hero-lead shrink-0 size-20 sm:size-24">
+        <div class="lg:hidden hero-lead shrink-0 size-20 sm:size-24">
           <Sticker icon={SITE_ICON} lift class="text-accent" />
         </div>
       </div>

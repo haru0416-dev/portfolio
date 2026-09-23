@@ -2,7 +2,6 @@
 import Wordmark from './Wordmark.astro';
 interface Props { title: string; lead?: string }
 const { title, lead } = Astro.props;
-// リンクを含む説明文は lead スロットで渡す。
 const hasLead = Boolean(lead) || Astro.slots.has('lead');
 ---
 <header class="pt-4 pb-12 mb-4">

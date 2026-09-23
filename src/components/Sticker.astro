@@ -11,7 +11,7 @@ interface Props {
 const { icon: Icon, size, lift = false, class: cls } = Astro.props;
 const dims = size ? { width: size, height: size } : {};
 ---
-{/* 同じアイコンを 2 枚重ね、下の太い線を型抜きしたシールの台紙にする。線の色は親の color を継ぐ。 */}
+{/* 下の 1 枚は太い線と塗りで、型抜きしたシールの台紙になる。 */}
 <span class:list={['sticker', !size && 'sticker-fill', lift && 'sticker-lift', cls]} aria-hidden="true">
   <Icon {...dims} class="sticker-base" stroke-width={7} fill="currentColor" />
   <Icon {...dims} class="sticker-ink" stroke-width={2} />

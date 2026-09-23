@@ -11,3 +11,6 @@ export function formatDate(date: Date): string {
   const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
+
+/** 2026-09-17 を表示用の 2026.09.17 にする。 */
+export const dotted = (iso: string) => iso.replaceAll('-', '.');

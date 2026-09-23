@@ -27,7 +27,6 @@ for (const post of rest) {
 <Base title="Blog" wide>
   <Hero title="Blog" lead="開発中に試したことを書いています。" />
 
-  {/* 広い画面では本文幅の一覧の右に、自己紹介・タグ・RSS の列を固定する。狭い画面では絞り込みを一覧の上、残りを下に並べる。 */}
   <div class="blog-layout">
     <div id="blog-results" class="blog-list">
       {latest && (
@@ -94,6 +93,7 @@ for (const post of rest) {
 </script>
 
 <style>
+  /* 狭い画面では右の列を解き、タグを一覧の上、自己紹介と RSS を下に並べる。 */
   .blog-layout { display: flex; flex-direction: column; }
   .blog-list { order: 1; }
   .blog-aside { display: contents; }

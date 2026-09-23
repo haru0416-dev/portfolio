@@ -110,6 +110,11 @@ time, .tabular-nums { white-space: nowrap; }
 /* Fredoka は 600 のみ読み込むため 600 を指定する。和文は 700 しかないので、そのまま 700 で描かれる。 */
 .display-jp { font-family: var(--font-display-jp); font-weight: 600; }
 
+/* 表示中のテーマでだけ見せる。明示の選択は html のクラス、「端末の設定」では OS の設定に従う。 */
+:root.light .when-dark, :root.dark .when-light { display: none; }
+@media (prefers-color-scheme: light) { :root:not(.dark) .when-dark { display: none; } }
+@media (prefers-color-scheme: dark) { :root:not(.light) .when-light { display: none; } }
+
 /* シール。台紙は両テーマで紙の白だが、ダークでは名前の文字(--ink)より暗くして主役を譲る。
    インクは親の color を継ぐ。ダークの明るいアクセントは台紙と明るさが近く沈むため、暗くして締める。 */
 .sticker {
@@ -146,8 +151,8 @@ time, .tabular-nums { white-space: nowrap; }
 header.site.glass::before { content: none; }
 
 /* 区切り線は重ねて描き、border による寸法の変化を避ける。 */
-:is(.dotted, .divide-line > :not(:first-child)) { position: relative; }
-:is(.dotted, .divide-line > :not(:first-child))::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--rule); pointer-events: none; }
+.dotted { position: relative; }
+.dotted::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--rule); pointer-events: none; }
 .line-bottom::after { content: ""; position: absolute; inset: auto 0 0; border-bottom: 1px solid var(--line); pointer-events: none; }
 .line-top::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 1px solid var(--line); pointer-events: none; }
 
@@ -178,7 +183,6 @@ header.site.glass::before { content: none; }
 }
 .cover-thumb { position: relative; flex-shrink: 0; width: 6rem; height: 3.5rem; border-radius: .75rem; overflow: hidden; }
 .cover-thumb .cover { justify-content: center; }
-.cover-thumb .cover-icon { filter: none; }
 .cover {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden;
   background-color: var(--cover-bg); color: var(--cover-fg); transition: transform 500ms var(--ease-out);
@@ -200,7 +204,7 @@ header.site.glass::before { content: none; }
   background-image: radial-gradient(var(--cover-dot) 1.25px, transparent 1.5px); background-size: 1.5rem 1.5rem;
   mask-image: radial-gradient(ellipse at 50% 40%, black, transparent 75%);
 }
-.cover-icon { position: relative; display: flex; filter: drop-shadow(0 8px 16px var(--glass-lo)); }
+.cover-icon { position: relative; display: flex; }
 .cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hue-0 { --cover-bg: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); --cover-fg: var(--accent); --cover-dot: color-mix(in oklch, var(--accent) 35%, transparent); }
 .hue-1 { --cover-bg: color-mix(in oklch, var(--mint) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--mint) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--mint) 55%, transparent); }

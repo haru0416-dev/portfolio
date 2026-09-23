@@ -126,7 +126,6 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
       };
       boot();
       document.addEventListener('astro:after-swap', boot);
-      // 設計グリッドは開くときに初めて読み込む。
       const grid = () => import('../scripts/design-grid');
       addEventListener('keydown', (ev) => {
         if ((ev.key !== 'g' && ev.key !== 'G') || ev.metaKey || ev.ctrlKey || ev.altKey || ev.isComposing) return;
@@ -141,7 +140,7 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
       if (restore) grid().then((m) => m.showDesignGrid());
     </script>
     <Header />
-    {/* 本文幅のページも列はサイト幅に取り、内容を左に寄せる。ロゴと内容の左端がページをまたいでそろう。 */}
+    {/* 本文幅のページも列はサイト幅に取り、内容の左端をロゴにそろえる。 */}
     <main id="content" tabindex="-1" transition:name="main" transition:animate="initial" class="outline-none flex-1 w-full max-w-site mx-auto px-4 sm:px-8 pt-12 pb-16">
       {wide ? <slot /> : <div class="max-w-reading"><slot /></div>}
     </main>

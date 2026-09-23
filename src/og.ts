@@ -4,12 +4,12 @@ import { googleFonts, subsetFonts, type FontSubset } from '@takumi-rs/helpers';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { SITE } from './site';
-import { THEME_COLOR, oklchToHex, HUE } from './palette';
-import { formatDate } from './date';
+import { THEME_COLOR, oklchToHex, oklchToRgb, HUE } from './palette';
+import { dotted, formatDate } from './date';
 import { RAYS } from './data/sea';
 
 const W = 1200, H = 630;
-export const OG_SIZE = { width: W, height: H } as const;
+const OG_SIZE = { width: W, height: H } as const;
 
 const U = 24;
 const L = {
@@ -32,10 +32,7 @@ const DISPLAY_JP = `font-family:'Zen Maru Kana',Fredoka,'Zen Maru Gothic';font-w
 const chip = (text: string, tracking = 0) =>
   `<span style="display:flex;align-items:center;height:${L.chip.h}px;padding:0 ${L.chip.px}px;border-radius:${L.chip.radius}px;background-color:${C.paper2};border:2px solid ${C.line};letter-spacing:${tracking}em">${text}</span>`;
 const PAPER = THEME_COLOR.dark;
-const rgba = (l: number, c: number, h: number, a: number) => {
-  const hex = oklchToHex(l, c, h);
-  return `rgba(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',')},${a})`;
-};
+const rgba = (l: number, c: number, h: number, a: number) => `rgba(${oklchToRgb(l, c, h).join(',')},${a})`;
 // global.css の .sea(ダーク)を 1200×630 の画面として描く。vmax は 12px。
 const SEA_H = 225;
 const BG = [
@@ -75,9 +72,6 @@ function sea() {
 
 const SEA = sea();
 
-const sprout = `data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${C.accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"/><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4M5 21h14"/></svg>`,
-)}`;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -125,7 +119,7 @@ async function prepare(html: string) {
 type Box = { left: number; top: number; right: number; bottom: number };
 
 /** 白背景が前提。薄いアンチエイリアスの縁は計測から除く。 */
-export async function inkBox(html: string): Promise<Box | null> {
+async function inkBox(html: string): Promise<Box | null> {
   const { node, css } = await prepare(html);
   const px = await renderer.render(node, { width: W, height: H, css, lang: 'ja', format: 'raw' });
   let l = W, t = H, r = -1, b = -1;
@@ -213,7 +207,7 @@ export interface CardImage {
   icon?: string;
 }
 
-export const postEyebrow = (date: Date) => `BLOG · ${formatDate(date).replaceAll('-', '.')}`;
+export const postEyebrow = (date: Date) => `BLOG · ${dotted(formatDate(date))}`;
 
 export async function lucideIcon(name: string) {
   const path = join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`);
@@ -225,6 +219,21 @@ export async function lucideIcon(name: string) {
 }
 
 type Place = (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => Promise<Box>;
+
+/** 要素のインクの箱を測り、at が返す位置に置く。 */
+function placer(els: El[]): Place {
+  return async (e, at) => {
+    const o = await probe({ ...e, x: 0, y: 0 });
+    const [x, y] = at(o);
+    els.push({ ...e, x, y });
+    return o;
+  };
+}
+
+const brand = (size: number, extra = '') => ({
+  key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${size}px;${extra}white-space:nowrap`,
+  content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink,
+});
 
 /** サイトの .eyebrow と同じく、札の右に点線を伸ばす。札の下端の y を返す。 */
 async function placeEyebrow(place: Place, text: string) {
@@ -238,19 +247,15 @@ async function placeEyebrow(place: Place, text: string) {
   return M + ebH;
 }
 
-export async function layoutCard({ eyebrow, title, titleAccent, tags, icon }: CardImage) {
+async function layoutCard({ eyebrow, title, titleAccent, tags, icon }: CardImage) {
   const M = L.margin, R = W - M, B = H - M;
   const els: El[] = [];
-  const place = async (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => {
-    const o = await probe({ ...e, x: 0, y: 0 });
-    const [x, y] = at(o);
-    els.push({ ...e, x, y });
-    return o;
-  };
+  const place = placer(els);
+  const sprout = await lucideIcon('sprout');
 
   const eyebrowBottom = await placeEyebrow(place, esc(eyebrow));
 
-  const logoEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${L.logo}px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
+  const logoEl = brand(L.logo);
   const logo = await probe({ ...logoEl, x: 0, y: 0 });
   const s0 = await probe({ key: 'sprout', kind: 'img', src: sprout, size: 100, x: 0, y: 0 });
   const sp = await place({ key: 'sprout', kind: 'img', src: sprout, size: Math.round(100 * (logo.bottom - logo.top) / (s0.bottom - s0.top)) }, (o) => [M - o.left, B - o.bottom]);
@@ -306,15 +311,11 @@ export async function layoutCard({ eyebrow, title, titleAccent, tags, icon }: Ca
   return { html: (only?: string) => page(els, only) };
 }
 
-export async function layoutSite() {
+async function layoutSite() {
   const M = L.margin, R = W - M, B = H - M;
   const els: El[] = [];
-  const place = async (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => {
-    const o = await probe({ ...e, x: 0, y: 0 });
-    const [x, y] = at(o);
-    els.push({ ...e, x, y });
-    return o;
-  };
+  const place = placer(els);
+  const sprout = await lucideIcon('sprout');
   const eyebrowBottom = await placeEyebrow(place, 'NOTES &amp; EXPERIMENTS');
 
   const dom = await place({ key: 'domain', style: `font-size:${L.logo}px;white-space:nowrap`, content: 'haru0416.dev', color: C.ink2 }, (o) => [M - o.left, B - o.bottom]);
@@ -323,7 +324,7 @@ export async function layoutSite() {
   await place({ key: 'rule', kind: 'rule', w: R - M }, (o) => [M - o.left, ruleY - o.top]);
 
   const mid = (eyebrowBottom + ruleY) / 2;
-  const markEl = { key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:160px;line-height:1;letter-spacing:-4px;white-space:nowrap`, content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink };
+  const markEl = brand(160, 'line-height:1;letter-spacing:-4px;');
   const mark = await probe({ ...markEl, x: 0, y: 0 });
   const leadEl = { key: 'lead', style: `${DISPLAY_JP};font-size:36px;white-space:nowrap`, content: esc(SITE.description), color: C.ink2 };
   const lead = await probe({ ...leadEl, x: 0, y: 0 });
