@@ -196,6 +196,8 @@ function probe(e: El): Promise<Box> {
 export interface CardImage {
   eyebrow: string;
   title: string;
+  /** 題名の末尾にアクセント色で続ける文字。サイトの「haru.」の点に使う。 */
+  titleAccent?: string;
   tags: string[];
   icon?: string;
 }
@@ -225,7 +227,7 @@ async function placeEyebrow(place: Place, text: string) {
   return M + ebH;
 }
 
-export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
+export async function layoutCard({ eyebrow, title, titleAccent, tags, icon }: CardImage) {
   const M = L.margin, R = W - M, B = H - M;
   const els: El[] = [];
   const place = async (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => {
@@ -254,7 +256,7 @@ export async function layoutCard({ eyebrow, title, tags, icon }: CardImage) {
   const tg = tags.length ? await probe({ ...tagsEl, x: 0, y: 0 }) : null;
   const tagsH = tg ? L.gap.tags + (tg.bottom - tg.top) : 0;
 
-  const content = esc(phrases(title));
+  const content = esc(phrases(title)) + (titleAccent ? `<span style="color:${C.accent}">${esc(titleAccent)}</span>` : '');
   let chosen: { e: El; o: Box } | undefined;
   let iconW = 0;
   for (const size of L.titleSizes) {
