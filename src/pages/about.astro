@@ -2,7 +2,9 @@
 import '../styles/prose.css';
 import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
-import { getWorks } from '../data/collections';
+import { getPublishedPosts, getWorks } from '../data/collections';
+import { LAB } from '../data/lab';
+import { formatDate } from '../date';
 import { SITE } from '../site';
 import { SITE_ICON as SiteIcon } from '../data/icons';
 import Rss from '@lucide/astro/icons/rss';
@@ -10,6 +12,7 @@ import Bug from '@lucide/astro/icons/bug';
 import Grid from '@lucide/astro/icons/grid-3x3';
 import Notebook from '@lucide/astro/icons/notebook-pen';
 import ArrowUp from '@lucide/astro/icons/arrow-up';
+import Flask from '@lucide/astro/icons/flask-conical';
 import GitHubMark from '../assets/icons/github.svg';
 
 const works = await getWorks();
@@ -22,8 +25,21 @@ const skills = [
   { label: 'ランタイム・ライブラリ', items: [...uses.keys()].filter((s) => !LANGUAGES.includes(s)).sort((a, b) => uses.get(b)! - uses.get(a)! || a.localeCompare(b, 'en')) },
 ];
 const githubUser = SITE.github.replace(/^https:\/\/github\.com\//, '');
+
+// 記事と Lab を日付の新しい順に並べ、年ごとにまとめる。作品は公開日を持たないため含めない。
+const KINDS = {
+  blog: { label: 'Blog', action: 'Blog に記事を公開', Icon: Notebook },
+  lab: { label: 'Lab', action: 'Lab に実験を公開', Icon: Flask },
+} as const;
+type Kind = keyof typeof KINDS;
+const log = [
+  ...(await getPublishedPosts()).map((p) => ({ kind: 'blog' as Kind, date: formatDate(p.data.pubDate), title: p.data.title, description: p.data.description, href: `/blog/${p.id}/` })),
+  ...LAB.map((l) => ({ kind: 'lab' as Kind, date: l.date, title: l.title, description: l.description, href: `/lab/${l.slug}/` })),
+].sort((a, b) => b.date.localeCompare(a.date) || a.kind.localeCompare(b.kind));
+const years = [...new Set(log.map((e) => e.date.slice(0, 4)))].map((year) => ({ year, entries: log.filter((e) => e.date.startsWith(year)) }));
+const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, log.filter((e) => e.kind === k).length]));
 ---
-<Base title="About" description="自己紹介。Rust や TypeScript でツールや研究的なものを作ったりしてます。" wide jpHeadings={false} image={{ src: '/og/about.png', alt: `自己紹介「Hi, I'm ${SITE.name}.」と haru0416.dev` }}>
+<Base title="About" description="自己紹介。Rust や TypeScript でツールや研究的なものを作ったりしてます。" wide image={{ src: '/og/about.png', alt: `自己紹介「Hi, I'm ${SITE.name}.」と haru0416.dev` }}>
   <header class="flex items-end justify-between gap-6 pt-4">
     <h1>
       <span class="display block text-lg leading-8 sm:text-xl text-ink-2 hero-lead">Hi, I'm</span>
@@ -59,6 +75,41 @@ const githubUser = SITE.github.replace(/^https:\/\/github\.com\//, '');
       ))}
     </section>
   </div>
+
+  <section aria-labelledby="changelog" class="mt-24">
+    <h2 id="changelog" class="about-h2">Changelog</h2>
+    <div role="group" aria-label="種類で絞り込む" class="flex flex-wrap gap-2 mb-8" data-changelog-filter>
+      <button type="button" class="chip glass press" data-kind="" aria-pressed="true" aria-controls="changelog-list">すべて<span class="chip-count">{log.length}</span></button>
+      {(Object.keys(KINDS) as Kind[]).map((k) => (
+        <button type="button" class="chip glass press" data-kind={k} aria-pressed="false" aria-controls="changelog-list">{KINDS[k].label}<span class="chip-count">{counts[k]}</span></button>
+      ))}
+    </div>
+    <div id="changelog-list" class="max-w-reading space-y-12">
+      {years.map(({ year, entries }) => (
+        <section aria-labelledby={`cl-${year}`} class="cl-year">
+          <h3 id={`cl-${year}`} class="display text-xl leading-8">{year}</h3>
+          <ol role="list" class="cl-list mt-4">
+            {entries.map((e, i) => {
+              const { action, Icon } = KINDS[e.kind];
+              return (
+                <li class="cl-item" data-kind={e.kind} data-last={i === entries.length - 1 ? '' : undefined}>
+                  <div class="flex items-center gap-2 h-6 text-sm text-muted">
+                    <span class="cl-dot" aria-hidden="true"><Icon size={14} stroke-width={2.25} /></span>
+                    {action}
+                    <time datetime={e.date} class="tag tabular-nums">{e.date.slice(5).replace('-', '.')}</time>
+                  </div>
+                  <a href={e.href} class="cl-card press">
+                    <span class="display-jp block text-base leading-6">{e.title}</span>
+                    {e.description && <span class="block text-sm leading-6 text-ink-2 truncate">{e.description}</span>}
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))}
+    </div>
+  </section>
 
   <section aria-labelledby="about-links" class="mt-24">
     <h2 id="about-links" class="about-h2">Links</h2>
@@ -104,6 +155,28 @@ const githubUser = SITE.github.replace(/^https:\/\/github\.com\//, '');
   </p>
 </Base>
 
+<script>
+  // 絞り込みは見た目だけを切り替える。項目のない年は見出しごと隠す。
+  document.addEventListener('astro:page-load', () => {
+    const group = document.querySelector<HTMLElement>('[data-changelog-filter]');
+    const list = document.getElementById('changelog-list');
+    if (!group || !list) return;
+    const buttons = group.querySelectorAll<HTMLButtonElement>('button[data-kind]');
+    group.addEventListener('click', (ev) => {
+      const btn = (ev.target as Element).closest<HTMLButtonElement>('button[data-kind]');
+      if (!btn) return;
+      const kind = btn.dataset.kind!;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      list.querySelectorAll<HTMLElement>('.cl-item').forEach((li) => { li.hidden = kind !== '' && li.dataset.kind !== kind; });
+      list.querySelectorAll<HTMLElement>('.cl-year').forEach((y) => {
+        const shown = [...y.querySelectorAll<HTMLElement>('.cl-item:not([hidden])')];
+        y.querySelectorAll('.cl-item').forEach((li) => li.toggleAttribute('data-last', li === shown.at(-1)));
+        y.hidden = shown.length === 0;
+      });
+    });
+  });
+</script>
+
 <style>
   .about-hero-art { flex-shrink: 0; width: 6rem; height: 6rem; }
   @media (min-width: 22.5rem) {
@@ -114,7 +187,19 @@ const githubUser = SITE.github.replace(/^https:\/\/github\.com\//, '');
     .about-hero-art { width: 15rem; height: 15rem; }
     .about-hero-art :global(.about-hero-icon) { width: 7rem; height: 7rem; }
   }
-  @supports (corner-shape: squircle) { .tile { corner-shape: squircle; } }
+  @supports (corner-shape: squircle) { .tile, .cl-card { corner-shape: squircle; } }
+
+  /* アイコンの列に沿って点線を引き、項目を 1 本の時系列につなぐ。 */
+  .cl-list { display: flex; flex-direction: column; gap: 1.5rem; }
+  .cl-item { position: relative; padding-left: 2rem; }
+  .cl-item:not([data-last])::before { content: ""; position: absolute; left: .6875rem; top: 1.5rem; bottom: -1.5rem; border-left: 2px dotted var(--rule); }
+  .cl-dot { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; color: var(--accent-ink); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .cl-card {
+    display: block; margin-top: .5rem; padding: 1rem 1.5rem; border-radius: 1rem; color: var(--ink); background: var(--paper-2);
+    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
+    transition: background-color 150ms ease, transform 160ms var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) { .cl-card:hover { background: var(--accent-soft); } }
 
   .about-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 3rem; margin-bottom: 1.5rem; }
   .skill-group + .skill-group { margin-top: 2rem; }
