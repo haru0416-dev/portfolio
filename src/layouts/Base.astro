@@ -135,6 +135,19 @@ const socialImageAlt = social?.alt ?? 'haru のロゴと Rust / TypeScript、har
       };
       boot();
       document.addEventListener('astro:after-swap', boot);
+      // 設計グリッドは開くときに初めて読み込む。
+      const grid = () => import('../scripts/design-grid');
+      addEventListener('keydown', (ev) => {
+        if ((ev.key !== 'g' && ev.key !== 'G') || ev.metaKey || ev.ctrlKey || ev.altKey || ev.isComposing) return;
+        if ((ev.target as Element).closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
+        grid().then((m) => m.toggleDesignGrid());
+      });
+      document.addEventListener('click', (ev) => {
+        if ((ev.target as Element).closest('[data-grid-toggle]')) grid().then((m) => m.toggleDesignGrid());
+      });
+      let restore = new URLSearchParams(location.search).has('grid');
+      try { restore ||= sessionStorage.getItem('design-grid') === '1'; } catch {}
+      if (restore) grid().then((m) => m.showDesignGrid());
     </script>
     <Header />
     <main id="content" tabindex="-1" transition:name="main" transition:animate="initial" class:list={['outline-none flex-1 w-full mx-auto px-4 sm:px-8 pt-12 pb-16', wide ? 'max-w-site' : 'max-w-reading']}>

@@ -81,6 +81,8 @@ bun run pages:dev
 
 本文内の `transition:name` には `transition:animate="initial"` を併記する。要素ごとのフェードCSSを生成せず、通常の遷移と非対応ブラウザ向けのフェードを `global.css` で定義している。
 
+文字は 16px × 1.25ⁿ の型スケール、行送りと高さは 8px の倍数、角丸は 4・6・8・12・16・24・32px に揃える。`G` キー、フッターの Grid、または URL の `?grid` で、8px グリッドと本文の列、ホバーした要素の寸法を重ねて表示できる。実装は `src/scripts/design-grid.ts` で、開いたときに初めて読み込む。
+
 背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面の Canvas を隠す。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
 
 ### フォント

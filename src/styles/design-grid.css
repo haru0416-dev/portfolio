@@ -1,0 +1,80 @@
+/* G キーで重ねる設計グリッド。src/scripts/design-grid.ts が html 直下に置く。 */
+:root {
+  --dg-m: oklch(78% 0.14 60 / 40%);
+  --dg-p: oklch(78% 0.13 150 / 40%);
+  --dg-c: oklch(72% 0.12 250 / 30%);
+}
+.dg-root {
+  --dg-line: color-mix(in oklch, var(--accent) 14%, transparent);
+  --dg-col: color-mix(in oklch, var(--accent) 70%, transparent);
+  position: absolute; top: 0; left: 0; width: 100%; z-index: 40; pointer-events: none;
+}
+.dg-root[hidden], .dg-legend[hidden], .dg-card[hidden] { display: none; }
+/* 文書の上端から 8px ごとに 1px の線。32px ごとに少し濃くする。 */
+.dg-grid {
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(to bottom, color-mix(in oklch, var(--accent) 28%, transparent) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to bottom, var(--dg-line) 0 1px, transparent 1px 8px);
+}
+.dg-col { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--dg-col); }
+.dg-col-l { left: var(--dg-l); }
+.dg-col-r { left: var(--dg-r); }
+.dg-col-label {
+  position: absolute; top: 4.5rem; left: var(--dg-l); padding: 0 .5rem; height: 1.5rem; display: flex; align-items: center;
+  font: 700 var(--text-xs)/1rem var(--font-mono); color: var(--on-accent); background: var(--accent-btn); border-radius: 0 .375rem .375rem 0;
+}
+
+.dg-fixed { position: fixed; inset: 0; }
+.dg-fixed:not(.dg-active) > * { display: none; }
+.dg-margin, .dg-padding, .dg-content { position: fixed; box-sizing: border-box; }
+.dg-margin { border: 0 solid var(--dg-m); }
+.dg-padding { border: 0 solid var(--dg-p); outline: 1px solid var(--dg-col); }
+.dg-content { background: var(--dg-c); }
+.dg-card {
+  position: fixed; top: 0; left: 0; z-index: 42; pointer-events: none; max-width: min(20rem, calc(100vw - 1rem)); padding: .5rem .75rem; border-radius: .5rem;
+  font: 500 var(--text-xs)/1rem var(--font-mono); color: oklch(96% 0.01 var(--h)); background: oklch(24% 0.03 var(--h) / 94%); /* 両テーマで同じ暗色にし、数値の色分けを固定する */
+  box-shadow: 0 8px 24px color-mix(in oklch, black 20%, transparent);
+}
+.dg-card > div { display: flex; gap: .5rem; align-items: baseline; white-space: nowrap; }
+.dg-card b { width: 3.5rem; flex-shrink: 0; font-weight: 700; opacity: .6; }
+.dg-card small { font-size: 1em; opacity: .7; }
+.dg-card .dg-name { display: block; margin-bottom: .25rem; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.dg-card sup, .dg-legend sup { font-size: .75em; line-height: 0; }
+.dg-card .dg-ok { color: oklch(85% 0.1 175); }
+.dg-card .dg-half { color: oklch(86% 0.12 90); }
+.dg-card .dg-off { color: oklch(76% 0.15 25); font-weight: 700; }
+
+.dg-legend {
+  position: fixed; left: 1rem; bottom: 1rem; z-index: 41; width: 15rem; max-height: calc(100dvh - 6rem); overflow: auto;
+  padding: .5rem .75rem; border-radius: .75rem; font-size: var(--text-xs); line-height: 1rem; color: var(--ink);
+  background: color-mix(in oklch, var(--paper) 92%, transparent); box-shadow: inset 0 0 0 1px var(--line), 0 8px 24px var(--glass-lo);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.dg-legend summary { display: flex; align-items: center; gap: .5rem; height: 1.5rem; padding-right: 1.5rem; list-style: none; font-family: var(--font-display); font-size: var(--text-sm); }
+.dg-legend summary::-webkit-details-marker { display: none; }
+.dg-legend summary::before { content: "▸"; font-size: .75em; color: var(--muted); transition: rotate 150ms ease; }
+.dg-legend details[open] summary::before { rotate: 90deg; }
+.dg-close { position: absolute; top: .5rem; right: .5rem; width: 1.5rem; height: 1.5rem; border-radius: .375rem; color: var(--muted); }
+.dg-close:hover { background: var(--paper-2); color: var(--ink); }
+.dg-legend dl { display: grid; grid-template-columns: 3rem 1fr; gap: .25rem .5rem; margin-top: .5rem; }
+.dg-legend dt { font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.dg-legend dd { color: var(--ink-2); }
+.dg-ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 .25rem; margin-top: .25rem; font-family: var(--font-mono); font-size: 11px; }
+.dg-ladder li { display: flex; justify-content: space-between; gap: .25rem; padding: 0 .25rem; border-radius: .25rem; }
+.dg-ladder li span { color: var(--muted); }
+.dg-radii { display: flex; flex-wrap: wrap; gap: .25rem; font-family: var(--font-mono); font-size: 11px; }
+.dg-radii li { padding: 0 .25rem; border-radius: .25rem; }
+.dg-legend [data-hit], .dg-legend [data-hit] span { background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+.dg-hint kbd { font: 700 11px/1rem var(--font-mono); padding: 0 .375rem; border-radius: .25rem; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+.dg-key { display: flex; align-items: center; gap: .25rem .5rem; flex-wrap: wrap; margin-top: .5rem; color: var(--muted); }
+.dg-legend .dg-ok { color: light-dark(oklch(50% 0.1 175), var(--mint)); }
+.dg-legend .dg-half { color: light-dark(oklch(52% 0.12 80), oklch(80% 0.12 90)); }
+.dg-legend .dg-off { color: light-dark(oklch(52% 0.19 25), oklch(72% 0.15 25)); }
+.dg-box { display: flex; align-items: center; gap: .25rem; }
+.dg-sw { width: .75rem; height: .75rem; border-radius: .25rem; }
+.dg-sw-m { background: var(--dg-m); }
+.dg-sw-p { background: var(--dg-p); }
+.dg-sw-c { background: var(--dg-c); }
+@media not ((hover: hover) and (pointer: fine)) { .dg-box { display: none; } }
+@media (max-width: 39.99rem) { .dg-legend { left: .5rem; right: .5rem; bottom: .5rem; width: auto; } }
