@@ -1,5 +1,7 @@
 ---
 import Logo from './Logo.astro';
+import Sun from '@lucide/astro/icons/sun';
+import Moon from '@lucide/astro/icons/moon';
 const nav = [
   { href: '/about', label: 'About' },
   { href: '/blog', label: 'Blog' },
@@ -20,7 +22,8 @@ const path = Astro.url.pathname;
         >{n.label}</a>
       ))}
       <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-lg text-muted hover:text-ink hover:bg-paper-2">
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>
+        <Sun size={16} stroke-width={2} aria-hidden="true" class="theme-sun" />
+        <Moon size={16} stroke-width={2} aria-hidden="true" class="theme-moon" />
       </button>
     </nav>
   </div>
@@ -59,6 +62,14 @@ const path = Astro.url.pathname;
     box-shadow: 0 8px 24px var(--glass-lo);
   }
   .theme-options fieldset { min-width: 0; }
+  /* 実際に表示しているテーマを示す。「端末の設定」では OS の設定、明示の選択では html のクラスに従う。 */
+  .theme-moon { display: none; }
+  :global(:root.dark) .theme-sun { display: none; }
+  :global(:root.dark) .theme-moon { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not(.light)) .theme-sun { display: none; }
+    :global(:root:not(.light)) .theme-moon { display: block; }
+  }
   .theme-options label {
     display: flex;
     align-items: center;
