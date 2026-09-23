@@ -71,7 +71,8 @@
   --font-mono: var(--font-jetbrains);
 }
 
-html { background: var(--paper); }
+/* スクロールしない短いページだけ中身が横にずれないよう、スクロールバーの幅を常に取っておく。 */
+html { background: var(--paper); scrollbar-gutter: stable; }
 body {
   color: var(--ink);
   font-family: var(--font-sans);
