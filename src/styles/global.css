@@ -384,7 +384,8 @@ header.site.glass::before { content: none; }
 /* 新旧の本文が重なって読めない時間を作らないよう、古い本文を消し切ってから出す。 */
 ::view-transition-old(main) { animation: vt-out 120ms cubic-bezier(0.4, 0, 1, 1) both; }
 ::view-transition-new(main) { animation: vt-in 320ms var(--ease-out) 100ms both; }
-::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; }
+/* 本文の枠は新旧の高さの間で伸びるため、スナップショットは引き伸ばさず上端に置いて切る。 */
+::view-transition-old(main), ::view-transition-new(main) { height: 100%; overflow: clip; object-fit: none; object-position: top; }
 @keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
 @keyframes vt-in { from { opacity: 0; transform: translateY(10px); } }
 html[data-astro-transition="back"]::view-transition-old(main) { animation-name: vt-out-back; }
