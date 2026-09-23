@@ -73,6 +73,13 @@
 
 /* スクロールしない短いページだけ中身が横にずれないよう、スクロールバーの幅を常に取っておく。 */
 html { background: var(--paper); scrollbar-gutter: stable; }
+/* 細い角丸のつまみ。Chrome と Safari は ::-webkit-scrollbar で形まで、Firefox は標準の指定で色と細さだけ変える。
+   Chrome は scrollbar-color を指定すると ::-webkit-scrollbar を無視するため、標準の指定は Firefox だけに当てる。 */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rule) padding-box; border: 3px solid transparent; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
+@supports not selector(::-webkit-scrollbar) { html { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; } }
 body {
   color: var(--ink);
   font-family: var(--font-sans);
