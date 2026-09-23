@@ -7,6 +7,9 @@ import sitemap from '@astrojs/sitemap';
 import { satteri } from '@astrojs/markdown-satteri';
 import { figureFromTitledImage } from './src/data/markdown-figure.ts';
 import { CODE_THEME, CODE_TRANSFORMERS } from './src/data/code-theme.ts';
+import { lastmodByPath } from './src/data/lastmod.ts';
+
+const lastmod = lastmodByPath();
 
 export default defineConfig({
   site: 'https://haru0416.dev',
@@ -17,7 +20,12 @@ export default defineConfig({
     // lightningcss は animation-timeline を animation ショートハンドに畳み込んで無効化してしまう
     build: { cssMinify: 'esbuild' },
   },
-  integrations: [mdx(), sitemap()],
+  integrations: [mdx(), sitemap({
+    serialize(item) {
+      const date = lastmod.get(new URL(item.url).pathname);
+      return date ? { ...item, lastmod: date } : item;
+    },
+  })],
   markdown: {
     // 色は CSS 変数で両テーマ分を出力し、prose.css で light-dark() により選ぶ。
     shikiConfig: { themes: CODE_THEME, defaultColor: false, transformers: CODE_TRANSFORMERS },
