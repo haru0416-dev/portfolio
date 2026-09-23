@@ -1,0 +1,139 @@
+---
+import '../styles/prose.css';
+import Base from '../layouts/Base.astro';
+import Wordmark from '../components/Wordmark.astro';
+import { getWorks } from '../data/collections';
+import { SITE } from '../site';
+import { SITE_ICON as SiteIcon } from '../data/icons';
+import Rss from '@lucide/astro/icons/rss';
+import Bug from '@lucide/astro/icons/bug';
+import Grid from '@lucide/astro/icons/grid-3x3';
+import Notebook from '@lucide/astro/icons/notebook-pen';
+import ArrowUp from '@lucide/astro/icons/arrow-up';
+import GitHubMark from '../assets/icons/github.svg';
+
+const works = await getWorks();
+// 作品の stack を集計し、言語とそれ以外に分ける。言語は定義順、それ以外は使っている作品の多い順。このサイト自体も Astro の使用例として数える。
+const LANGUAGES = ['Rust', 'TypeScript', 'Python', 'C'];
+const uses = new Map<string, number>([['Astro', 1]]);
+for (const s of works.flatMap((w) => w.data.stack)) uses.set(s, (uses.get(s) ?? 0) + 1);
+const skills = [
+  { label: '言語', items: LANGUAGES.filter((s) => uses.has(s)) },
+  { label: 'ランタイム・ライブラリ', items: [...uses.keys()].filter((s) => !LANGUAGES.includes(s)).sort((a, b) => uses.get(b)! - uses.get(a)! || a.localeCompare(b, 'en')) },
+];
+const githubUser = SITE.github.replace(/^https:\/\/github\.com\//, '');
+---
+<Base title="About" description="自己紹介。Rust や TypeScript でツールや研究的なものを作ったりしてます。" wide jpHeadings={false}>
+  <header class="flex items-end justify-between gap-6 pt-4">
+    <h1>
+      <span class="display block text-lg leading-8 sm:text-xl text-ink-2 hero-lead">Hi, I'm</span>
+      <span class="display block text-5xl min-[22.5rem]:text-6xl sm:text-7xl tracking-[-0.01em]"><Wordmark text={SITE.name} /><span class="text-accent">.</span></span>
+    </h1>
+    {/* イラストに差し替える枠。下端を名前の行の下端にそろえ、同じ地面に立たせる。 */}
+    <div aria-hidden="true" class="about-hero-art hero-lead">
+      <div class="hero-mark flex size-full items-center justify-center rounded-full text-accent">
+        <SiteIcon size={48} stroke-width={1.75} class="about-hero-icon" />
+      </div>
+    </div>
+  </header>
+
+  <div class="mt-16 grid gap-16 lg:grid-cols-2">
+    <section aria-labelledby="about-me">
+      <h2 id="about-me" class="about-h2">About me</h2>
+      <div class="prose">
+        <p>Rust や TypeScript でツールや研究的なものを作ったりしてます。</p>
+        <p>面白そうだなって思ったものをプレで作ってみたり、それを実際に実装してみたりといろいろ試し中です。</p>
+        <p>このサイトには、作ったツールとかを <a href="/works/">Works</a> に、今後気ままにかけたらいいなって思っている <a href="/blog/">Blog</a> に、ブラウザで動く面白そうだと思っているものを <a href="/lab/">Lab</a> に載せて行く予定です。</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="skills">
+      <h2 id="skills" class="about-h2">Skills</h2>
+      {skills.map((g) => (
+        <div class="skill-group">
+          <h3 class="display-jp text-lg leading-8">{g.label}</h3>
+          <ul role="list" class="mt-2 flex flex-wrap gap-2">
+            {g.items.map((s) => <li class="tag">{s}</li>)}
+          </ul>
+        </div>
+      ))}
+    </section>
+  </div>
+
+  <section aria-labelledby="about-links" class="mt-24">
+    <h2 id="about-links" class="about-h2">Links</h2>
+    <ul role="list" class="bento">
+      <li class="bento-lg">
+        <a href={SITE.github} class="tile press">
+          <GitHubMark width={32} height={32} aria-hidden="true" />
+          <span class="tile-text">
+            <span class="display text-2xl leading-8">GitHub</span>
+            <span class="text-sm text-muted">@{githubUser}</span>
+          </span>
+        </a>
+      </li>
+      <li>
+        <a href="/blog/" class="tile press">
+          <Notebook size={24} stroke-width={2} aria-hidden="true" />
+          <span class="tile-text"><span class="font-bold">Blog</span><span class="text-xs text-muted">開発メモ</span></span>
+        </a>
+      </li>
+      <li>
+        <a href="/rss.xml" class="tile press">
+          <Rss size={24} stroke-width={2} aria-hidden="true" />
+          <span class="tile-text"><span class="font-bold">RSS</span><span class="text-xs text-muted">記事の更新</span></span>
+        </a>
+      </li>
+      <li>
+        <a href="/works/#feedback" class="tile press">
+          <Bug size={24} stroke-width={2} aria-hidden="true" />
+          <span class="tile-text"><span class="font-bold">感想・不具合</span><span class="text-xs text-muted">GitHub Issues</span></span>
+        </a>
+      </li>
+      <li>
+        <button type="button" data-grid-toggle aria-pressed="false" aria-keyshortcuts="G" class="tile press">
+          <Grid size={24} stroke-width={2} aria-hidden="true" />
+          <span class="tile-text"><span class="font-bold">Design grid</span><span class="text-xs text-muted"><kbd>G</kbd> で寸法を重ねる</span></span>
+        </button>
+      </li>
+    </ul>
+  </section>
+
+  <p class="mt-24 flex justify-center">
+    <a href="#content" class="u-link inline-flex items-center gap-2 text-sm text-muted hover:text-ink">一番上に戻る<ArrowUp size={16} stroke-width={2} aria-hidden="true" /></a>
+  </p>
+</Base>
+
+<style>
+  .about-hero-art { flex-shrink: 0; width: 6rem; height: 6rem; }
+  @media (min-width: 22.5rem) {
+    .about-hero-art { width: 7rem; height: 7rem; }
+    .about-hero-art :global(.about-hero-icon) { width: 3.5rem; height: 3.5rem; }
+  }
+  @media (min-width: 40rem) {
+    .about-hero-art { width: 15rem; height: 15rem; }
+    .about-hero-art :global(.about-hero-icon) { width: 7rem; height: 7rem; }
+  }
+  @supports (corner-shape: squircle) { .tile { corner-shape: squircle; } }
+
+  .about-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 3rem; margin-bottom: 1.5rem; }
+  .skill-group + .skill-group { margin-top: 2rem; }
+
+  .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 8rem; gap: 1rem; }
+  .bento-lg { grid-column: span 2; }
+  @media (min-width: 64rem) {
+    /* 段の高さ(128px)も間隔も 32 の倍数にし、2 段目も 32px の線に乗せる。 */
+    .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; }
+    .bento-lg { grid-row: span 2; }
+  }
+  .tile {
+    display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; padding: 1.5rem;
+    border-radius: 1.5rem; text-align: left; color: var(--ink); background: var(--paper-2);
+    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
+    transition: background-color 150ms ease, transform 160ms var(--ease-out);
+  }
+  .tile-text { display: flex; flex-direction: column; }
+  .tile kbd { font: 700 var(--text-xs)/1rem var(--font-mono); padding: 0 .25rem; border-radius: .25rem; box-shadow: inset 0 0 0 1px var(--line); }
+  .tile[aria-pressed="true"] { background: var(--accent-soft); }
+  @media (hover: hover) and (pointer: fine) { .tile:hover { background: var(--accent-soft); } }
+</style>
