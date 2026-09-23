@@ -11,7 +11,7 @@
 .prose li + li { margin-top: .5rem; }
 .prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 行高を変えずにタップ領域を広げる */
 .prose strong { font-weight: 600; }
-.prose code { font-size: .8944em; line-height: 1; background: var(--paper-2); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
+.prose code { font-size: .8944em; line-height: 1; background: var(--surface); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
 .prose pre code { background: none; padding: 0; }
 /* コードブロックは src/data/code-theme.ts の変換で figure.code-block に包まれる。背景と縁取りは枠が持ち、中の pre は横スクロールだけを受け持つ。 */
 .prose .code-block {
@@ -58,7 +58,7 @@
     to { --fade-l: 2.5rem; --fade-r: 0px; }
   }
 }
-.prose blockquote { background: var(--paper-2); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
+.prose blockquote { background: var(--surface); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
 .prose img { border-radius: 1rem; width: 100%; }
 .prose figure:not(.code-block) { margin-inline: 0; }
 .prose figcaption { margin-top: .75rem; font-size: var(--text-sm); line-height: 1.5rem; color: var(--muted); text-align: center; text-wrap: balance; }
