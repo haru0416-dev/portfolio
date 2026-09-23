@@ -5,9 +5,9 @@
 .prose h3 { font-size: var(--text-lg); line-height: 2rem; margin-top: 3rem; }
 .prose h2 + *, .prose h3 + * { margin-top: 1rem; }
 .prose ul { list-style: disc; padding-left: 1.4em; }
-.prose ul li::marker { color: var(--accent); }
+.prose ul li::marker { color: var(--muted); }
 .prose ol { list-style: decimal; padding-left: 1.6em; }
-.prose ol li::marker { color: var(--accent-ink); font-weight: 700; font-variant-numeric: tabular-nums; } /* 番号は文字なので、コントラストの取れる accent-ink にする */
+.prose ol li::marker { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
 .prose li + li { margin-top: .5rem; }
 .prose a { color: var(--accent-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; padding-block: .25rem; } /* 行高を変えずにタップ領域を広げる */
 .prose strong { font-weight: 600; }

@@ -14,6 +14,7 @@
   --line:        light-dark(oklch(86%   0.035 var(--h)),        oklch(32% 0.030 var(--h)));
   /* 点線の区切り。点線は半分が隙間で縁取りより薄く見えるので、--line より濃くする。 */
   --rule:        light-dark(oklch(74%   0.045 var(--h)),        oklch(45% 0.040 var(--h)));
+  /* アクセントの桃色は、ブランドの印(ロゴの点・芽)、押せるもの(リンク・主ボタン)、現在地(目次・選択中)に限る。飾りには使わない。 */
   --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
   --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
   --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
