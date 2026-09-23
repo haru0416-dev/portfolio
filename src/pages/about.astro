@@ -6,7 +6,8 @@ import { getPublishedPosts, getWorks } from '../data/collections';
 import { LAB } from '../data/lab';
 import { formatDate } from '../date';
 import { SITE } from '../site';
-import { SITE_ICON as SiteIcon } from '../data/icons';
+import Sticker from '../components/Sticker.astro';
+import { SITE_ICON } from '../data/icons';
 import Rss from '@lucide/astro/icons/rss';
 import Bug from '@lucide/astro/icons/bug';
 import Grid from '@lucide/astro/icons/grid-3x3';
@@ -47,9 +48,7 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
     </h1>
     {/* イラストに差し替える枠。下端を名前の行の下端にそろえ、同じ地面に立たせる。 */}
     <div aria-hidden="true" class="about-hero-art hero-lead">
-      <div class="hero-mark flex size-full items-center justify-center rounded-full text-accent">
-        <SiteIcon size={48} stroke-width={1.75} class="about-hero-icon" />
-      </div>
+      <Sticker icon={SITE_ICON} lift class="text-accent" />
     </div>
   </header>
 
@@ -179,14 +178,8 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
 
 <style>
   .about-hero-art { flex-shrink: 0; width: 6rem; height: 6rem; }
-  @media (min-width: 22.5rem) {
-    .about-hero-art { width: 7rem; height: 7rem; }
-    .about-hero-art :global(.about-hero-icon) { width: 3.5rem; height: 3.5rem; }
-  }
-  @media (min-width: 40rem) {
-    .about-hero-art { width: 15rem; height: 15rem; }
-    .about-hero-art :global(.about-hero-icon) { width: 7rem; height: 7rem; }
-  }
+  @media (min-width: 22.5rem) { .about-hero-art { width: 7rem; height: 7rem; } }
+  @media (min-width: 40rem) { .about-hero-art { width: 15rem; height: 15rem; } }
   @supports (corner-shape: squircle) { .tile, .cl-card { corner-shape: squircle; } }
 
   /* アイコンの列に沿って点線を引き、項目を 1 本の時系列につなぐ。 */

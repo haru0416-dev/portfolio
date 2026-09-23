@@ -4,9 +4,10 @@ import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import WorkCover from '../components/WorkCover.astro';
 import Wordmark from '../components/Wordmark.astro';
+import Sticker from '../components/Sticker.astro';
+import { SITE_ICON } from '../data/icons';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
-import { SITE_ICON as SiteIcon } from '../data/icons';
 
 const posts = (await getPublishedPosts()).slice(0, 5);
 const works = await getWorks();
@@ -17,9 +18,15 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
   <section class="min-h-[round(down,calc(50dvh-4rem),8px)] pb-12 flex items-center">
     <div class="w-full lg:w-2/3 parallax">
       <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
-      <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
-        <Wordmark text={SITE.name} /><span class="text-accent">.</span>
-      </h1>
+      {/* 大きなシールを出さない幅では、名前の行と同じ高さの小さなシールを名前の右に置く。 */}
+      <div class="flex items-end justify-between gap-4">
+        <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
+          <Wordmark text={SITE.name} /><span class="text-accent">.</span>
+        </h1>
+        <div aria-hidden="true" class="lg:hidden hero-lead shrink-0 size-20 sm:size-24">
+          <Sticker icon={SITE_ICON} lift class="text-accent" />
+        </div>
+      </div>
       <p class="display-jp mt-6 text-base sm:text-xl text-ink hero-lead">
         作ったツールと開発メモ
       </p>
@@ -33,8 +40,8 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
       </div>
     </div>
     <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-center">
-      <div class="hero-lead hero-mark flex shrink-0 size-60 rounded-full items-center justify-center text-accent">
-        <SiteIcon size={112} stroke-width={1.75} />
+      <div class="hero-lead shrink-0 size-60">
+        <Sticker icon={SITE_ICON} lift class="text-accent" />
       </div>
     </div>
   </section>

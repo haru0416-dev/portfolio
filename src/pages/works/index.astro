@@ -22,7 +22,7 @@ const stacks = [...new Set(works.flatMap((w) => w.data.stack))].sort((a, b) => a
       {works.map((w, i) => (
         <li class="reveal" data-work data-stack={JSON.stringify(w.data.stack)}>
           <a href={`/works/${w.id}/`} transition:name={`work-${w.id}`} transition:animate="initial" class="work-card group">
-            <WorkCover id={w.id} icon={w.data.icon} cover={w.data.cover} hue={i} loading={i < 3 ? 'eager' : 'lazy'} />
+            <WorkCover id={w.id} icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={80} loading={i < 3 ? 'eager' : 'lazy'} />
             {WORK_STATUS_LABELS[w.data.status] && <span class="tag badge absolute top-4 left-6 z-1 uppercase">{WORK_STATUS_LABELS[w.data.status]}</span>}
             <span transition:name={`work-caption-${w.id}`} transition:animate="initial" class="caption vt-caption">
               <span transition:name={`work-title-${w.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit max-w-full text-base leading-6 line-clamp-2">{w.data.name}</span>

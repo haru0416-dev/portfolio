@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { ICONS, type IconName } from '../data/icons';
+import Sticker from './Sticker.astro';
 interface Props {
   icon: IconName;
   cover?: ImageMetadata;
@@ -20,5 +21,5 @@ if (!Icon) throw new Error(`未登録のアイコン: ${icon}`);
 <span class:list={['cover', `hue-${hue % 3}`]} aria-hidden="true">
   {cover
     ? <Image src={cover} alt="" widths={widths} sizes={sizes} loading={loading} class="cover-img" />
-    : <span transition:name={`work-icon-${id}`} transition:animate="initial" class="cover-icon vt-swap"><Icon size={iconSize} stroke-width={1.75} /></span>}
+    : <span transition:name={`work-icon-${id}`} transition:animate="initial" class="cover-icon vt-swap"><Sticker icon={Icon} size={iconSize} /></span>}
 </span>
