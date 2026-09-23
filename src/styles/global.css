@@ -137,7 +137,7 @@ header.site.glass::before { content: none; }
 .line-bottom::after { content: ""; position: absolute; inset: auto 0 0; border-bottom: 1px solid var(--line); pointer-events: none; }
 .line-top::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 1px solid var(--line); pointer-events: none; }
 
-.card { border-radius: 2.5rem; padding: 1.5rem; }
+.card { border-radius: 2rem; padding: 1.5rem; }
 :is(.card, .pill, .chip):where(:not(.glass)) { background: var(--paper-2); }
 .golden { aspect-ratio: 1.618; }
 @supports (height: round(down, 1px, 8px)) { .golden { aspect-ratio: auto; height: round(down, 100cqi / 1.618, 8px); } }
@@ -152,7 +152,7 @@ header.site.glass::before { content: none; }
   box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
   transition: box-shadow 300ms ease;
 }
-.work-hero { border-radius: 2.5rem; }
+.work-hero { border-radius: 2rem; }
 @media (min-width: 40rem) { .work-hero { aspect-ratio: 12 / 5; } }
 @media (min-width: 64rem) { .work-hero { aspect-ratio: 3 / 1; } }
 /* 高さを 8px に丸め、行送りをグリッドに乗せる。cqi は親を基準にする。 */
