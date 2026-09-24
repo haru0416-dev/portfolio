@@ -8,6 +8,7 @@ import { dotted, formatDate } from '../date';
 import { LANGUAGES } from '../data/stack';
 import { SITE } from '../site';
 import Sticker from '../components/Sticker.astro';
+import BusinessCard from '../components/BusinessCard.astro';
 import { SITE_ICON } from '../data/icons';
 import Rss from '@lucide/astro/icons/rss';
 import Bug from '@lucide/astro/icons/bug';
@@ -107,6 +108,18 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
           </ol>
         </section>
       ))}
+    </div>
+  </section>
+
+  <section aria-labelledby="about-card" class="mt-24">
+    <h2 id="about-card" class="about-h2">Card</h2>
+    <div class="grid items-center gap-8 lg:grid-cols-[auto_1fr] lg:gap-16">
+      <BusinessCard />
+      <div class="prose">
+        <p>名刺です。指したほうへ傾き、押すと少し沈みます。つまんでドラッグすると縦にも横にも回せて、クリックやタップで裏返ります。</p>
+        <p>そのまま刷れるよう、仕上がり 55×91mm・裁ち落とし 3mm・角丸で作っています。地の海と光の筋は、このサイトの背景と同じ並びです。</p>
+        <p>表の QR コードは、このサイトのトップを開きます。</p>
+      </div>
     </div>
   </section>
 

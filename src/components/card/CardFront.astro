@@ -1,0 +1,178 @@
+---
+// 名刺の表。海の中から、左上の水面を通って差し込む光を見る。座標は mm。
+//
+// 見え方は実物の水中に合わせている。
+// - 光の筋は水面の一点(太陽の方向)から扇に開き、遠くほど太く淡くなる。細く強い筋を少し、太く淡い筋を多く混ぜる。
+// - 水中の粒は、光の筋が当たっているところでだけ明るく見える(チンダル現象)。粒ごとに筋の中にいる度合いで明るさを決める。
+// - 上端には、下から見上げた水面が揺らぐ明るい天井として見える。
+// - 泡は昇るほど水圧が下がって大きくなる。光の来る左上に明るい縁とハイライト、反対側に泡が集めた光の弧が出る。
+//
+// 水の中にあるものは、深さの霞と太陽の光の下にまとめて置く。上に載るのは紙に刷った文字・イラスト・QR だけ。
+import { CARD, INK, CARD_RAYS, marineSnow, causticCells } from '../../data/card';
+import { qrPath } from '../../data/qr';
+import { SITE } from '../../site';
+import githubSvg from '../../assets/icons/github.svg?raw';
+
+interface Props { id: string }
+const { id } = Astro.props;
+const { width: W, height: H, bleed: B, safe: S } = CARD;
+
+const host = 'haru0416.dev';
+const githubPath = SITE.github.replace(/^https:\/\//, '');
+const qr = qrPath(`https://${host}/`);
+const githubMark = githubSvg.match(/ d="([^"]+)"/)![1];
+const QR_SIZE = 13;
+const qrScale = QR_SIZE / (qr.size + 4);
+
+type Point = [number, number];
+const f = (n: number) => n.toFixed(2);
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+
+// 光の筋。水面の上、左上の外にある太陽の方向から扇に開く。並び・幅・濃さはサイトの背景と同じ値を使う。
+const SUN: Point = [-6, -34];
+const RAY_LENGTH = 92;
+type Ray = { u: Point; top: Point; dist: number; half: number; a: number };
+const aim = (x: number, half: number, a: number): Ray => {
+  const top: Point = [x, -B], dx = top[0] - SUN[0], dy = top[1] - SUN[1], dist = Math.hypot(dx, dy);
+  return { u: [dx / dist, dy / dist], top, dist, half, a };
+};
+// 太く淡い筋はサイトの並び。細く強い筋は、その間にいくつか通す。
+const broad = CARD_RAYS.map((r) => aim(r.x + r.w / 2, r.w * 0.32, r.a * 0.42));
+const sharp = [9.5, 23, 38.5].map((x, i) => aim(x, 0.32, [0.55, 0.42, 0.34][i]));
+/** 筋の多角形。上端から RAY_LENGTH だけ伸ばし、太陽からの距離に比例して太らせる。 */
+const rayPath = (r: Ray, k: number) => {
+  const n: Point = [-r.u[1], r.u[0]];
+  const end: Point = [r.top[0] + r.u[0] * RAY_LENGTH, r.top[1] + r.u[1] * RAY_LENGTH];
+  const h0 = r.half * k, h1 = h0 * ((r.dist + RAY_LENGTH) / r.dist);
+  const pts: Point[] = [[r.top[0] - n[0] * h0, r.top[1] - n[1] * h0], [r.top[0] + n[0] * h0, r.top[1] + n[1] * h0], [end[0] + n[0] * h1, end[1] + n[1] * h1], [end[0] - n[0] * h1, end[1] - n[1] * h1]];
+  return `M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join('L')}Z`;
+};
+/** その点が光の筋の中にどれだけ入っているか(0〜1)。筋の中心ほど、浅いほど強い。 */
+const lit = ([x, y]: Point) => {
+  let sum = 0;
+  for (const r of [...broad, ...sharp]) {
+    const px = x - SUN[0], py = y - SUN[1], along = px * r.u[0] + py * r.u[1];
+    if (along < r.dist) continue;
+    const across = Math.abs(px * r.u[1] - py * r.u[0]), half = r.half * (along / r.dist) * 1.3;
+    const t = across / half;
+    if (t < 1) sum += r.a * 2.2 * (1 - t * t);
+  }
+  return clamp01(sum) * clamp01(1 - (y + B) / 80);
+};
+
+// 水中の粒。文字の並ぶ下半分には撒かない。光の筋の外では暗く沈み、筋の中でだけ光る。
+const snow = marineSnow(11, 120, -B, 52).map((p) => ({ ...p, glow: lit([p.x, p.y]) }));
+// 目の前を漂う大きな粒。ピントが合わず、柔らかくぼけて見える。
+const near = [[7, 40, 0.9], [44, 20, 0.7], [16, 12, 0.55], [50, 44, 1.1]].map(([x, y, r]) => ({ x, y, r, glow: lit([x, y]) }));
+
+// 見上げた水面。コースティクスの網を縦につぶして上端に置き、太陽のある左ほど明るくする。
+const surface = causticCells(71, { x: -B, y: -B, w: W + B * 2, h: 16 }, 9, 1).map((c) => c.map(([x, y]): Point => [
+  x + 0.4 * Math.sin(0.5 * y + x * 0.2), -B + (y + B) * 0.42 + 0.25 * Math.sin(0.7 * x),
+]));
+const mid = (a: Point, b: Point): Point => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+const smooth = (poly: Point[]) => {
+  const start = mid(poly.at(-1)!, poly[0]);
+  return `M${f(start[0])} ${f(start[1])}` + poly.map((p, i) => { const m = mid(p, poly[(i + 1) % poly.length]); return `Q${f(p[0])} ${f(p[1])} ${f(m[0])} ${f(m[1])}`; }).join('') + 'Z';
+};
+const surfaceCells = surface.map((c) => {
+  const cy = c.reduce((a, p) => a + p[1], 0) / c.length, cx = c.reduce((a, p) => a + p[0], 0) / c.length;
+  return { d: smooth(c), opacity: 0.5 * clamp01(1 - (cy + B) / 7) * (1 - 0.55 * clamp01(cx / W)) };
+});
+
+// 水面へ昇っていく泡の列。昇るほど水圧が下がって大きくなる。イラストの枠の右を通す。
+const bubbles = [0, 0.13, 0.24, 0.38, 0.5, 0.63, 0.77, 0.9].map((t) => {
+  const y = 47 - t * 40;
+  return { x: 47.6 - t * 3.2 + Math.sin(t * 11) * 0.8, y, r: 0.32 + t * 0.78 };
+});
+
+// 芽は仮置き。イラストができたら、この枠(中心・大きさ)に画像を置く。
+const ART = { cx: W / 2, cy: 30, size: 30 };
+const sprout = ['M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3', 'M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4', 'M5 21h14'];
+const artTransform = `translate(${ART.cx} ${ART.cy}) rotate(-8) scale(${ART.size / 24}) translate(-12 -12)`;
+---
+<defs>
+  <linearGradient id={`${id}-sea`} x1="0" y1={-B} x2={W * 0.35} y2={H + B} gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color={INK.seaTop} /><stop offset=".45" stop-color={INK.seaMid} /><stop offset="1" stop-color={INK.seaDeep} />
+  </linearGradient>
+  <radialGradient id={`${id}-sun`} cx="4" cy="-8" r="46" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color={INK.white} stop-opacity=".5" />
+    <stop offset=".18" stop-color={INK.ray} stop-opacity=".2" />
+    <stop offset=".55" stop-color={INK.ray} stop-opacity=".05" />
+    <stop offset="1" stop-color={INK.ray} stop-opacity="0" />
+  </radialGradient>
+  <linearGradient id={`${id}-ray`} x1="0" y1={-B} x2="0" y2="78" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color={INK.ray} stop-opacity=".34" />
+    <stop offset=".5" stop-color={INK.ray} stop-opacity=".09" />
+    <stop offset="1" stop-color={INK.ray} stop-opacity="0" />
+  </linearGradient>
+  {/* 見上げた水面の明るさ。上端ほど明るく、すぐに水の色へ戻る。 */}
+  <linearGradient id={`${id}-ceiling`} x1="0" y1={-B} x2="0" y2="7" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color={INK.ray} stop-opacity=".28" /><stop offset="1" stop-color={INK.ray} stop-opacity="0" />
+  </linearGradient>
+  <radialGradient id={`${id}-mote`}>
+    <stop offset="0" stop-color={INK.white} stop-opacity=".9" /><stop offset=".45" stop-color={INK.white} stop-opacity=".35" /><stop offset="1" stop-color={INK.white} stop-opacity="0" />
+  </radialGradient>
+  {/* 泡の縁は、光の来る左上が明るい。 */}
+  <linearGradient id={`${id}-bubble`} x1="0" y1="0" x2="1" y2="1">
+    <stop offset=".1" stop-color={INK.white} stop-opacity=".85" /><stop offset=".9" stop-color={INK.white} stop-opacity=".18" />
+  </linearGradient>
+  {/* 深さの霞。水の中にあるもの全部の上にかけ、下ほど暗い海に沈める。 */}
+  <linearGradient id={`${id}-fog`} x1="0" y1="40" x2="0" y2={H + B} gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color={INK.seaDeep} stop-opacity="0" /><stop offset="1" stop-color={INK.seaDeep} stop-opacity=".5" />
+  </linearGradient>
+</defs>
+
+{/* ここから霞までが水の中。 */}
+<rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-sea)`} />
+<rect x={-B} y={-B} width={W + B * 2} height={10 + B} fill={`url(#${id}-ceiling)`} />
+<g class="fx-ceiling" fill="none" stroke={INK.white} stroke-width=".13">
+  {surfaceCells.map((c) => <path d={c.d} opacity={f(c.opacity)} />)}
+</g>
+{/* 光の筋。フィルタを使わず、幅の違う帯を重ねて縁をぼかす。刷ったときに画像化されない。 */}
+<g class="fx-rays">
+  {broad.map((r) => [1, 0.62, 0.3].map((k) => <path d={rayPath(r, k)} fill={`url(#${id}-ray)`} opacity={f(r.a)} />))}
+  {sharp.map((r) => [1, 0.45].map((k) => <path d={rayPath(r, k)} fill={`url(#${id}-ray)`} opacity={f(r.a)} />))}
+</g>
+{/* 粒。光の筋の外でもかすかに見え、筋の中で強く光る。 */}
+<g class="fx-snow" fill={INK.white}>{snow.map((p) => <circle cx={f(p.x)} cy={f(p.y)} r={f(p.r)} opacity={f(p.a * (0.16 + 0.84 * p.glow))} />)}</g>
+<g class="fx-near">{near.map((p) => <circle cx={p.x} cy={p.y} r={p.r} fill={`url(#${id}-mote)`} opacity={f(0.12 + 0.3 * p.glow)} />)}</g>
+{/* 泡。縁・左上のハイライト・右下に集まった光の弧。 */}
+<g class="fx-bubbles">{bubbles.map((b) => (
+  <g>
+    <circle cx={f(b.x)} cy={f(b.y)} r={f(b.r)} fill={INK.ray} fill-opacity=".06" stroke={`url(#${id}-bubble)`} stroke-width={f(0.09 + b.r * 0.05)} />
+    <ellipse cx={f(b.x - b.r * 0.38)} cy={f(b.y - b.r * 0.38)} rx={f(b.r * 0.24)} ry={f(b.r * 0.14)} transform={`rotate(-45 ${f(b.x - b.r * 0.38)} ${f(b.y - b.r * 0.38)})`} fill={INK.white} opacity=".85" />
+    <path d={`M${f(b.x + b.r * 0.62 * Math.cos(0.35))} ${f(b.y + b.r * 0.62 * Math.sin(0.35))}A${f(b.r * 0.62)} ${f(b.r * 0.62)} 0 0 1 ${f(b.x + b.r * 0.62 * Math.cos(1.25))} ${f(b.y + b.r * 0.62 * Math.sin(1.25))}`} fill="none" stroke={INK.white} stroke-width={f(0.06 + b.r * 0.04)} stroke-linecap="round" opacity=".45" />
+  </g>
+))}</g>
+<rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-fog)`} />
+<rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-sun)`} />
+
+{/* ここから上は紙に刷ったもの。 */}
+<text x={S} y={S + 2.2} class="t-eyebrow" fill={INK.silver}>NOTES &amp; EXPERIMENTS</text>
+
+{/* イラストの枠。今は仮の芽のシールを置いている。 */}
+<g transform={artTransform} stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(0 .5)" fill="#000" stroke="#000" stroke-width="7" opacity=".28">{sprout.map((d) => <path d={d} />)}</g>
+  <g fill={INK.stickerBase} stroke={INK.stickerBase} stroke-width="7">{sprout.map((d) => <path d={d} />)}</g>
+  <g fill="none" stroke={INK.accent} stroke-width="2">{sprout.map((d) => <path d={d} />)}</g>
+</g>
+
+<text x={S} y={59} class="t-role" fill={INK.silver}>Developer — Rust / TypeScript</text>
+<text x={S - 0.6} y={71.2} class="t-name" fill={INK.white}>{SITE.name}<tspan fill={INK.accent}>.</tspan></text>
+<text x={S} y={76.4} class="t-jp" fill={INK.white} opacity=".86">ツールと、ブラウザで動く実験</text>
+
+{/* サイトの区切りと同じ点線。 */}
+<g fill={INK.gray}>{Array.from({ length: 36 }, (_, i) => <circle cx={S + 0.2 + i * 0.9} cy={79.6} r=".17" />)}</g>
+
+<g fill="none" stroke={INK.silver} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform={`translate(${S} ${80.7}) scale(${2.5 / 24})`}>
+  <circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" />
+</g>
+<text x={S + 3.6} y={82.7} class="t-mono" fill={INK.white}>{host}</text>
+<path transform={`translate(${S} ${84.3}) scale(${2.5 / 16})`} fill={INK.silver} d={githubMark} />
+<text x={S + 3.6} y={86.3} class="t-mono" fill={INK.white}>{githubPath}</text>
+
+{/* 白の面から模様を抜いて QR を出す。面そのものが読み取りに要る余白になる。 */}
+<g transform={`translate(${W - S - QR_SIZE} ${H - S - QR_SIZE}) scale(${qrScale}) translate(2 2)`}>
+  <rect x="-2" y="-2" width={qr.size + 4} height={qr.size + 4} rx="2.2" fill={INK.qrPanel} />
+  <path d={qr.d} fill-rule="evenodd" fill={INK.seaDeep} />
+</g>
