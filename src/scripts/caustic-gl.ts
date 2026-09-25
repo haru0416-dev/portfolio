@@ -15,7 +15,6 @@ precision highp float;
 in vec2 vUv;
 uniform vec2 uRes;
 uniform float uTime;
-uniform float uScroll;
 out vec4 outColor;
 
 const float NET = ${NET.toFixed(1)};
@@ -51,11 +50,9 @@ void main() {
   // 深さ。太陽のある左上で 0、右下の角で 1。
   float depth = clamp(length(p) / length(uRes), 0.0, 1.0);
   float t = uTime * 0.25;
-  // 本文より遅くスクロールさせ、水底を奥に見せる。
-  vec2 w = p + vec2(0.0, uScroll * 0.12);
   float g = 1.0 + 0.45 * depth;
   float cs = cos(WAVE), sn = sin(WAVE);
-  vec2 r = vec2(cs * w.x + sn * w.y, -sn * w.x + cs * w.y);
+  vec2 r = vec2(cs * p.x + sn * p.y, -sn * p.x + cs * p.y);
   r.x /= STRETCH;
   vec2 q = r / (NET * g);
   // 境界をゆるく曲げて、多角形らしさを消す。
@@ -152,7 +149,7 @@ void main() {
 
 export type Caustic = {
   resize(w: number, h: number): void;
-  render(time: number, scroll: number): void;
+  render(time: number): void;
   clear(): void;
   dispose(): void;
 };
@@ -186,7 +183,7 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
   // 並列コンパイルが使えれば止まらずに終わりを確かめ、終わるまで描かない。使えなければ最初に描くときに一度だけ待つ。
   const parallel = gl.getExtension('KHR_parallel_shader_compile');
   let state: 'compiling' | 'ready' | 'failed' = 'compiling';
-  let u: Record<'netRes' | 'time' | 'scroll' | 'composeRes' | 'net', WebGLUniformLocation | null>;
+  let u: Record<'netRes' | 'time' | 'composeRes' | 'net', WebGLUniformLocation | null>;
   const progs = [netProg, composeProg];
   const checkReady = () => {
     if (state !== 'compiling') return state === 'ready';
@@ -199,7 +196,7 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
     }
     const loc = (prog: WebGLProgram, name: string) => gl.getUniformLocation(prog, name);
     u = {
-      netRes: loc(netProg, 'uRes'), time: loc(netProg, 'uTime'), scroll: loc(netProg, 'uScroll'),
+      netRes: loc(netProg, 'uRes'), time: loc(netProg, 'uTime'),
       composeRes: loc(composeProg, 'uRes'), net: loc(composeProg, 'uNet'),
     };
     state = 'ready';
@@ -230,12 +227,12 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     },
-    render(time, scroll) {
+    render(time) {
       if (!W || !H || !checkReady()) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
       gl.useProgram(netProg);
-      gl.uniform2f(u.netRes, W, H); gl.uniform1f(u.time, time); gl.uniform1f(u.scroll, scroll);
+      gl.uniform2f(u.netRes, W, H); gl.uniform1f(u.time, time);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.useProgram(composeProg);
