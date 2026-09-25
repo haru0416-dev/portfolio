@@ -92,12 +92,13 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
       {RAYS.map((r) => <i class="ray" style={`--x:${r.x}%;--w:${r.w}%;--a:${r.a};--d:${r.d}s;--o:-${r.o}s`}></i>)}
       <i class="sun"></i>
       <canvas class="deep"></canvas>
+      <canvas class="caustic"></canvas>
       <canvas class="surface"></canvas>
     </div>
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
-      import { startSurface, touchSurface } from '../scripts/surface';
+      import { startSurface } from '../scripts/surface';
       import { startDeep, touchDeep } from '../scripts/deep';
       import { isDark } from '../scripts/theme';
       import type { BackgroundControl } from '../scripts/background';
@@ -130,22 +131,21 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
       };
       boot();
       document.addEventListener('astro:after-swap', boot);
-      // カーソルで海に触れる。明るい水面にはなぞった跡とクリックで波紋、深い海には泡が立つ。
-      // 動きを減らす設定では、水面は隠れ深い海は止まっているので何もしない。
+      // カーソルで深い海に触れると、なぞった跡とクリックで泡が立つ。明るい水面は静かなまま、光の網だけを揺らす。
+      // 動きを減らす設定では、深い海は止まっているので何もしない。
       const still = matchMedia('(prefers-reduced-motion: reduce)');
-      const touch = (x: number, y: number, strong: boolean) => (isDark() ? touchDeep : touchSurface)(x, y, strong);
       let lastX = 0, lastY = 0, lastT = 0, travel = 0;
       addEventListener('pointermove', (ev) => {
         // 指の動きはスクロールなので数えない。
-        if (ev.pointerType !== 'mouse' || still.matches) return;
+        if (ev.pointerType !== 'mouse' || still.matches || !isDark()) return;
         travel += Math.hypot(ev.clientX - lastX, ev.clientY - lastY);
         lastX = ev.clientX; lastY = ev.clientY;
-        // 波紋は細かく、泡はまばらに出す。
-        if (travel < (isDark() ? 140 : 36) || ev.timeStamp - lastT < 50) return;
+        // 泡はまばらに出す。
+        if (travel < 140 || ev.timeStamp - lastT < 50) return;
         travel = 0; lastT = ev.timeStamp;
-        touch(ev.clientX, ev.clientY, false);
+        touchDeep(ev.clientX, ev.clientY, false);
       }, { passive: true });
-      addEventListener('pointerdown', (ev) => { if (!still.matches) touch(ev.clientX, ev.clientY, true); }, { passive: true });
+      addEventListener('pointerdown', (ev) => { if (!still.matches && isDark()) touchDeep(ev.clientX, ev.clientY, true); }, { passive: true });
       const grid = () => import('../scripts/design-grid');
       addEventListener('keydown', (ev) => {
         if ((ev.key !== 'g' && ev.key !== 'G') || ev.metaKey || ev.ctrlKey || ev.altKey || ev.isComposing) return;

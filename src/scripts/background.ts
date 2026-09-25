@@ -6,6 +6,9 @@ export type Scene = {
   /** dt は秒。 */
   step(dt: number): void;
   render(): void;
+  /** 止めたときに、2D の Canvas 以外に描いたものを消す。 */
+  stop?(): void;
+  dispose?(): void;
 };
 export type BackgroundControl = { dispose(): void };
 
@@ -35,7 +38,7 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     raf = requestAnimationFrame(frame);
   };
   const start = () => { if (running || reduce.matches || !active() || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
-  const stop = () => { running = false; cancelAnimationFrame(raf); ctx?.clearRect(0, 0, W, H); };
+  const stop = () => { running = false; cancelAnimationFrame(raf); ctx?.clearRect(0, 0, W, H); scene?.stop?.(); };
   const sync = () => {
     if (disposed) return;
     if (!active() || document.hidden || (reduce.matches && !opts.staticWhenReduced)) {
@@ -64,5 +67,5 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
   document.addEventListener('visibilitychange', sync);
   reduce.addEventListener('change', sync);
   sync();
-  return { dispose() { disposed = true; stop(); offTheme(); observer.disconnect(); document.removeEventListener('visibilitychange', sync); reduce.removeEventListener('change', sync); } };
+  return { dispose() { disposed = true; stop(); scene?.dispose?.(); offTheme(); observer.disconnect(); document.removeEventListener('visibilitychange', sync); reduce.removeEventListener('change', sync); } };
 }
