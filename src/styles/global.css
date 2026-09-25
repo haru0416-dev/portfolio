@@ -417,12 +417,18 @@ html[data-theme-switch="light"]::view-transition-new(root) {
   mask-image: url(../assets/theme-switch/surface-front.svg), url(../assets/theme-switch/surface-middle.svg), url(../assets/theme-switch/surface-body.svg);
 }
 /* 先を行く層は本体の 5vh・2.5vh 先から 16vh・8vh 先まで広がる。画面を上下に動かすと、淡い層の中で新旧の文字がずれて二重に見える。 */
+/* マスクの SVG は描き終わるまでの数コマ効かず、新しい画面が全面に出てチラつく。波が画面の外にある最初の 10% は新しい画面を透明にしておく。
+   位置は from と to だけで指定し、縁の光と同じ 1 区間の動きに保つ。 */
 @keyframes theme-dive {
-  from { mask-position: 0 -45vh, 0 -42.5vh, 0 -40vh; }
+  from { mask-position: 0 -45vh, 0 -42.5vh, 0 -40vh; opacity: 0; }
+  10% { opacity: 0; }
+  11% { opacity: 1; }
   to { mask-position: -95vw -172vh, -78vw -164vh, -60vw -156vh; }
 }
 @keyframes theme-surface {
-  from { mask-position: 0 -155vh, 0 -157.5vh, 0 -160vh; }
+  from { mask-position: 0 -155vh, 0 -157.5vh, 0 -160vh; opacity: 0; }
+  10% { opacity: 0; }
+  11% { opacity: 1; }
   to { mask-position: 95vw -28vh, 78vw -36vh, 60vw -44vh; }
 }
 @keyframes theme-old-dive { to { filter: brightness(.85); } }
