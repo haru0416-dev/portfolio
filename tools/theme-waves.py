@@ -19,16 +19,18 @@ def wave(y0, amp, phase=0.0, periods=PERIODS):
     return d
 
 
-def mask(dive):
-    """新しい画面を見せる範囲。潜るときは波より下、浮かぶときは波より上。先を行く淡い 2 枚は、水面の手前の薄い水の層で、層ごとに波の山をずらす。"""
-    s = 1 if dive else -1
-    layers = [(150 - 9 * s, 2.4, .2, .35), (150 - 4.5 * s, 3.0, .45, .7), (150, AMP, 1, 0)]
-    paths = ''
-    for y, a, opacity, phase in layers:
-        left = f"{-100 / PERIODS * phase:.1f}" if phase else "0"
-        close = f"V300H{left}Z" if dive else f"V0H{left}Z"
-        paths += f"<path d='{wave(y, a, phase, PERIODS + 1)}{close}'" + (f" fill-opacity='{opacity}'" if opacity < 1 else '') + "/>"
-    return f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 300' preserveAspectRatio='none'>{paths}</svg>"
+# マスクの層。先を行く淡い 2 枚は水面の手前の薄い水の層で、本体とは別に動かす(CSS で層ごとに位置をずらし、横へ流す速さも変える)。
+# 絵の中ではどの層も波の中心を上端から 150 に置く。本体は縁の光と同じ形・同じ位置のまま動かす。
+LAYERS = {'front': (2.4, .2, .35), 'middle': (3.0, .45, .7), 'body': (AMP, 1, 0)}
+
+
+def mask(dive, layer):
+    """新しい画面を見せる範囲の 1 層。潜るときは波より下、浮かぶときは波より上。層ごとに波の高さと山の位置を変える。"""
+    amp, opacity, phase = LAYERS[layer]
+    left = f"{-100 / PERIODS * phase:.1f}" if phase else "0"
+    close = f"V300H{left}Z" if dive else f"V0H{left}Z"
+    path = f"<path d='{wave(150, amp, phase, PERIODS + 1)}{close}'" + (f" fill-opacity='{opacity}'" if opacity < 1 else '') + "/>"
+    return f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 300' preserveAspectRatio='none'>{path}</svg>"
 
 
 def glow(dive):
@@ -50,9 +52,11 @@ def glow(dive):
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'src/assets/theme-switch')
 os.makedirs(OUT, exist_ok=True)
-for name, svg in {
-    'dive-mask': mask(True), 'surface-mask': mask(False),
-    'dive-glow': glow(True), 'surface-glow': glow(False),
-}.items():
+files = {f'{side}-{layer}': mask(side == 'dive', layer) for side in ('dive', 'surface') for layer in LAYERS}
+files.update({'dive-glow': glow(True), 'surface-glow': glow(False)})
+for old in os.listdir(OUT):
+    if old.endswith('.svg') and old.removesuffix('.svg') not in files:
+        os.remove(os.path.join(OUT, old))
+for name, svg in files.items():
     open(os.path.join(OUT, f'{name}.svg'), 'w').write(svg + '\n')
 print('ok')
