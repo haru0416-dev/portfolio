@@ -69,6 +69,7 @@
   --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --font-zen-maru: "Zen Maru", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif;
   --font-display: var(--font-fredoka), var(--font-zen-maru);
   --font-display-jp: "Zen Maru Kana", var(--font-fredoka), var(--font-zen-maru);
   --font-sans: var(--font-nunito);
@@ -111,6 +112,11 @@ time, .tabular-nums { white-space: nowrap; }
 .skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 .display { font-family: var(--font-display); font-weight: 600; }
+/* 見出しに使う文字だけの Zen Maru Gothic(scripts/zen-maru.py)。Google の分割版は先読みできず、遅い回線で漢字だけが後から差し替わる。 */
+@font-face {
+  font-family: "Zen Maru"; font-weight: 700; font-display: swap;
+  src: url("/fonts/zen-maru-700.woff2") format("woff2");
+}
 /* palt 非対応のため、かな・約物を詰めた生成フォントを優先する。 */
 @font-face {
   font-family: "Zen Maru Kana"; font-weight: 700; font-display: swap;

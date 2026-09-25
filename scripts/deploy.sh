@@ -16,4 +16,6 @@ if grep -q '\[ERROR\]' "$log"; then
   echo "ビルドのログにエラーがあるため、公開を中止しました。" >&2
   exit 1
 fi
+# 見出しのフォントは使う文字だけを持つので、記事で増えた文字が抜けていないか確かめる。
+uv run -q scripts/zen-maru.py --check
 wrangler pages deploy dist --project-name haru0416-portfolio --branch main

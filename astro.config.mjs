@@ -43,6 +43,5 @@ export default defineConfig({
     { provider: fontProviders.google(), name: 'Fredoka', cssVariable: '--font-fredoka', weights: [600], styles: ['normal'], subsets: ['latin'], fallbacks: [] },
     { provider: fontProviders.google(), name: 'Nunito', cssVariable: '--font-nunito', weights: [500, 700], styles: ['normal'], subsets: ['latin'], fallbacks: ['Hiragino Sans', 'Yu Gothic UI', 'Meiryo', 'sans-serif'] },
     { provider: fontProviders.google(), name: 'JetBrains Mono', cssVariable: '--font-jetbrains', weights: [400], styles: ['normal'], subsets: ['latin'], fallbacks: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'] },
-    { provider: fontProviders.google(), name: 'Zen Maru Gothic', cssVariable: '--font-zen-maru', weights: [700], styles: ['normal'], subsets: ['japanese', 'latin'], fallbacks: ['Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', 'sans-serif'] },
   ],
 });

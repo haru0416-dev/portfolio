@@ -41,7 +41,7 @@ const log = [
 const years = [...new Set(log.map((e) => e.date.slice(0, 4)))].map((year) => ({ year, entries: log.filter((e) => e.date.startsWith(year)) }));
 const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, log.filter((e) => e.kind === k).length]));
 ---
-<Base title="About" description="自己紹介。Rust や TypeScript でツールや研究的なものを作ったりしてます。" wide image={{ src: '/og/about.png', alt: `自己紹介「Hi, I'm ${SITE.name}.」と haru0416.dev` }}>
+<Base mono title="About" description="自己紹介。Rust や TypeScript でツールや研究的なものを作ったりしてます。" wide image={{ src: '/og/about.png', alt: `自己紹介「Hi, I'm ${SITE.name}.」と haru0416.dev` }}>
   <header class="flex items-end justify-between gap-6 pt-4">
     <h1>
       <span class="display block text-lg leading-8 sm:text-xl text-ink-2 hero-lead">Hi, I'm</span>

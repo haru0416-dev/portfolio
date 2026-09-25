@@ -8,7 +8,7 @@ import { RAYS } from '../data/sea';
 import { rootColorStyle, THEME_COLOR } from '../palette';
 import { ClientRouter } from 'astro:transitions';
 import { componentDataByCssVariable } from 'virtual:astro:assets/fonts/internal';
-const preloads = ['--font-fredoka', '--font-nunito'].flatMap((v) => componentDataByCssVariable.get(v)?.preloads ?? []);
+const fontPreloads = (vars: string[]) => vars.flatMap((v) => componentDataByCssVariable.get(v)?.preloads ?? []);
 
 interface Props {
   title?: string;
@@ -17,8 +17,11 @@ interface Props {
   image?: { src: string; alt: string };
   type?: 'website' | 'article';
   jpHeadings?: boolean;
+  /** 等幅のフォントを使うページ。先読みしないと、遅い回線でコードなどが後から差し替わる。 */
+  mono?: boolean;
 }
-const { title, description = SITE.description, wide = false, image, type = 'website', jpHeadings = true } = Astro.props;
+const { title, description = SITE.description, wide = false, image, type = 'website', jpHeadings = true, mono = false } = Astro.props;
+const preloads = fontPreloads(['--font-fredoka', '--font-nunito', ...(mono ? ['--font-jetbrains'] : [])]);
 const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const lab = labFromPath(Astro.url.pathname);
@@ -80,6 +83,7 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     {preloads.map((p) => <link rel="preload" href={p.url} as="font" type={`font/${p.type}`} crossorigin />)}
     <link rel="stylesheet" href="/fonts.css" />
     {jpHeadings && <link rel="preload" href="/fonts/zen-maru-kana-700.woff2" as="font" type="font/woff2" crossorigin />}
+    {jpHeadings && <link rel="preload" href="/fonts/zen-maru-700.woff2" as="font" type="font/woff2" crossorigin />}
     {/* 最初に目にする矢印と指さしだけ先読みする。端末のテーマに合う方を読む。 */}
     <link rel="preload" href="/cursors/arrow.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: light)" />
     <link rel="preload" href="/cursors/point.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: light)" />

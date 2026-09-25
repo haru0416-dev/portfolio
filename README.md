@@ -87,15 +87,23 @@ bun run pages:dev
 
 ### フォント
 
-ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、`/fonts.css` に `@font-face` をまとめる。
+ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、Fredoka・Nunito・JetBrains Mono は `/fonts.css` に `@font-face` をまとめる。
 
-和文見出しには、かなと約物を詰めた派生フォントを優先して当てる。再生成には uv と Python 3.12 以上が必要。
+和文見出しは、Zen Maru Gothic から作った 2 つのフォントで描く。どちらも先読みし、遅い回線でも見出しが後から差し替わらないようにする。再生成には uv と Python 3.12 以上が必要。
 
-```sh
-uv run scripts/zen-maru-kana.py
-```
+- かなと約物を詰めた派生フォント。かなを優先して当てる。
 
-出力は `public/fonts/zen-maru-kana-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと先読みを省ける。
+  ```sh
+  uv run scripts/zen-maru-kana.py
+  ```
+
+- 見出しで使う文字だけのサブセット。ビルドした HTML から文字を集めるので、先にビルドする。記事や見出しを足して文字が増えたら作り直してコミットする。デプロイ時に足りない文字がないか確かめ、足りなければ公開を止める。
+
+  ```sh
+  bun run build && uv run scripts/zen-maru.py
+  ```
+
+出力は `public/fonts/zen-maru-kana-700.woff2` と `public/fonts/zen-maru-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を、等幅のフォントを使うページは `mono` を渡して、先読みを合わせる。
 
 ### OG 画像とカーソル
 
