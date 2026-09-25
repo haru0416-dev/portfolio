@@ -316,6 +316,13 @@ header.site.glass::before { content: none; }
   position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%);
 }
+/* ライトは名刺の裏と同じ浅い海を、同じ色の強さで塗る。光は左上から差すので、深さも斜めに付ける。
+   太陽のある左上は日の当たる砂の暖かさ、中ほどは澄んだ水色、右下へ深くなるほど青緑に沈む。 */
+/* 色相を回すと砂の黄色と水色の間に緑の帯が出るため、OKLab で混ぜる。
+   右下は名刺より明るくとどめる。本文の上に置く背景なので、補助の文字(--ink-2)がコントラスト比 4.5 を保てる深さまで。 */
+:root { --sea-shallow: linear-gradient(155deg in oklab, oklch(96% 0.035 95), oklch(90.5% 0.058 205) 48%, oklch(86.5% 0.065 213)); }
+:root.light .sea { background: var(--sea-shallow); }
+@media (prefers-color-scheme: light) { :root:not(.dark) .sea { background: var(--sea-shallow); } }
 /* 光の筋やグラデーションに出る段(バンディング)を、最前面の薄いノイズでぼかすディザ。 */
 .sea::after { content: ""; position: absolute; inset: 0; background: var(--grain); }
 .sea i { position: absolute; display: block; }
