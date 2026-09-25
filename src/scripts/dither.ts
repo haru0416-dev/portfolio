@@ -36,8 +36,8 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const opts: DitherOptions = { ...initial };
   let W = 0, H = 0, img: ImageData | null = null, raf = 0, running = false, paused = false, last = 0, t = 0;
+  // geometry は 3 値ずつ: 惑星は [法線 Z, 経度, 縁]、星は [-1, 速度, 位相]。
   let xs = new Float64Array(0), ys = new Float64Array(0), geometry = new Float64Array(0);
-  // 3 値ずつ保存: 惑星は [法線 Z, 経度, 縁]、星は [-1, 速度, 位相]。
   let pixels = new Uint32Array(0), count = 0;
   let backgroundR = -1, backgroundG = -1, backgroundB = -1;
 
@@ -49,7 +49,7 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
     backgroundR = backgroundG = backgroundB = -1;
     xs = new Float64Array(W); ys = new Float64Array(H);
     pixels = new Uint32Array(W * H); geometry = new Float64Array(W * H * 3); count = 0;
-    // Float64 を使い、色の量子化境界がキャッシュ前の計算とずれないようにする。
+    // Float32 にすると色の量子化の境界が変わって絵が変わるため、Float64 で持つ。
     const cx = W * 1.18, cy = -H * 0.42, R = H * 1.15;
     for (let x = 0; x < W; x++) xs[x] = (x + 0.5 - cx) / R;
     for (let y = 0; y < H; y++) {
@@ -92,31 +92,31 @@ export function startDither(canvas: HTMLCanvasElement, initial: DitherOptions): 
       [backgroundR, backgroundG, backgroundB] = bg;
     }
     for (let p = 0; p < count; p++) {
-        const pixel = pixels[p], x = pixel % W, y = Math.floor(pixel / W), i = pixel * 4, j = p * 3;
-        const nz = geometry[j];
-        let r = bg[0], g = bg[1], b = bg[2];
-        if (nz >= 0) {
-          const dx = xs[x], dy = ys[y];
-          const shade = clamp01((dx * lx + dy * ly + nz * lz) / ln);
-          const u = geometry[j + 1] + t * 0.02, v = dy * 4;
-          const tex = noise(u * 2, v * 2) * 0.6 + noise(u * 5, v * 5) * 0.4;
-          const k = clamp01(Math.pow(shade, 0.8) * (0.45 + tex * 0.6));
-          r = dark[0] + (light[0] - dark[0]) * k; g = dark[1] + (light[1] - dark[1]) * k; b = dark[2] + (light[2] - dark[2]) * k;
-          const edge = geometry[j + 2] * (0.5 + shade * 0.5);
-          r += (rim[0] - r) * edge; g += (rim[1] - g) * edge; b += (rim[2] - b) * edge;
-        } else {
-          const tw = 0.55 + 0.45 * Math.sin(t * geometry[j + 1] + geometry[j + 2]);
-          r += (star[0] - r) * tw; g += (star[1] - g) * tw; b += (star[2] - b) * tw;
-        }
-        const off = BAYER2[(y & 1) * 2 + (x & 1)] * 255 * spread;
-        const rr = r + off, gg = g + off, bb = b + off;
-        let best = 0, bestD = Infinity;
-        for (let p = 0; p < pal.length; p++) {
-          const c = pal[p], dd = (rr - c[0]) ** 2 + (gg - c[1]) ** 2 + (bb - c[2]) ** 2;
-          if (dd < bestD) { bestD = dd; best = p; }
-        }
-        const c = pal[best];
-        data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2];
+      const pixel = pixels[p], x = pixel % W, y = Math.floor(pixel / W), i = pixel * 4, j = p * 3;
+      const nz = geometry[j];
+      let r = bg[0], g = bg[1], b = bg[2];
+      if (nz >= 0) {
+        const dx = xs[x], dy = ys[y];
+        const shade = clamp01((dx * lx + dy * ly + nz * lz) / ln);
+        const u = geometry[j + 1] + t * 0.02, v = dy * 4;
+        const tex = noise(u * 2, v * 2) * 0.6 + noise(u * 5, v * 5) * 0.4;
+        const k = clamp01(Math.pow(shade, 0.8) * (0.45 + tex * 0.6));
+        r = dark[0] + (light[0] - dark[0]) * k; g = dark[1] + (light[1] - dark[1]) * k; b = dark[2] + (light[2] - dark[2]) * k;
+        const edge = geometry[j + 2] * (0.5 + shade * 0.5);
+        r += (rim[0] - r) * edge; g += (rim[1] - g) * edge; b += (rim[2] - b) * edge;
+      } else {
+        const tw = 0.55 + 0.45 * Math.sin(t * geometry[j + 1] + geometry[j + 2]);
+        r += (star[0] - r) * tw; g += (star[1] - g) * tw; b += (star[2] - b) * tw;
+      }
+      const off = BAYER2[(y & 1) * 2 + (x & 1)] * 255 * spread;
+      const rr = r + off, gg = g + off, bb = b + off;
+      let best = 0, bestD = Infinity;
+      for (let p = 0; p < pal.length; p++) {
+        const c = pal[p], dd = (rr - c[0]) ** 2 + (gg - c[1]) ** 2 + (bb - c[2]) ** 2;
+        if (dd < bestD) { bestD = dd; best = p; }
+      }
+      const c = pal[best];
+      data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2];
     }
     ctx.putImageData(img, 0, 0);
   };

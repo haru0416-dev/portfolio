@@ -1,14 +1,12 @@
-// QR コードの符号化。名刺に載せる短い URL だけを扱うため、JIS X 0510 のうち次の範囲に絞る。
-// - バイトモード(UTF-8)のみ
-// - 型番 1〜6。7 以上で要る型番情報の領域は持たない
-// 手順と変数名は Project Nayuki の QR Code generator(MIT)を参考にしている。
+// QR コードの符号化(JIS X 0510)。名刺に載せる短い URL だけを扱うため、バイトモード(UTF-8)と型番 1〜6 に絞る。
+// 型番 7 以上で要る型番情報の領域は持たない。手順と変数名は Project Nayuki の QR Code generator(MIT)を参考にしている。
 
-export type Ecc = 'L' | 'M' | 'Q' | 'H';
+type Ecc = 'L' | 'M' | 'Q' | 'H';
 
 /** 形式情報に書く誤り訂正レベルの 2 ビット。 */
 const ECC_BITS: Record<Ecc, number> = { L: 1, M: 0, Q: 3, H: 2 };
 
-/** 型番ごとの [1 ブロックの誤り訂正語数, [ブロック数, 1 ブロックのデータ語数][]]。短いブロックが先に並ぶ。 */
+/** 規格の表から写した、型番ごとの [1 ブロックの誤り訂正語数, [ブロック数, 1 ブロックのデータ語数][]]。短いブロックが先に並ぶ。 */
 const BLOCKS: Record<Ecc, [number, [number, number][]][]> = {
   L: [[7, [[1, 19]]], [10, [[1, 34]]], [15, [[1, 55]]], [20, [[1, 80]]], [26, [[1, 108]]], [18, [[2, 68]]]],
   M: [[10, [[1, 16]]], [16, [[1, 28]]], [26, [[1, 44]]], [18, [[2, 32]]], [24, [[2, 43]]], [16, [[4, 27]]]],
@@ -17,6 +15,7 @@ const BLOCKS: Record<Ecc, [number, [number, number][]][]> = {
 };
 const MAX_VERSION = 6;
 
+/** 規格のマスクパターン 0〜7。true のモジュールを反転する。 */
 const MASKS: ((x: number, y: number) => boolean)[] = [
   (x, y) => (x + y) % 2 === 0,
   (_, y) => y % 2 === 0,
@@ -28,7 +27,7 @@ const MASKS: ((x: number, y: number) => boolean)[] = [
   (x, y) => (((x + y) % 2) + ((x * y) % 3)) % 2 === 0,
 ];
 
-// --- リード・ソロモン符号。GF(2^8) の原始多項式は x^8 + x^4 + x^3 + x^2 + 1(0x11D)。
+// リード・ソロモン符号。GF(2^8) の原始多項式は x^8 + x^4 + x^3 + x^2 + 1(0x11D)。
 
 function gfMul(x: number, y: number): number {
   let z = 0;
@@ -63,8 +62,6 @@ function rsRemainder(data: number[], divisor: number[]): number[] {
   }
   return result;
 }
-
-// --- 符号語の組み立て
 
 function dataCapacity(version: number, ecc: Ecc): number {
   return BLOCKS[ecc][version - 1][1].reduce((sum, [n, k]) => sum + n * k, 0);
@@ -101,8 +98,6 @@ function buildCodewords(bytes: Uint8Array, version: number, ecc: Ecc): number[] 
   for (let i = 0; i < ecLength; i++) blocks.forEach((b) => out.push(b.ec[i]));
   return out;
 }
-
-// --- 模様の配置
 
 class Grid {
   readonly modules: boolean[][];
@@ -153,13 +148,12 @@ function drawFormatBits(g: Grid, ecc: Ecc, mask: number) {
   const bits = ((data << 10) | rem) ^ 0x5412;
   const bit = (i: number) => ((bits >>> i) & 1) !== 0;
   const { size } = g;
-  // 左上の角を囲む 1 組目。
+  // 左上の角を囲む 1 組目と、右上・左下に分かれた 2 組目に同じ 15 ビットを書く。
   for (let i = 0; i <= 5; i++) g.fixed(8, i, bit(i));
   g.fixed(8, 7, bit(6));
   g.fixed(8, 8, bit(7));
   g.fixed(7, 8, bit(8));
   for (let i = 9; i < 15; i++) g.fixed(14 - i, 8, bit(i));
-  // 右上と左下に分かれた 2 組目。
   for (let i = 0; i < 8; i++) g.fixed(size - 1 - i, 8, bit(i));
   for (let i = 8; i < 15; i++) g.fixed(8, size - 15 + i, bit(i));
   g.fixed(8, size - 8, true); // 常に暗いモジュール
@@ -192,11 +186,10 @@ function applyMask(g: Grid, mask: number) {
   }
 }
 
-// --- マスクの評価。点数が低いほど読み取りやすい。
+// マスクの評価(規格の失点 N1〜N4)。点数が低いほど読み取りやすい。
 
-/** 1 行(または 1 列)の、同じ色の連続(N1)と 1:1:3:1:1 の並び(N3)の点。行の外は明るい余白と見なす。 */
+/** 1 行(または 1 列)の、同じ色の連続(N1)と 1:1:3:1:1 の並び(N3)の点。 */
 function linePenalty(line: boolean[]): number {
-  // 同じ色の連続(ラン)に分ける。
   const runs: { dark: boolean; length: number }[] = [];
   for (const dark of line) {
     const last = runs.at(-1);
@@ -206,8 +199,8 @@ function linePenalty(line: boolean[]): number {
   let score = 0;
   for (const { length } of runs) if (length >= 5) score += 3 + (length - 5);
 
-  // 位置検出パターンに似た 暗明暗暗暗明暗 が 1:1:3:1:1 の比率で並び、片側に 4 倍以上、反対側に 1 倍以上の明るいランがあるもの。
-  // 比率で見るため、2:2:6:2:2 のように拡大した並びも数える。行の外は明るい余白が続いていると見なす。
+  // 暗明暗暗暗明暗 が 1:1:3:1:1(拡大した 2:2:6:2:2 なども含む)で並び、片側に 4 倍以上、反対側に 1 倍以上の明るいランがあるもの。
+  // 行の外は明るい余白が続いていると見なす。
   const border = line.length;
   const lightBefore = (j: number) => (j === 0 ? border : runs[j - 1].length + (j - 1 === 0 ? border : 0));
   const lightAfter = (j: number) => (j + 5 === runs.length ? border : runs[j + 5].length + (j + 5 === runs.length - 1 ? border : 0));
@@ -242,12 +235,8 @@ function penalty(g: Grid): number {
   return score;
 }
 
-// --- 入口
-
-export type QrMatrix = { version: number; size: number; mask: number; modules: boolean[][] };
-
-/** text を QR コードにする。mask を省くと、8 通りを試して点数が最も低いものを選ぶ。 */
-export function encodeQr(text: string, ecc: Ecc = 'M', mask?: number): QrMatrix {
+/** text を QR コードにする。マスクは 8 通りを試して点数が最も低いものを選ぶ。 */
+export function encodeQr(text: string, ecc: Ecc) {
   const bytes = new TextEncoder().encode(text);
   let version = 1;
   // 4 ビットのモード指示子と 8 ビットの文字数指示子のぶん、2 語ぶんを差し引いて比べる。
@@ -264,13 +253,10 @@ export function encodeQr(text: string, ecc: Ecc = 'M', mask?: number): QrMatrix 
     drawFormatBits(g, ecc, m);
     return g;
   };
-  let best = mask ?? 0;
-  if (mask === undefined) {
-    let bestScore = Infinity;
-    for (let m = 0; m < MASKS.length; m++) {
-      const score = penalty(render(m));
-      if (score < bestScore) { best = m; bestScore = score; }
-    }
+  let best = 0, bestScore = Infinity;
+  for (let m = 0; m < MASKS.length; m++) {
+    const score = penalty(render(m));
+    if (score < bestScore) { best = m; bestScore = score; }
   }
-  return { version, size, mask: best, modules: render(best).modules };
+  return { size, modules: render(best).modules };
 }

@@ -1,5 +1,4 @@
-// 背景の光の筋。Base.astro の .sea と src/og.ts の OG 画像が同じ値で描く。
-// 位置・幅・濃さ・揺れの周期をばらばらにし、等間隔に見えないようにする。
+// 背景の光の筋。Base.astro の .sea、OG 画像(src/og.ts)、名刺(src/data/card.ts)が同じ値で描く。
 // x: 左端(画面幅の %)、w: 幅(%)、a: 濃さ、d: 揺れの周期(秒)、o: 揺れの位相(秒)
 export const RAYS = [
   { x: 6, w: 9, a: 0.55, d: 41, o: 7 },

@@ -7,7 +7,7 @@ type Tone = Record<Role, string>;
 const c = (l: number, ch: number, h: number) => oklchToHex(l, ch, h);
 
 // 背景は prose.css の --code-bg と同じ値にする。
-export const CODE_BG = { light: c(94.5, 0.022, HUE), dark: c(22, 0.028, HUE) };
+const CODE_BG = { light: c(94.5, 0.022, HUE), dark: c(22, 0.028, HUE) };
 
 const TONES: { light: Tone; dark: Tone } = {
   light: {

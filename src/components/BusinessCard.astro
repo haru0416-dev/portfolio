@@ -3,7 +3,6 @@ import CardArt from './card/CardArt.astro';
 import { CARD } from '../data/card';
 ---
 <div class="bc-scene" style={`--card-w:${CARD.width};--card-h:${CARD.height};--card-r:${CARD.radius};--card-t:${CARD.thickness}`}>
-  {/* 表と裏を重ねた 1 枚の札を、上に重ねた透明なボタンで操作する。 */}
   <div class="bc-stage" data-business-card>
     <div class="bc-shadow bc-shadow-near" aria-hidden="true"><i></i></div>
     <div class="bc-shadow bc-shadow-far" aria-hidden="true"><i></i></div>
@@ -14,19 +13,16 @@ import { CARD } from '../data/card';
         <span class="bc-light" aria-hidden="true"></span>
       </div>
       <div class="bc-face bc-back" data-face="back" aria-hidden="true">
-        {/* 裏は水・網の影・その上すべての 3 層。網の影だけを JS が傾きに合わせて動かし、水の厚みを出す。
-            裏の絵は千を超える図形でできている。ページに入れた瞬間にその全部のスタイル計算・レイアウト・描画が走り、ページ移動が重くなるので、
-            template に入れておき、表示し終えて手が空いてから組み立てる(business-card.ts)。裏は裏返すまで見えない。 */}
+        {/* 裏の絵は千を超える図形で、ページに入れるとページ移動が重くなる。template に入れておき、あとで business-card.ts が組み立てる。
+            網の影の層だけを JS が傾きに合わせて動かし、水の厚みを出す。 */}
         <template data-card-art><CardArt side="back" id="bc-back-under" layer="under" /></template>
         <span class="bc-net-shadow" aria-hidden="true"><template data-card-art><CardArt side="back" id="bc-back-shadow" layer="shadow" /></template></span>
         <template data-card-art><CardArt side="back" id="bc-back-over" layer="over" /></template>
         <span class="bc-paper" aria-hidden="true"></span>
         <span class="bc-light" aria-hidden="true"></span>
       </div>
-      {/* 紙の断ち。表と裏の間に、札と同じ形の紙の板を厚みの向きに重ねる。傾けると板の輪郭がずれて見え、角の丸みにも沿った断面になる。
-          刷った色は表面だけなので、断面は紙の白が見える。 */}
+      {/* 紙の断ち。札と同じ形の板を厚みの向きに重ね、傾けたときに角の丸みにも沿った断面に見せる。 */}
       {[-1, 0, 1].map((k) => <span class="bc-core" style={`--k:${k}`} aria-hidden="true"></span>)}
-      {/* 真横では板が厚みのない線になって消えるため、そのときだけ左右の断ちを帯で見せる。 */}
       <span class="bc-edge bc-edge-l" aria-hidden="true"></span>
       <span class="bc-edge bc-edge-r" aria-hidden="true"></span>
     </div>
@@ -43,24 +39,22 @@ import { CARD } from '../data/card';
 </script>
 
 <style>
-  /* 1mm の画面上の長さ。名刺の幅を 16rem にそろえる。上下は、持ち上げたときの影が切れない幅を空ける。
-     左右は、斜めに置いて張り出す角のぶんだけ空け、角を見出しの端にそろえる。 */
+  /* --mm は 1mm の画面上の長さで、名刺の幅を 16rem にする。上下は持ち上げたときの影が切れない幅、
+     左右は斜めに置いて張り出す角のぶんを空け、角を見出しの端にそろえる。 */
   .bc-scene {
     --mm: calc(16rem / var(--card-w)); --tilt-angle: -4deg;
     display: grid; place-items: center;
     padding: 2rem calc(var(--card-h) * var(--mm) / 2 * sin(abs(var(--tilt-angle))) - var(--card-w) * var(--mm) / 2 * (1 - cos(var(--tilt-angle)))) 3rem;
-    /* 名刺はページの下のほうにあり、移動した直後には見えない。見えるまでは、3D の層と表の絵のスタイル計算・レイアウト・描画を省く。
-       省いている間の大きさは、中身(余白を除く)の札の大きさ 16rem × 26.5rem(16rem × 91/55)。幅も必ず指定する。
-       高さだけのつもりで 1 つの値を書くと幅にも効き、スマホでは画面からはみ出して画面の幅が変わり、ページ移動のアニメーションが中止される。
-       影は余白の内側に収まるので、描画の切り抜きで欠けない。 */
+    /* 画面に入るまで 3D の層と表の絵の描画を省く。仮の大きさは札の 16rem × 26.5rem(16rem × 91/55)で、幅も必ず指定する。
+       1 つの値だけ書くと幅にも効き、スマホで画面からはみ出して画面の幅が変わり、ページ移動のアニメーションが中止される。 */
     content-visibility: auto; contain-intrinsic-size: auto 16rem auto 26.5rem;
   }
 
   .bc-stage {
     position: relative; width: calc(var(--card-w) * var(--mm)); aspect-ratio: 55 / 91;
-    /* 机に置いたように少し斜めにする。回す向きは JS が札の縦横に直す。 */
+    /* 斜めに置く。ポインタの向きは JS が札の縦横に直す。 */
     perspective: 1400px; rotate: var(--tilt-angle);
-    /* 長押しで札の文字が選択されたり、iOS のメニューが出たりしないようにする。札は手で持つ物として扱う。 */
+    /* 長押しで札の文字が選択されたり、iOS のメニューが出たりしないようにする。 */
     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   }
   /* 札・影・光・断ちの transform と opacity は JS が毎フレーム直接書く。ここにあるのは止まっているときの形。 */
@@ -80,17 +74,18 @@ import { CARD } from '../data/card';
   .bc-face > :global(.card-art), .bc-net-shadow { position: absolute; inset: 0; }
   .bc-net-shadow { will-change: transform; }
   .bc-front { transform: translateZ(calc(var(--card-t) * var(--mm) / 2)); }
-  /* 裏は明るい浅い海なので、面の下地も明るくし、縁のにじみに暗い色が出ないようにする。 */
+  /* 裏は明るいので下地も明るくし、縁のにじみに暗い色が出ないようにする。 */
   .bc-back { transform: rotateY(180deg) translateZ(calc(var(--card-t) * var(--mm) / 2)); background: #eef2f6; }
 
-  /* 板は厚みの中に等間隔で置く。正面から見たとき表の縁のにじみから白が透けないよう、輪郭より少し内側に寄せる。 */
+  /* 正面から見たとき表の縁のにじみから板が透けないよう、輪郭より少し内側に寄せる。 */
   .bc-core {
     position: absolute; inset: .6px; pointer-events: none;
     border-radius: calc(var(--card-r) * var(--mm) - .6px);
     background: oklch(86% 0.01 285);
     transform: translateZ(calc(var(--k) * var(--card-t) * var(--mm) / 3));
   }
-  /* 帯は斜めから見ると縁がぎざつくため、真横に近いときだけ JS が --edge-on で出す。角の丸みにかからない長さにする。 */
+  /* 真横では板が厚みのない線になって消えるため、左右の断ちを帯で見せる。帯は斜めから見ると縁がぎざつくので、
+     真横に近いときだけ JS が出す。角の丸みにかからない長さにする。 */
   .bc-edge {
     position: absolute; pointer-events: none; backface-visibility: hidden; -webkit-backface-visibility: hidden;
     top: calc(var(--card-r) * var(--mm)); bottom: calc(var(--card-r) * var(--mm)); left: 50%;
@@ -100,11 +95,10 @@ import { CARD } from '../data/card';
   .bc-edge-l { transform: rotateY(-90deg) translateZ(calc(var(--card-w) * var(--mm) / 2)); }
   .bc-edge-r { transform: rotateY(90deg) translateZ(calc(var(--card-w) * var(--mm) / 2)); }
 
-  /* 紙の粒。背景と同じ粒を重ね、名刺がサイトと同じ質感に見えるようにする。
-     札を斜めに置くと、粒の画像が回転の補間でならされ、振れ幅が 6 割ほどに減る。同じ粒を 2 枚重ねて(約 1.9 倍)0.94 をかけ、背景と同じ強さに戻す。 */
+  /* 背景と同じ紙の粒。札を斜めに置くと粒の画像が回転の補間でならされ、振れ幅が 6 割ほどに減るため、
+     2 枚重ねて(約 1.9 倍)0.94 をかけ、背景と同じ強さに戻す。 */
   .bc-paper { position: absolute; inset: 0; pointer-events: none; background: var(--grain), var(--grain); opacity: .94; }
-  /* 光。マットコートは広くぼんやり光り、光から遠い縁は沈む。
-     札より大きい板の中心にグラデーションを描き、JS が板ごと動かして縮尺を変える。半径は札の対角線の半分を基準にする。
+  /* 札より大きい板の中心にグラデーションを描き、JS が板ごと動かして縮尺を変える。半径は札の対角線の半分を基準にする。
      光の点は中心から縦横 4 割まで動き、縮尺は 1 以上なので、板は札の 1.8 倍あれば札を覆い切る。大きくすると合成の手間が面積のぶん増える。 */
   .bc-light {
     --reach: calc(sqrt(var(--card-w) * var(--card-w) + var(--card-h) * var(--card-h)) / 2 * var(--mm));
@@ -114,16 +108,15 @@ import { CARD } from '../data/card';
       radial-gradient(circle var(--reach) at 50% 50%, transparent 45%, oklch(0% 0 0 / 28%));
     opacity: .25; will-change: transform, opacity;
   }
-  /* 明るい裏では、光から遠い縁の沈みを弱める。暗い表と同じ強さだと、水の色が濁って見える。 */
+  /* 明るい裏で表と同じ強さに縁を沈めると、水の色が濁って見える。 */
   .bc-back .bc-light {
     background:
       radial-gradient(circle var(--reach) at 50% 50%, oklch(100% 0 0 / 22%), transparent 50%),
       radial-gradient(circle var(--reach) at 50% 50%, transparent 50%, oklch(30% 0.05 250 / 12%));
   }
 
-  /* 影はぼかしの弱い 1 枚と強い 1 枚。JS が不透明度の配分を変えて、持ち上げたときのぼけを表す。
-     ぼかしは動かない内側の要素にかけ、外側だけを動かす。ぼかしは最初に一度だけ描かれ、毎フレームかけ直さない。
-     半径は JS の BLUR_NEAR・BLUR_FAR と同じ値にする。 */
+  /* 影はぼかしの弱い 1 枚と強い 1 枚で、JS が不透明度の配分を変える。ぼかしは動かない内側の要素にかけ、外側だけを動かして
+     毎フレームかけ直さないようにする。半径は JS の BLUR_NEAR・BLUR_FAR と同じ値にする。 */
   .bc-shadow {
     position: absolute; inset: 3% 4% 0; pointer-events: none;
     transform: translate(4px, 12px); will-change: transform, opacity;

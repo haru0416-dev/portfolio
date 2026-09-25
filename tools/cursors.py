@@ -1,7 +1,5 @@
 # 再生成: python3 tools/cursors.py
-# カーソルはサイトのシール(Sticker)と同じ作り。白い台紙を型抜きし、その上に線を描く。
-# 桃色はサイトの決まりどおり押せるもの(リンク・ボタン・名刺)にだけ使い、ふだんの矢印と文字のカーソルは本文のインクで描く。
-# ダークテーマでは、シールと同じく台紙を少し落とし、桃色を暗くする。
+# SVG を public/cursors に、CSS を global.css の末尾(「/* カーソル」以降)に書き出す。
 import math
 import os
 
@@ -25,7 +23,7 @@ def oklch(l, c, h):
 # テーマごとの色。light は global.css の --ink・--paper-2・--accent・--accent-ink と同じ値。
 THEMES = {
     'light': {'base': '#ffffff', 'ink': oklch(32, 0.05, H), 'fill': oklch(94.5, 0.022, H), 'accent': oklch(66, 0.175, H_ACCENT), 'accent_down': oklch(52, 0.17, H_ACCENT)},
-    # シールの台紙(.sticker-base)と同じ 86%。インクは暗い地の上でも線が読めるよう濃いまま、桃色はシールと同じく落とす。
+    # 台紙はシール(.sticker-base)と同じ 86%。インクは暗い地でも読めるよう濃いままにする。
     'dark': {'base': oklch(86, 0.015, H), 'ink': oklch(32, 0.05, H), 'fill': oklch(80, 0.02, H), 'accent': oklch(55, 0.16, H_ACCENT), 'accent_down': oklch(45, 0.15, H_ACCENT)},
 }
 
@@ -42,21 +40,20 @@ PAD = 4  # アイコン(24 単位)を枠の中央に置く余白。
 
 
 def sticker(paths, line, fill=None, press=False, palm=False):
-    """台紙(太い線と塗り)の上に、アイコンの線を描く。press は押し込んだ手で、少し縮めて下へ沈める。
-    palm は手の形で、開いた線を塗りで閉じたときに手のひらに残る細い穴を、台紙色の円でふさぐ。"""
+    """台紙(太い線と塗り)の上にアイコンの線を描く。press は少し縮めて下へ沈める。
+    palm は、開いた線を塗りで閉じたときに手のひらに残る細い穴を台紙色の円でふさぐ。"""
     ps = ''.join(f"<path d='{d}'/>" for d in paths)
     hole = "<circle cx='14' cy='15.5' r='5.5'/>" if palm else ''
     inner = "translate(12 12.7) scale(.94) translate(-12 -12)" if press else ""
     f = f" fill='{fill}'" if fill else " fill='none'"
     return (f"<svg xmlns='http://www.w3.org/2000/svg' width='{SIZE}' height='{SIZE}' viewBox='0 0 {SIZE} {SIZE}'>"
             f"<g transform='translate({PAD} {PAD})' stroke-linecap='round' stroke-linejoin='round'><g transform='{inner}'>"
-            # 台紙はシールと同じ 7 の太さ。細いと指の間が埋まらず、暗い地で背景が透ける。
+            # 台紙の太さ 7 はシールと同じ。細いと指の間が埋まらず、暗い地で背景が透ける。
             f"<g fill='{{base}}' stroke='{{base}}' stroke-width='7'>{hole}{ps}</g>"
             f"<g{f} stroke='{line}' stroke-width='2'>{ps}</g></g></g></svg>")
 
 
 # 名前: (アイコン, 線の色, 塗り, 押し込み, ホットスポット, 代わりのカーソル)
-# ホットスポットは絵の先端。指さしは指先、押し込んだ手は沈んだ指先、手と I ビームは中心。
 CURSORS = {
     'arrow': ('arrow', 'ink', 'fill', False, (8, 8), 'auto'),
     'point': ('point', 'accent', None, False, (12, 6), 'pointer'),
@@ -107,7 +104,6 @@ css = f"""
   input, textarea, [contenteditable] {{ cursor: var(--cursor-text); }} /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * {{ cursor: inherit; }}
   canvas {{ cursor: var(--cursor-arrow); }}
-  /* 名刺は手に取る物なので、開いた手と握った手にする。 */
   .bc-hit {{ cursor: var(--cursor-grab); }}
   .bc-hit:active, .is-dragging .bc-hit {{ cursor: var(--cursor-grabbing); }}
 }}

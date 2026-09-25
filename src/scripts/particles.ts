@@ -3,7 +3,7 @@ const SHAPES = 5;
 const BLURS = [0, 1.2, 2.6];
 
 type Particle = { x: number; y: number; r: number; v: number; depth: number; phase: number; sprite: number; spin: number; angle: number };
-export type ParticleOptions = {
+type ParticleOptions = {
   color: string;
   /** 画面の何 px² に 1 粒置くか。 */
   area: number;

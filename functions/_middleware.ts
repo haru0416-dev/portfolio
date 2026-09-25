@@ -35,7 +35,7 @@ function text(body: string, status: number, headers: Record<string, string> = {}
 
 export const onRequest: PagesFunction = async (ctx) => {
   const res = await respond(ctx);
-  // 静的ファイルの応答はそのままでは変更できないので、複製してヘッダーを足す
+  // 静的ファイルの応答はそのままでは変更できないので、複製してヘッダーを足す。
   const out = new Response(res.body, res);
   out.headers.set('X-Sprout', SPROUT);
   return out;

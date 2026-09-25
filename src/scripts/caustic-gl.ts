@@ -1,5 +1,5 @@
-// ライトテーマの水底に映る光の網を、WebGL2 で画面の解像度のまま描く。見え方は名刺の裏(CardBack.astro)に合わせる。
-// 1 枚目で網の明るさだけを描き、2 枚目でそれを読み直して色を付ける。網の影は同じ網を右下へずらして読むだけで済む。
+// ライトテーマの水底に映る光の網。見え方は名刺の裏(CardBack.astro)に合わせてある。
+// 1 枚目で網の明るさだけを描き、2 枚目でそれを読み直して色と影を付ける。
 
 /** 網目 1 つの大きさ(CSS px)。浅い左上での大きさで、深いほど大きくなる。 */
 const NET = 84;
@@ -27,14 +27,13 @@ vec2 hash2(vec2 p) {
   p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
   return fract(sin(p) * 43758.5453);
 }
-// 網の点。目の中に散らし、ゆっくり円を描かせる。
 vec2 seed(vec2 n, float t) {
   vec2 h = hash2(n), k = hash2(n + 17.3);
   float a = t * (0.6 + 0.8 * k.x) + k.y * 6.2832;
   return 0.2 + 0.6 * h + 0.3 * vec2(sin(a), cos(a * 0.8));
 }
 
-// 細かい網の境界までの近さ(境界の差)。線の太さは揃えなくてよいので、1 回で済ませる。
+// 細かい網は線の太さをそろえなくてよいので、境界の差だけで 1 回で済ませる。
 float fineGap(vec2 q, float t) {
   vec2 n = floor(q), f = fract(q);
   float f1 = 8.0, f2 = 8.0;
@@ -52,9 +51,8 @@ void main() {
   // 深さ。太陽のある左上で 0、右下の角で 1。
   float depth = clamp(length(p) / length(uRes), 0.0, 1.0);
   float t = uTime * 0.25;
-  // スクロールすると網は本文より遅れて動き、水底が本文より奥にあるように見える。
+  // 本文より遅くスクロールさせ、水底を奥に見せる。
   vec2 w = p + vec2(0.0, uScroll * 0.12);
-  // 深いほど網の目を大きく、波の進む向きに引き伸ばす。
   float g = 1.0 + 0.45 * depth;
   float cs = cos(WAVE), sn = sin(WAVE);
   vec2 r = vec2(cs * w.x + sn * w.y, -sn * w.x + cs * w.y);
@@ -87,40 +85,29 @@ void main() {
   float dpx = edge * px;
   float s1 = sqrt(f1), gap = (sqrt(f2) - s1) * px;
 
-  // 線の明るさを場所ごとに揺らす。一部の線は細って消え、均一なタイル模様に見えない。
   float vary = 0.5 + 0.5 * sin(q.x * 0.9 + t * 0.6) * sin(q.y * 1.1 - t * 0.5);
   float taper = smoothstep(0.08, 0.55, 0.5 + 0.5 * sin(q.x * 4.3 - q.y * 3.1 + t * 0.7) * sin(q.y * 5.3 + t * 0.4 + q.x * 1.9));
-  // 主役の筋。ゆっくり流れる大きな模様が明るいところだけ、線を太く強く光らせる。
   float hero = smoothstep(0.7, 0.97, 0.5 + 0.5 * sin(q.x * 0.35 + t * 0.25) * sin(q.y * 0.42 - q.x * 0.18 - t * 0.2));
 
-  // 線の芯。光が集まるところほど細く明るい。深いほど太くぼける。
-  // 光が集まる小さな目ほど、線は細く明るい。点から境界までの長さで目の大きさを測る(ふつうは 0.5 前後)。
+  // 点から境界までの長さで目の大きさを測る(ふつうは 0.5 前後)。小さな目ほど線を細く明るくする。
   float cellSize = clamp((s1 + edge) / 0.5, 0.6, 1.5);
   float width = (0.55 + 0.8 * depth) * (0.75 + 0.4 * vary + 0.35 * hero) * cellSize;
   float soft = 0.6 + 1.6 * depth;
   float core = 1.0 - smoothstep(width - soft * 0.5, width + soft, dpx);
-  // 縁の光。線から内側へなだらかに暗くなる。境界の差で測るので、目の角は丸く見える。
-  // 線の断面は左右で違う。明るい側は縁がいちばん明るく内へなだらかに暗くなり、反対側はすぐ暗くなる。
-  // 目ごとにどちらの側になるかを決め、縁の光を片側の目にだけ付ける。
+  // 縁の光は目ごとに片側にだけ付ける。
   float bright = smoothstep(0.35, 0.8, hash2(n + mg + 7.0).x);
   float rim = exp(-gap / (5.0 + 8.0 * depth)) * bright * 1.8;
-  // 主役の筋のまわりのにじみ。筋は太くせず、光を広げて強さを出す。
   float bloom = exp(-dpx / (5.0 + 8.0 * depth)) * hero;
-  // 線が 3 本出会う点。光線が重なるので、線より明るい点になる。
+  // 線が 3 本出会う点。
   float node = max(0.0, 1.0 - (sqrt(f3) - s1) / 0.3);
   node = node * node * node;
-  // 太陽に近いところでは、明るい交点が小さくまたたく。
   float sun = max(0.0, 1.0 - length(p / uRes) / 0.7);
   float glint = node * node * sun * (0.5 + 0.5 * sin(uTime * 2.25 + q.x * 13.1 + q.y * 7.7));
 
-  // 細かい網を淡く重ね、揺らぎの大小を出す。大きい網とは別の速さで動かす。
   float fine = exp(-fineGap(q * 2.1 + 5.0, t * 1.4) * px / 2.1 / (1.2 + 1.5 * depth));
-  // ふつうの線は淡く途切れがちにし、主役の筋と交点だけを強く光らせる。
   float light = core * (0.18 + 0.22 * vary + 0.8 * hero) * mix(0.1, 1.0, max(taper, hero)) / cellSize
               + rim * 0.1 + bloom * 0.22 + fine * 0.1 + node * 0.45 + glint * 0.8;
-  // 深いほど網は水の色に沈んで淡くなる。
   light *= mix(1.0, 0.35, smoothstep(0.15, 0.9, depth));
-  // 虹色のにじみは、主役の筋に、ときどき一瞬だけ出す。全部の線にかけると偽物に見える。
   float prism = hero * core * smoothstep(0.75, 1.0, sin(uTime * 0.6 + q.x * 0.9 - q.y * 0.5));
   outColor = vec4(min(1.0, light), prism, 0.0, 1.0);
 }`;
@@ -133,7 +120,6 @@ uniform sampler2D uNet;
 uniform vec2 uRes;
 out vec4 outColor;
 
-// 光は白ではなく、太陽に近いほど暖かく、深いほど水の色を帯びる。影は深い水の色。
 const vec3 WARM = vec3(255.0, 249.0, 236.0) / 255.0;
 const vec3 COOL = vec3(228.0, 247.0, 252.0) / 255.0;
 const vec3 SHADE = vec3(52.0, 104.0, 142.0) / 255.0;
@@ -145,17 +131,15 @@ void main() {
   vec2 p = vec2(vUv.x, 1.0 - vUv.y) * uRes;
   vec2 uv = p / uRes;
   float depth = clamp(length(p) / length(uRes), 0.0, 1.0);
-  // 光の線の虹色のにじみ。太陽から離れる向きに、赤は内、青は外へずれる。
   vec2 away = normalize(p + 1.0) * (0.8 + 0.8 * depth);
   vec2 here = net2(p);
   float lg = here.r, prism = here.g;
   vec3 lit = prism > 0.004 ? mix(vec3(lg), vec3(net(p - away), lg, net(p + away)), prism * 0.6) : vec3(lg);
-  // 網の影。水底に落ちるので、太陽の反対(右下)へずれる。深いほど水が厚く、影は遠くへずれてぼける。
-  // 線に沿った濃い縁にならないよう、遠くへずらして広くぼかす。
+  // 影は右下へ遠くずらして広くぼかす。近いと線に沿った濃い縁になる。
   vec2 off = vec2(1.0) * (12.0 + 14.0 * depth);
   float sh = (net(p - off) + net(p - off * 1.2 + vec2(3.0, -3.0)) + net(p - off * 0.8 + vec2(-3.0, 3.0)) + net(p - off * 1.4)) * 0.25;
   float fall = max(0.0, sh - lg) * 0.12;
-  // 目の内側はわずかに沈める。明るい地の上では、線より内側を沈めないと光の網に見えない。
+  // 明るい地の上では、目の内側を沈めないと光の網に見えない。
   float cell = 0.035 * (1.0 - 0.7 * depth) * max(0.0, 1.0 - lg * 5.0);
   float shade = max(fall, cell);
 
@@ -173,10 +157,7 @@ export type Caustic = {
   dispose(): void;
 };
 
-/**
- * シェーダーのコンパイルとリンクを頼むだけで、結果は問い合わせない。
- * 直後に成否を問い合わせると、コンパイルが終わるまでメインスレッドが止まる(初めてのときは数百 ms かかる環境がある)。
- */
+/** 結果は問い合わせない。リンク直後に成否を問い合わせると、コンパイルが終わるまでメインスレッドが止まる(数百 ms の環境がある)。 */
 function compile(gl: WebGL2RenderingContext, vs: string, fs: string) {
   const prog = gl.createProgram()!;
   for (const [type, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]] as const) {
@@ -189,10 +170,7 @@ function compile(gl: WebGL2RenderingContext, vs: string, fs: string) {
   return prog;
 }
 
-/**
- * WebGL2 が使えなければ null。そのときは背景のグラデーションだけになる。
- * GPU がなく CPU で描く環境(ソフトウェア描画)でも null にする。網は画面の点ごとに計算するので、CPU では 1 コマに 100ms を超え、ページ全体が重くなる。
- */
+/** WebGL2 がない環境と、ソフトウェア描画の環境では null。CPU で描くと 1 コマに 100ms を超え、ページ全体が重くなる。 */
 export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
   const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false, failIfMajorPerformanceCaveat: true });
   if (!gl) return null;
@@ -205,16 +183,16 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
   }
   const netProg = compile(gl, VERT, NET_FRAG);
   const composeProg = compile(gl, VERT, COMPOSE_FRAG);
-  // 並列コンパイルが使えれば、終わったかどうかを止まらずに確かめられる。終わるまでは描かない。使えなければ最初に描くときに一度だけ待つ。
+  // 並列コンパイルが使えれば止まらずに終わりを確かめ、終わるまで描かない。使えなければ最初に描くときに一度だけ待つ。
   const parallel = gl.getExtension('KHR_parallel_shader_compile');
   let state: 'compiling' | 'ready' | 'failed' = 'compiling';
   let u: Record<'netRes' | 'time' | 'scroll' | 'composeRes' | 'net', WebGLUniformLocation | null>;
+  const progs = [netProg, composeProg];
   const checkReady = () => {
     if (state !== 'compiling') return state === 'ready';
-    const progs = [netProg, composeProg];
     if (parallel && !progs.every((p) => gl.getProgramParameter(p, parallel.COMPLETION_STATUS_KHR))) return false;
     if (!progs.every((p) => gl.getProgramParameter(p, gl.LINK_STATUS))) {
-      // 描けないときは Canvas ごと隠す(一度作った WebGL の Canvas は、遷移のあとに白く塗られることがある)。
+      // 一度作った WebGL の Canvas は遷移のあとに白く塗られることがあるので隠す。
       state = 'failed';
       canvas.hidden = true;
       return false;
@@ -238,7 +216,7 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
 
   return {
     resize(w, h) {
-      // 細い線を画面の解像度で描く。高い倍率では描く点の数が増えすぎるため 1.5 倍で止める。
+      // 高い倍率では描く点の数が増えすぎるため 1.5 倍で止める。
       dpr = Math.min(1.5, devicePixelRatio || 1);
       W = w; H = h;
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);

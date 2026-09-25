@@ -47,7 +47,7 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
       <span class="display block text-lg leading-8 sm:text-xl text-ink-2 hero-lead">Hi, I'm</span>
       <span class="display block text-5xl min-[22.5rem]:text-6xl sm:text-7xl tracking-[-0.01em]"><Wordmark text={SITE.name} /><span class="text-accent">.</span></span>
     </h1>
-    {/* イラストに差し替える枠。下端を名前の行の下端にそろえ、同じ地面に立たせる。 */}
+    {/* イラストに差し替える枠。下端を名前の行の下端にそろえる。 */}
     <div aria-hidden="true" class="about-hero-art hero-lead">
       <Sticker icon={SITE_ICON} lift class="text-accent" />
     </div>

@@ -1,14 +1,12 @@
-// アドレスバーの伸縮で背景を再初期化しないよう、window ではなく 100lvh の canvas 自体を測る。
 import { isDark, onThemeChange } from './theme';
 
-export type Scene = {
+type Scene = {
   resize(w: number, h: number): void;
   /** dt は秒。 */
   step(dt: number): void;
   render(): void;
-  /** 動き始めたとき(表示するテーマになったときなど)。 */
   start?(): void;
-  /** 止めたときに、2D の Canvas 以外に描いたものを消す。 */
+  /** 止めたときに、2D の Canvas 以外(WebGL など)に描いたものを消す。 */
   stop?(): void;
   dispose?(): void;
 };
@@ -47,12 +45,11 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
       stop();
       return;
     }
-    // 非表示テーマや動きを減らす設定では、オフスクリーン画像も 2D context も作らない。
+    // 描かないうちは context も場面も作らず、バッファも確保しない。
     if (!scene) {
       ctx = canvas.getContext('2d', { alpha: true })!;
       scene = make(ctx);
     }
-    // 表示するテーマだけバッファを確保する。切り替え時に最新の寸法を反映する。
     const resized = resize();
     if (!W || !H) return;
     if (reduce.matches) {
@@ -64,6 +61,7 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     }
   };
   const offTheme = onThemeChange(sync);
+  // アドレスバーの伸縮で作り直さないよう、window ではなく 100lvh の canvas 自体を測る。
   const observer = new ResizeObserver(sync);
   observer.observe(canvas);
   document.addEventListener('visibilitychange', sync);

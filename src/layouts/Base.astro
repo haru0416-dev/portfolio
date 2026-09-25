@@ -130,15 +130,13 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
         bg = [s && startSurface(s), d && startDeep(d)].filter((x): x is BackgroundControl => !!x);
       };
       boot();
-      // 海の背景はページをまたいで残す(transition:persist)。移動のたびに作り直すと、光の網の WebGL とシェーダーの準備からやり直しになり、移動が重くなる。
-      // 残らなかったとき(Canvas が入れ替わったとき)だけ作り直す。
+      // 海は transition:persist で残し、WebGL とシェーダーを作り直さない。Canvas が入れ替わったときだけ作り直す。
       let booted = document.querySelector('canvas.surface');
       document.addEventListener('astro:after-swap', () => {
         const now = document.querySelector('canvas.surface');
         if (now !== booted) { booted = now; boot(); }
       });
-      // カーソルで深い海に触れると、なぞった跡とクリックで泡が立つ。明るい水面は静かなまま、光の網だけを揺らす。
-      // 動きを減らす設定では、深い海は止まっているので何もしない。
+      // 泡は深い海でだけ立てる。動きを減らす設定では深い海は止まっているので何もしない。
       const still = matchMedia('(prefers-reduced-motion: reduce)');
       let lastX = 0, lastY = 0, lastT = 0, travel = 0;
       addEventListener('pointermove', (ev) => {
@@ -146,7 +144,6 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
         if (ev.pointerType !== 'mouse' || still.matches || !isDark()) return;
         travel += Math.hypot(ev.clientX - lastX, ev.clientY - lastY);
         lastX = ev.clientX; lastY = ev.clientY;
-        // 泡はまばらに出す。
         if (travel < 140 || ev.timeStamp - lastT < 50) return;
         travel = 0; lastT = ev.timeStamp;
         touchDeep(ev.clientX, ev.clientY, false);

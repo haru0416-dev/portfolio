@@ -13,15 +13,15 @@
 .prose strong { font-weight: 600; }
 .prose code { font-size: .8944em; line-height: 1; background: var(--surface); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
 .prose pre code { background: none; padding: 0; }
-/* コードブロックは src/data/code-theme.ts の変換で figure.code-block に包まれる。背景と縁取りは枠が持ち、中の pre は横スクロールだけを受け持つ。 */
+/* figure.code-block は src/data/code-theme.ts の変換が作る。 */
 .prose .code-block {
-  /* code-theme.ts の CODE_BG と同じ値 */
+  /* code-theme.ts の CODE_BG と同じ値。 */
   --code-bg: light-dark(oklch(94.5% 0.022 var(--h)), oklch(22% 0.028 var(--h)));
   position: relative; margin-inline: 0; margin-bottom: 0;
   background: var(--code-bg); border: 1px solid var(--line); border-radius: 1rem;
 }
 .prose .code-block pre { padding: 1.5rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; }
-/* 言語名は上端の余白に置き、コードの 1 行目にかからないようにする。 */
+/* 上端の余白は言語名がコードの 1 行目にかからないためのもの。 */
 .prose .code-block pre { padding-top: 2.5rem; }
 .prose .code-block::before {
   content: attr(data-lang); position: absolute; top: .75rem; left: 1.5rem;
@@ -42,7 +42,7 @@
   .code-copy:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 8%, transparent); }
 }
 .prose pre.astro-code, .prose pre.astro-code span { color: light-dark(var(--shiki-light), var(--shiki-dark)); }
-/* 横にはみ出す行があるときだけ、続きのある側の端で文字を薄く消す。はみ出さなければスクロールのタイムラインが無効になり、消さない。 */
+/* はみ出さないときはスクロールのタイムラインが無効になり、端を消さない。 */
 @property --fade-l { syntax: "<length>"; inherits: false; initial-value: 0px; }
 @property --fade-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
 @supports (animation-timeline: scroll()) {
@@ -68,7 +68,7 @@
 .prose th, .prose td { padding: .5rem 1rem; border-bottom: 1px solid var(--line); text-align: left; }
 .prose th { font-weight: 600; color: var(--muted); font-size: var(--text-xs); letter-spacing: .04em; }
 
-/* 見出しのリンクは本文の左の余白に吊るし、見出しの文字位置を動かさない。狭い画面では余白がないので見出しの後ろに置く。 */
+/* 見出しのリンクは左の余白に吊るして文字位置を動かさない。狭い画面では余白がないので見出しの後ろに置く。 */
 .prose :is(h2, h3):not(.sr-only) { position: relative; } /* 脚注の読み上げ用見出し(sr-only)は absolute のままにする */
 .prose .heading-anchor {
   position: absolute; right: 100%; top: 0; padding-inline: .5rem; margin-right: .125rem;
@@ -85,7 +85,7 @@
 .prose sup { line-height: 0; }
 .prose sup a { font-size: .75em; font-weight: 700; text-decoration: none; padding: .5rem .3rem; margin-inline: -.3rem; } /* 見た目の位置は変えずに当たり判定だけ広げる */
 .prose sup a::before { content: "["; } .prose sup a::after { content: "]"; }
-/* 区切りは .dotted と同じく重ねて描き、枠線の 2px で行が 8px の線から外れないようにする。 */
+/* 区切りは .dotted と同じく重ねて描き、枠線の 2px で行が 8px のグリッドから外れないようにする。 */
 .prose .footnotes { position: relative; margin-top: 4rem; padding-top: 1.5rem; font-size: var(--text-sm); line-height: 1.5rem; color: var(--ink-2); }
 .prose .footnotes::before { content: ""; position: absolute; inset: 0 0 auto; border-top: 2px dotted var(--rule); }
 .prose .footnotes ol { margin-top: 0; padding-left: 0; list-style-position: inside; }

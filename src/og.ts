@@ -9,7 +9,6 @@ import { dotted, formatDate } from './date';
 import { RAYS } from './data/sea';
 
 const W = 1200, H = 630;
-const OG_SIZE = { width: W, height: H } as const;
 
 const U = 24;
 const L = {
@@ -71,7 +70,6 @@ function sea() {
 }
 
 const SEA = sea();
-
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -308,7 +306,7 @@ async function layoutCard({ eyebrow, title, titleAccent, tags, icon }: CardImage
     await place({ key: 'icon', kind: 'img', src: icon, size: Math.round(100 * size * L.titleIcon / (i0.bottom - i0.top)) }, (o) => [M - o.left, cy - (o.top + o.bottom) / 2]);
   }
 
-  return { html: (only?: string) => page(els, only) };
+  return page(els);
 }
 
 async function layoutSite() {
@@ -334,17 +332,18 @@ async function layoutSite() {
   const sp = await place({ key: 'sprout', kind: 'img', src: sprout, size: Math.round(100 * markH / (s0.bottom - s0.top)) }, (o) => [M - o.left, top - o.top]);
   els.push({ ...markEl, x: M + (sp.right - sp.left) + U - mark.left, y: top - mark.top });
   els.push({ ...leadEl, x: M - lead.left, y: top + markH + U - lead.top });
-  return { html: (only?: string) => page(els, only) };
+  return page(els);
 }
 
-export async function renderSiteImage(): Promise<Buffer<ArrayBuffer>> {
-  const { html } = await layoutSite();
-  const { node, css } = await prepare(html());
-  return renderer.render(node, { ...OG_SIZE, css, lang: 'ja' });
+async function renderPage(html: string): Promise<Buffer<ArrayBuffer>> {
+  const { node, css } = await prepare(html);
+  return renderer.render(node, { width: W, height: H, css, lang: 'ja' });
 }
 
-export async function renderCardImage(card: CardImage): Promise<Buffer<ArrayBuffer>> {
-  const { html } = await layoutCard(card);
-  const { node, css } = await prepare(html());
-  return renderer.render(node, { ...OG_SIZE, css, lang: 'ja' });
+export async function renderSiteImage() {
+  return renderPage(await layoutSite());
+}
+
+export async function renderCardImage(card: CardImage) {
+  return renderPage(await layoutCard(card));
 }

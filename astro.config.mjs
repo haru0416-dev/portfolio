@@ -29,10 +29,10 @@ export default defineConfig({
   markdown: {
     // 色は CSS 変数で両テーマ分を出力し、prose.css で light-dark() により選ぶ。
     shikiConfig: { themes: CODE_THEME, defaultColor: false, transformers: CODE_TRANSFORMERS },
-    // 「↩」は絵文字で表示される環境があるため矢印を使う。
     processor: satteri({
       hastPlugins: [figureFromTitledImage],
       features: {
+        // 「↩」は絵文字で表示される環境があるため矢印を使う。
         gfm: { footnotes: { label: '脚注', backLabel: '本文の脚注 {reference} へ戻る', backContent: '↑' } },
         // Astro は既定で有効にするが、日本語の直後の ' を閉じ引用符にし、--> を –> に変えてしまう。
         smartPunctuation: false,

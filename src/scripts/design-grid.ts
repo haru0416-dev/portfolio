@@ -30,9 +30,9 @@ const fmt = (v: number) => String(Math.round(v * 100) / 100);
 function units(v: number) {
   if (v === 0) return { text: '0', cls: '' };
   const u = v / UNIT;
-  if (Number.isInteger(u)) return { text: `${fmt(v)}`, cls: 'dg-ok', title: `${u}u` };
-  if (Number.isInteger(u * 2)) return { text: `${fmt(v)}`, cls: 'dg-half', title: `${u}u` };
-  return { text: `${fmt(v)}`, cls: 'dg-off', title: '8px グリッド外' };
+  if (Number.isInteger(u)) return { text: fmt(v), cls: 'dg-ok', title: `${u}u` };
+  if (Number.isInteger(u * 2)) return { text: fmt(v), cls: 'dg-half', title: `${u}u` };
+  return { text: fmt(v), cls: 'dg-off', title: '8px グリッド外' };
 }
 
 function typeStep(fs: number) {
@@ -149,7 +149,7 @@ function inspect(target: Element | null) {
   }
   card!.innerHTML = rows.join('');
   const cw = card!.offsetWidth, ch = card!.offsetHeight;
-  let x = Math.min(Math.max(8, r.left), innerWidth - cw - 8);
+  const x = Math.min(Math.max(8, r.left), innerWidth - cw - 8);
   let y = r.bottom + m[2] + 8;
   if (y + ch > innerHeight - 8) y = Math.max(8, r.top - m[0] - ch - 8);
   card!.style.transform = `translate(${x}px, ${y}px)`;

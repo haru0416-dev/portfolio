@@ -188,7 +188,6 @@ const jsonLd = {
 </style>
 
 <script>
-  // 広い画面では目次を常に開いておく。
   let offToc: (() => void) | undefined;
   document.addEventListener('astro:before-swap', () => { offToc?.(); offToc = undefined; });
   document.addEventListener('astro:page-load', () => {

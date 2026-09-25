@@ -1,76 +1,33 @@
 ---
-// 名刺の紙面。座標の単位は mm で、仕上がりの左上を (0, 0) とする。絵柄は CardFront と CardBack が描く。
-// frame="screen" は仕上がりの範囲だけを見せ、3D の札の面に使う。
-// frame="print" は裁ち落としとトンボまで含めた実寸の紙面で、印刷用のページに使う。
+// 名刺の紙面。座標の単位は mm で、仕上がりの左上を (0, 0) とする。viewBox は仕上がりの範囲だけを見せる。
 import CardFront from './CardFront.astro';
 import CardBack from './CardBack.astro';
 import { CARD } from '../../data/card';
 
-interface Props {
-  side: 'front' | 'back';
-  frame?: 'screen' | 'print';
-  /** グラデーションなどの id の接頭辞。同じページに何枚も置くため、枚ごとに変える。 */
-  id: string;
-  /** 裏の絵柄のうち描く層。3D の札は網の影だけを別に動かすため、層に分けて重ねる。 */
-  layer?: 'all' | 'under' | 'shadow' | 'over';
-}
-const { side, frame = 'screen', id, layer = 'all' } = Astro.props;
-const { width: W, height: H, bleed: B, safe: S } = CARD;
-/** トンボを置く余白。 */
-const M = 13;
-
-const viewBox = frame === 'print' ? `${-M} ${-M} ${W + M * 2} ${H + M * 2}` : `0 0 ${W} ${H}`;
-const size = frame === 'print' ? { width: `${W + M * 2}mm`, height: `${H + M * 2}mm` } : {};
-
-// 仕上がり線と裁ち落とし線の位置に置く角トンボと、辺の中央のセンタートンボ。
-const L = { x0: -B, x1: W + B, y0: -B, y1: H + B };
-const cropMarks = [
-  ...[0, W].flatMap((x) => [x, x === 0 ? -B : W + B].flatMap((lx) => [
-    `M${lx} ${-M}V${L.y0 - 1}`, `M${lx} ${H + M}V${L.y1 + 1}`,
-  ])),
-  ...[0, H].flatMap((y) => [y, y === 0 ? -B : H + B].flatMap((ly) => [
-    `M${-M} ${ly}H${L.x0 - 1}`, `M${W + M} ${ly}H${L.x1 + 1}`,
-  ])),
-  `M${W / 2} ${-M}V${L.y0 - 1}M${W / 2 - 4} ${-M / 2 - 1.5}H${W / 2 + 4}`,
-  `M${W / 2} ${H + M}V${L.y1 + 1}M${W / 2 - 4} ${H + M / 2 + 1.5}H${W / 2 + 4}`,
-  `M${-M} ${H / 2}H${L.x0 - 1}M${-M / 2 - 1.5} ${H / 2 - 4}V${H / 2 + 4}`,
-  `M${W + M} ${H / 2}H${L.x1 + 1}M${W + M / 2 + 1.5} ${H / 2 - 4}V${H / 2 + 4}`,
-].join('');
+type Props = { id: string } & ({ side: 'front' } | { side: 'back'; layer: 'under' | 'shadow' | 'over' });
+const props = Astro.props;
+const { id } = props;
+const { width: W, height: H, bleed: B } = CARD;
 ---
-<svg class:list={['card-art', `card-${frame}`]} xmlns="http://www.w3.org/2000/svg" viewBox={viewBox} {...size} aria-hidden={frame === 'screen' ? 'true' : undefined}>
+<svg class="card-art card-screen" xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
   <defs>
     <clipPath id={`${id}-bleed`}><rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} /></clipPath>
   </defs>
   {/* 絵柄は裁ち落としの外へ出さない。 */}
   <g clip-path={`url(#${id}-bleed)`}>
-    {side === 'front' ? <CardFront id={id} /> : <CardBack id={id} layer={layer} />}
+    {props.side === 'front' ? <CardFront id={id} /> : <CardBack id={id} layer={props.layer} />}
   </g>
-
-  {frame === 'print' && (
-    <g>
-      <path d={cropMarks} fill="none" stroke="#000" stroke-width=".1" />
-      <text x={-M + 2} y={H + M - 2} class="t-slug" fill="#000">{`haru. 名刺 ${side === 'front' ? '表' : '裏'} / 仕上がり ${W}×${H}mm / 裁ち落とし ${B}mm / 角丸 R${CARD.radius}`}</text>
-      {/* 仕上がり線・安全領域・角丸の確認用の線。印刷するときは消す。 */}
-      <g class="card-guides" fill="none" stroke-width=".12">
-        <rect x={0} y={0} width={W} height={H} rx={CARD.radius} stroke="#00b7eb" />
-        <rect x={S} y={S} width={W - S * 2} height={H - S * 2} stroke="#ec008c" stroke-dasharray=".8 .6" />
-        <rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} stroke="#8a8a8a" stroke-dasharray=".4 .4" />
-      </g>
-    </g>
-  )}
 </svg>
 
 {/* 表と裏の文字は子のコンポーネントにあるため、紙面の中だけに効く global で書く。 */}
 <style is:global>
   .card-art { display: block; width: 100%; height: 100%; }
-  .card-art.card-print { width: auto; height: auto; }
   /* 字の大きさは mm。2mm は約 5.7pt で、名刺で読める下限に近い。
-     欧文は Fredoka にそろえる。Nunito は可変フォントで、PDF に Type 3 として埋め込まれ、印刷所の出力機で崩れることがある。 */
+     欧文は Fredoka にそろえる。可変フォントの Nunito は PDF に Type 3 で埋め込まれ、印刷所の出力機で崩れることがある。 */
   .card-art .t-eyebrow { font: 600 1.7px var(--font-fredoka), sans-serif; letter-spacing: .32px; }
   .card-art .t-role { font: 600 2.1px var(--font-fredoka), sans-serif; letter-spacing: .1px; }
   .card-art .t-name { font: 600 14px var(--font-fredoka), sans-serif; letter-spacing: -.12px; }
   .card-art .t-name-back { font-size: 14px; }
   .card-art .t-jp { font: 700 2.1px var(--font-zen-maru), sans-serif; }
   .card-art .t-mono { font: 400 2.05px var(--font-jetbrains), monospace; }
-  .card-art .t-slug { font: 600 2.2px var(--font-fredoka), var(--font-zen-maru), sans-serif; }
 </style>

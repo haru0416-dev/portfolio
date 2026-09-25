@@ -1,4 +1,3 @@
-// 名刺の札を、ばねで傾け、裏返し、つまんで回す。
 // 角度はすべて度。ry は表を 0 とし、180 の倍数ごとに面が入れ替わる。rx は縦の傾きで、手を離すと平らに戻る。
 
 /** ポインタを端に置いたときの傾き。 */
@@ -19,7 +18,7 @@ function step(s: Spring, target: number, dt: number, k = STIFFNESS, c = DAMPING)
   s.x += s.v * dt;
 }
 
-/** 裏の絵を組み立てるまでの待ち時間(ms)。ページ移動のアニメーション(0.5 秒ほど)が終わってから。 */
+/** 裏の絵を組み立てるまでの待ち時間(ms)。ページ移動のアニメーション(0.5 秒ほど)が終わるのを待つ。 */
 const MOUNT_BACK_AFTER = 1500;
 
 export function startBusinessCard(stage: HTMLElement): () => void {
@@ -31,8 +30,8 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   const lights = [...stage.querySelectorAll<HTMLElement>('.bc-light')];
   const edges = [...stage.querySelectorAll<HTMLElement>('.bc-edge')];
   const cores = [...stage.querySelectorAll<HTMLElement>('.bc-core')];
-  const netShadow = stage.querySelector<HTMLElement>('.bc-net-shadow');
-  const painted = [card, shadowNear, shadowFar, ...lights, ...edges, ...cores, ...(netShadow ? [netShadow] : [])];
+  const netShadow = stage.querySelector<HTMLElement>('.bc-net-shadow')!;
+  const painted = [card, shadowNear, shadowFar, ...lights, ...edges, ...cores, netShadow];
   /** 見えないときは合成の対象から外す。重なったレイヤーの面積がそのまま毎フレームの合成の手間になる。 */
   const show = (el: HTMLElement, on: boolean) => { el.style.visibility = on ? '' : 'hidden'; };
   const front = stage.querySelector<HTMLElement>('[data-face="front"]')!;
@@ -42,9 +41,9 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   const on = <K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (e: HTMLElementEventMap[K]) => void) =>
     el.addEventListener(type, fn, { signal: ac.signal });
 
-  // 裏の絵は template に入れてある。裏返しそうになったとき(カーソルが乗った・押した・キーボードで選んだ)に組み立てる。
-  // それ以外は、ページ移動のアニメーションが終わるのを待ってから手が空いたときに組み立てる。
-  // 「手が空いたら」だけだと、アニメーション中のメインスレッドは空いて見えるので、その最中に千を超える図形を組み立てて描き、アニメーションが止まる。
+  // 裏の絵(千を超える図形)は template から、裏返しそうになったとき(カーソルが乗った・押した・フォーカスした)に組み立てる。
+  // それ以外は MOUNT_BACK_AFTER 待ってから手が空いたときに組み立てる。アニメーション中もメインスレッドは空いて見えるため、
+  // requestIdleCallback だけだとその最中に組み立てが走り、アニメーションが止まる。
   const mountBack = () => stage.querySelectorAll<HTMLTemplateElement>('template[data-card-art]').forEach((t) => t.replaceWith(t.content));
   const later = setTimeout(() => {
     if ('requestIdleCallback' in globalThis) {
@@ -57,7 +56,7 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   on(hit, 'pointerdown', mountBack);
   on(hit, 'focus', mountBack);
 
-  // 表からの枚数。偶数で表、奇数で裏。何回転しても角度が飛ばないよう、足し引きだけで増減させる。
+  // 表からの半回転の数。偶数で表、奇数で裏。何回転しても角度が飛ばないよう、足し引きだけで増減させる。
   let face = 0;
   const rx: Spring = { x: 0, v: 0 };
   const ry: Spring = { x: 0, v: 0 };
@@ -87,8 +86,7 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   const flip = (dir: number) => {
     face += dir;
     showSide();
-    // 動きを減らす設定では CSS が面を差し替える。
-    if (!reduce.matches) wake();
+    wake();
   };
 
   on(hit, 'click', () => {
@@ -154,7 +152,6 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   on(hit, 'pointerup', release);
   on(hit, 'pointercancel', release);
 
-  // 画面にあり、タブが表示されているときだけ描く。
   let visible = false;
   let raf = 0;
   let last = 0;
@@ -174,7 +171,6 @@ export function startBusinessCard(stage: HTMLElement): () => void {
     last = now;
     const t = now / 1000;
     const hovering = pointer !== null;
-    // 触れていないときは、机の上で息をするようにゆっくり揺らす。
     const idleX = hovering ? 0 : Math.sin(t * 0.7) * 3;
     const idleY = hovering ? 0 : Math.sin(t * 0.5 + 1) * 6;
     const dragging = drag?.active ?? false;
@@ -192,21 +188,20 @@ export function startBusinessCard(stage: HTMLElement): () => void {
     if (visible && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
-  /** 影のぼかし。弱い影と強い影の 2 枚を重ね、不透明度の配分で間のぼかしを表す。半径そのものを毎フレーム変えると、毎回ぼかし直しになる。
-      弱い影は置いたままのぼけ具合、強い影は持ち上げたときのぼけ具合に合わせ、止まっているあいだはどちらか 1 枚で済ませる。 */
+  /** 影のぼかし(px)。BusinessCard.astro の CSS と同じ値。半径を毎フレーム変えるとぼかし直しになるため、2 枚の影の不透明度の配分で間を表す。 */
   const BLUR_NEAR = 10, BLUR_FAR = 24;
   /** 断ちの板を出す傾き。指したほうへ傾けるだけ(14° まで)なら断ちは 0.4px に届かないため、裏返しやつまんで回すときだけ出す。 */
   const CORE_FROM = 20;
 
   function render() {
-    // 一番近い面からのずれ。光沢と影はこれで決める。
+    // 一番近い面からのずれ。
     const dev = ry.x - 180 * Math.round(ry.x / 180);
     const tilt = Math.min(1, Math.hypot(dev, rx.x) / MAX_TILT);
     const up = Math.max(0, lift.x), down = Math.max(0, -lift.x);
     const rad = Math.PI / 180;
     card.style.transform = `translateZ(${((up - down) * 24).toFixed(2)}px) rotateX(${rx.x.toFixed(2)}deg) rotateY(${ry.x.toFixed(2)}deg)`;
 
-    // 影は札と一緒に回さず、下に落ちたものとして傾きと逆へずらす。持ち上げるほどぼけて薄く、押し込むほど締まって濃くなる。
+    // 影は札と一緒に回さず、下に落ちたものとして傾きと逆へずらす。
     const devClamped = Math.max(-MAX_TILT * 1.5, Math.min(MAX_TILT * 1.5, dev));
     const sw = Math.max(0.06, Math.abs(Math.cos(ry.x * rad))) * (1 - up * 0.05);
     const sh = Math.max(0.1, Math.abs(Math.cos(rx.x * rad))) * (1 - up * 0.05);
@@ -220,7 +215,7 @@ export function startBusinessCard(stage: HTMLElement): () => void {
     show(shadowFar, far > 0.01);
     show(shadowNear, far < 0.99);
 
-    // 光の板は札の中心に置いたまま動かす。中心の移動を translate、光の点から一番遠い角までの距離(グラデーションの半径)を scale で表す。
+    // 光の点の移動を translate、光の点から一番遠い角までの距離(グラデーションの半径)を scale で表す。
     const w = stage.offsetWidth, h = stage.offsetHeight;
     const gx = (0.5 + (dev / MAX_TILT) * 0.4) * w, gy = (0.5 - (rx.x / MAX_TILT) * 0.4) * h;
     const reach = Math.hypot(Math.max(gx, w - gx), Math.max(gy, h - gy)) / (Math.hypot(w, h) / 2);
@@ -231,11 +226,9 @@ export function startBusinessCard(stage: HTMLElement): () => void {
     // 真横に近いほど 1。|cos| が 0.25(約 75°)より大きいときは 0。
     const edgeOn = Math.max(0, 1 - Math.abs(Math.cos(ry.x * rad)) / 0.25).toFixed(3);
     for (const e of edges) { e.style.opacity = edgeOn; show(e, +edgeOn > 0); }
-    // 水底の網の影。紙面では太陽の反対へ 0.45mm ずらしてあり、傾けると水の厚みのぶん逆へ流れる。
-    if (netShadow) {
-      const mm = w / 55, sx = 0.45 * mm - (dev / MAX_TILT) * 2.5, sy = 0.45 * mm + (rx.x / MAX_TILT) * 2.5;
-      netShadow.style.transform = `translate(${sx.toFixed(2)}px, ${sy.toFixed(2)}px)`;
-    }
+    // 網の影は太陽の反対へ 0.45mm ずらし、傾けると水の厚みのぶん逆へ流す。55 は札の幅(mm)。
+    const mm = w / 55, sx = 0.45 * mm - (dev / MAX_TILT) * 2.5, sy = 0.45 * mm + (rx.x / MAX_TILT) * 2.5;
+    netShadow.style.transform = `translate(${sx.toFixed(2)}px, ${sy.toFixed(2)}px)`;
     const side = Math.max(Math.abs(dev), Math.abs(rx.x));
     for (const c of cores) show(c, side >= CORE_FROM);
   }

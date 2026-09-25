@@ -11,12 +11,12 @@
   --ink:         light-dark(oklch(32%   0.050 var(--h)),        oklch(94% 0.012 var(--h)));
   --ink-2:       light-dark(oklch(47%   0.040 var(--h)),        oklch(80% 0.022 var(--h)));
   --muted:       light-dark(oklch(50%   0.035 var(--h)),        oklch(66% 0.030 var(--h)));
-  /* 札・ボタン・カードの面と縁取り。背景の海は青寄りで紙色と色相が 50〜70° 違うため、半透明にして置かれた場所の色を透かす。 */
+  /* 背景の海は紙色と色相が 50〜70° 違うため、面は半透明にして下の色を透かす。 */
   --surface:     light-dark(oklch(97%   0.012 var(--h) / 55%),  oklch(26% 0.028 var(--h) / 55%));
   --line:        light-dark(oklch(45%   0.050 var(--h) / 16%),  oklch(100% 0 0 / 10%));
-  /* 点線の区切り。点線は半分が隙間で縁取りより薄く見えるので、--line より濃くする。 */
+  /* 点線は半分が隙間で薄く見えるため、--line より濃くする。 */
   --rule:        light-dark(oklch(74%   0.045 var(--h)),        oklch(45% 0.040 var(--h)));
-  /* アクセントの桃色は、ブランドの印(ロゴの点・芽)、押せるもの(リンク・主ボタン)、現在地(目次・選択中)に限る。飾りには使わない。 */
+  /* アクセントはブランドの印・押せるもの・現在地に限り、飾りには使わない。 */
   --accent:      light-dark(oklch(66%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
   --accent-ink:  light-dark(oklch(52%   0.170 var(--h-accent)), oklch(80% 0.140 var(--h-accent)));
   --accent-btn:  light-dark(oklch(58%   0.175 var(--h-accent)), oklch(77% 0.150 var(--h-accent)));
@@ -33,7 +33,7 @@
   --sun-core:    light-dark(oklch(100% 0 0 / 95%), oklch(90% 0.04 220 / 30%));
   --sun-glow:    light-dark(oklch(98% 0.06 85 / 60%), oklch(70% 0.08 220 / 12%));
   --sun-haze:    light-dark(oklch(97% 0.05 80 / 22%), oklch(55% 0.07 225 / 5%));
-  /* 画面全体にかける細かい粒。背景の海の段差(バンディング)をぼかし、名刺の紙の質感にも同じものを使う。 */
+  /* 背景の海のバンディングをぼかすディザ。名刺の紙の質感にも使う。 */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 :root.light { color-scheme: light; }
@@ -43,7 +43,7 @@
   --container-site: 64rem;
   --container-reading: 41rem;
 
-  /* 型スケール: 16px 基準、比率 1.25。行送りは 8px の倍数に丸める */
+  /* 16px 基準、比率 1.25。行送りは 8px の倍数に丸める。 */
   --text-xs: 0.8rem;       --text-xs--line-height: 1rem;
   --text-sm: 0.8944rem;    --text-sm--line-height: 1.5rem;   /* 16 ÷ √1.25 */
   --text-base: 1rem;       --text-base--line-height: 1.5rem;
@@ -75,10 +75,9 @@
   --font-mono: var(--font-jetbrains);
 }
 
-/* スクロールしない短いページだけ中身が横にずれないよう、スクロールバーの幅を常に取っておく。 */
+/* スクロールしない短いページで中身が横にずれないよう、スクロールバーの幅を常に取る。 */
 html { background: var(--paper); scrollbar-gutter: stable; }
-/* 細い角丸のつまみ。Chrome と Safari は ::-webkit-scrollbar で形まで、Firefox は標準の指定で色と細さだけ変える。
-   Chrome は scrollbar-color を指定すると ::-webkit-scrollbar を無視するため、標準の指定は Firefox だけに当てる。 */
+/* Chrome は scrollbar-color があると ::-webkit-scrollbar を無視するため、標準の指定は Firefox だけに当てる。 */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--rule) padding-box; border: 3px solid transparent; border-radius: 6px; }
@@ -99,9 +98,8 @@ body {
 }
 ::selection { background: var(--accent-soft); }
 
-/* 文節単位の改行は本文の行末を空けすぎるため、見出しとラベルに限定する。 */
 :is(h1, h2, h3, .display, .display-jp) { text-wrap: balance; }
-/* 2〜3行で終わる説明文(.phrase)も、語の途中で折り返さないよう文節で改行する。 */
+/* 文節改行は本文の行末を空けすぎるため、見出し・ラベルと短い説明文(.phrase)に限る。 */
 :is(h1, h2, h3, .display, .display-jp, .eyebrow, .tag, .chip, .pill, .phrase) { word-break: auto-phrase; }
 :is(p, li, dd, blockquote, .prose) { text-wrap: pretty; }
 time, .tabular-nums { white-space: nowrap; }
@@ -122,13 +120,11 @@ time, .tabular-nums { white-space: nowrap; }
 /* Fredoka は 600 のみ読み込むため 600 を指定する。和文は 700 しかないので、そのまま 700 で描かれる。 */
 .display-jp { font-family: var(--font-display-jp); font-weight: 600; }
 
-/* 表示中のテーマでだけ見せる。明示の選択は html のクラス、「端末の設定」では OS の設定に従う。 */
 :root.light .when-dark, :root.dark .when-light { display: none; }
 @media (prefers-color-scheme: light) { :root:not(.dark) .when-dark { display: none; } }
 @media (prefers-color-scheme: dark) { :root:not(.light) .when-light { display: none; } }
 
-/* シール。台紙は両テーマで紙の白だが、ダークでは名前の文字(--ink)より暗くして主役を譲る。
-   インクは親の color を継ぐ。ダークの明るいアクセントは台紙と明るさが近く沈むため、暗くして締める。 */
+/* ダークでは台紙を文字(--ink)より暗くし、台紙と明るさが近いインクも暗くして沈まないようにする。tools/cursors.py も同じ値を使う。 */
 .sticker {
   display: inline-grid; place-items: center; rotate: -8deg;
   filter: drop-shadow(0 0 .5px color-mix(in oklch, var(--ink) 30%, transparent)) drop-shadow(0 6px 10px color-mix(in oklch, black 16%, transparent));
@@ -186,7 +182,7 @@ header.site.glass::before { content: none; }
 .work-hero { border-radius: 2rem; }
 @media (min-width: 40rem) { .work-hero { aspect-ratio: 12 / 5; } }
 @media (min-width: 64rem) { .work-hero { aspect-ratio: 3 / 1; } }
-/* 高さを 8px に丸め、行送りをグリッドに乗せる。cqi は親を基準にする。 */
+/* 高さを 8px の倍数に丸めて行送りのグリッドに乗せる。cqi が親の幅を指すよう、親をコンテナにする。 */
 @supports (height: round(1px, 8px)) {
   :has(> .work-card) { container-type: inline-size; }
   .work-card { aspect-ratio: auto; height: round(100cqi * 9 / 16, 8px); }
@@ -199,12 +195,12 @@ header.site.glass::before { content: none; }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden;
   background-color: var(--cover-bg); color: var(--cover-fg); transition: transform 500ms var(--ease-out);
 }
-/* 題名は左下、バッジは左上に重なるため、アイコンは右寄りに置く。 */
+/* 題名は左下、バッジは左上に重なるため、アイコンは右に寄せる。 */
 .work-card .cover { padding: 0 7% 14% 0; }
-/* 題名は下端にあるため、アイコンは上に寄せ、枠の幅に合わせて縮めて重ならないようにする。 */
+/* 下端の題名と重ならないよう、アイコンは上に寄せて枠の幅に合わせて縮める。 */
 .work-hero .cover { align-items: flex-start; padding: 2rem 10% 0 0; }
 .work-hero .cover-icon svg { width: min(10rem, 16.5cqi); height: min(10rem, 16.5cqi); }
-/* 狭い画面では枠が低く重なるため、題名をアイコンの下に流し、枠の高さを中身に合わせる。 */
+/* 狭い画面では枠が低く題名と重なるため、題名をアイコンの下に流し、枠の高さを中身に合わせる。 */
 @media (max-width: 39.99rem) {
   .work-card.work-hero { height: auto; aspect-ratio: auto; }
   .work-hero .cover { padding: 1.25rem 1.5rem 0 0; }
@@ -221,11 +217,11 @@ header.site.glass::before { content: none; }
 .hue-0 { --cover-bg: color-mix(in oklch, var(--accent-soft) 60%, var(--paper)); --cover-fg: var(--accent); --cover-dot: color-mix(in oklch, var(--accent) 35%, transparent); }
 .hue-1 { --cover-bg: color-mix(in oklch, var(--mint) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--mint) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--mint) 55%, transparent); }
 .hue-2 { --cover-bg: color-mix(in oklch, var(--lilac) 22%, var(--paper)); --cover-fg: color-mix(in oklch, var(--lilac) 70%, var(--ink)); --cover-dot: color-mix(in oklch, var(--lilac) 55%, transparent); }
-/* 写真のカバーだけは、題名が読めるよう下端を紙色でぼかす。 */
 .work-card .caption { position: absolute; inset: auto 0 0; padding: 1rem 1.5rem; }
+/* 写真のカバーだけは、題名が読めるよう下端を紙色でぼかす。 */
 .work-card:has(.cover-img) .caption { background: linear-gradient(to top, color-mix(in oklch, var(--paper) 85%, transparent), transparent); }
 
-/* 押し込みの transform は各部品の transition に含める。 */
+/* .pill・.chip・.link-row は押し込みの transform を自分の transition に含める。 */
 .press:active { transform: scale(0.94); }
 .press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out), color 150ms ease, background-color 150ms ease; }
 
@@ -297,11 +293,11 @@ header.site.glass::before { content: none; }
   .work-card:hover .cover { transform: scale(1.05); }
 }
 
-/* 左右の余白ぶん scroll-padding を取り、先頭を余白の内側に揃える。上下はフォーカス枠(3px + 3px)が切れない幅を取る。 */
+/* 上下の 6px はフォーカス枠(3px + 3px)が切れないための余白。 */
 .scroll-row { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 1rem; overscroll-behavior-x: contain; padding-block: 6px; margin-block: -6px; }
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row > * { flex-shrink: 0; scroll-snap-align: start; }
-/* 横に続きがあるときだけ右端をぼかす。はみ出さない行ではタイムラインが無効になり、初期値 0 のまま残る。 */
+/* はみ出さない行ではスクロールのタイムラインが無効になり、初期値 0 のまま右端をぼかさない。 */
 @property --fade-end { syntax: "<length>"; inherits: false; initial-value: 0px; } /* rem は登録できない値なので px で書く */
 @media (max-width: 39.99rem) {
   @supports (animation-timeline: scroll(self inline)) {
@@ -316,14 +312,10 @@ header.site.glass::before { content: none; }
   position: fixed; inset: 0 0 auto; height: 100vh; height: 100lvh; z-index: -1; overflow: hidden; pointer-events: none;
   background: linear-gradient(to bottom in oklch, transparent 25%, var(--sea-depth)), linear-gradient(to bottom in oklch, var(--sea-sky), transparent 45%);
 }
-/* ライトは名刺の裏と同じ浅い海を、同じ色の強さで塗る。光は左上から差すので、深さも斜めに付ける。
-   太陽のある左上は日の当たる砂の暖かさ、中ほどは澄んだ水色、右下へ深くなるほど青緑に沈む。 */
-/* 色相を回すと砂の黄色と水色の間に緑の帯が出るため、OKLab で混ぜる。
-   右下は名刺より明るくとどめる。本文の上に置く背景なので、補助の文字(--ink-2)がコントラスト比 4.5 を保てる深さまで。 */
+/* 色相を回すと黄と水色の間に緑の帯が出るため OKLab で混ぜる。右下の明るさは、上に載る --ink-2 がコントラスト比 4.5 を保てる下限。 */
 :root { --sea-shallow: linear-gradient(155deg in oklab, oklch(96% 0.035 95), oklch(90.5% 0.058 205) 48%, oklch(86.5% 0.065 213)); }
 :root.light .sea { background: var(--sea-shallow); }
 @media (prefers-color-scheme: light) { :root:not(.dark) .sea { background: var(--sea-shallow); } }
-/* 光の筋やグラデーションに出る段(バンディング)を、最前面の薄いノイズでぼかすディザ。 */
 .sea::after { content: ""; position: absolute; inset: 0; background: var(--grain); }
 .sea i { position: absolute; display: block; }
 .sea .ray {
@@ -345,7 +337,6 @@ header.site.glass::before { content: none; }
   to   { transform: translateX(1.5vw) skewX(16deg); opacity: calc(var(--a) * .75); }
 }
 .sea .deep, .sea .caustic, .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* 水底の光の網(.caustic)と漂う粒(.surface)は、ライトでだけ描く。 */
 .sea .surface { opacity: .85; }
 
 .wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
@@ -397,15 +388,10 @@ header.site.glass::before { content: none; }
 [data-astro-transition-fallback="old"] :is(main, main [data-astro-transition-scope]) { animation-name: astroFadeOut; }
 [data-astro-transition-fallback="new"] :is(main, main [data-astro-transition-scope]) { animation-name: astroFadeIn; }
 
-/* テーマの切り替え。ゆっくり見せる。
-   ライトからダークへは潜る。深い海が波打って下から満ちてきて、水面の裏が光り、泡が一緒に昇る。前の画面は光を失っていく。
-   ダークからライトへは浮かぶ。明るい水面が上から降りてきて、日の光の縁ときらめきが先に立つ。
-   波は画面の高さの 3 倍の絵を窓からずらして見せる。絵は tools/theme-waves.py が作る(src/assets/theme-switch)。どの層も波の中心は絵の上端から 150vh。
-   水は 3 層。先を行く淡い 2 層は水面の手前の薄い水で、本体より速く横へ流れ、満ちるにつれて本体の先へ広がっていく。1 枚の絵のまま動かすと、水ではなく板が動いて見える。
-   本体の縁は縁の光と同じ位置を通る。110vh(浮かぶときは -10vh)から -6vh(106vh)へ。どの層も画面のすぐ外から動き始め、最初の一コマで水が現れない。
-   絵の大きさと位置は % ではなく vh で決める。遷移の画面の高さは 100vh と一致するとは限らない(iOS の Safari では vh がツールバーを畳んだ大きい画面の高さで、
-   遷移の画面より高い)。% で決めると、vh で動かす縁の光と (1.5 - 2p) × 高さの差だけずれ、光の線が遅れて追いついてくるように見える。
-   ページ移動用の遷移名が付いた要素が別々に動くと波が崩れるため、切り替えの間だけ外す。 */
+/* テーマの切り替え。マスクの絵は tools/theme-waves.py が作る高さ 300vh の絵で、どの層も波の中心は上端から 150vh。
+   本体の縁は .theme-tide の光と同じ位置を通る: 110vh(浮かぶときは -10vh)から -6vh(106vh)へ。
+   大きさと位置は % ではなく vh で決める。iOS Safari では vh が遷移の画面より高く、% だと vh で動かす縁の光とずれる。
+   遷移名の付いた要素が別々に動くと波が崩れるため、切り替えの間だけ外す。 */
 :root { --theme-switch: 2.2s; --theme-ease: cubic-bezier(.55, 0, .25, 1); }
 html[data-theme-switch] * { view-transition-name: none !important; }
 html[data-theme-switch]::view-transition-group(root) { animation-duration: var(--theme-switch); }
@@ -414,7 +400,6 @@ html[data-theme-switch]::view-transition-new(root) {
   animation: var(--theme-switch) var(--theme-ease) both;
   mask-size: 100vw 300vh; mask-repeat: repeat-x;
 }
-/* 層の並びは、先を行く層・その次・本体。 */
 html[data-theme-switch="dark"]::view-transition-old(root) { animation-name: theme-old-dive; }
 html[data-theme-switch="dark"]::view-transition-new(root) {
   animation-name: theme-dive;
@@ -425,7 +410,7 @@ html[data-theme-switch="light"]::view-transition-new(root) {
   animation-name: theme-surface;
   mask-image: url(../assets/theme-switch/surface-front.svg), url(../assets/theme-switch/surface-middle.svg), url(../assets/theme-switch/surface-body.svg);
 }
-/* 先を行く層は本体の 5vh・2.5vh 先から始まり、16vh・8vh 先まで広がる。画面は上下に動かさない。淡い水の層の中で新旧の文字がずれて二重に見える。 */
+/* 先を行く層は本体の 5vh・2.5vh 先から 16vh・8vh 先まで広がる。画面を上下に動かすと、淡い層の中で新旧の文字がずれて二重に見える。 */
 @keyframes theme-dive {
   from { mask-position: 0 -45vh, 0 -42.5vh, 0 -40vh; }
   to { mask-position: -95vw -172vh, -78vw -164vh, -60vw -156vh; }
@@ -437,20 +422,16 @@ html[data-theme-switch="light"]::view-transition-new(root) {
 @keyframes theme-old-dive { to { filter: brightness(.85); } }
 @keyframes theme-old-surface { to { filter: brightness(1.2); } }
 
-/* 水面の縁の光。新しい画面の中に置くので、波の形に切り抜かれる。遷移が始まってから動かし、波の本体と揃える。
-   終わりには光の帯がまだ画面に残るので、薄れて消える。
-   帯は transform ではなく top で動かし、メインスレッドでしか動かない波のマスク(mask-position)と同じコマで動かす。
-   transform だと帯だけ別の描画スレッドで動き、メインスレッドが詰まる瞬間(ダークに入るときの深い海の準備)に波だけが止まる。
-   光の線は本体の波と同じ形の絵で、同じだけ横へ流す。まっすぐな線だと、波打つ水の層の中に水平線が引かれて見える。
-   絵の中の波の中心は帯の端から 4vh の位置にあるので、帯はその分ずらす。浮かぶときは線が淡い層の側へ出ないよう、さらに 1vh 内へ寄せる。 */
+/* 水面の縁の光。mask-position はメインスレッドでしか動かないため、帯も transform ではなく top で動かして同じコマに揃える。
+   transform だと、メインスレッドが詰まる瞬間(深い海の準備)に波だけが止まる。
+   絵の波の中心は帯の端から 4vh にあるので帯をその分ずらし、浮かぶときは線が淡い層の側へ出ないようさらに 1vh 内へ寄せる。 */
 .theme-tide { position: fixed; left: 0; width: 100vw; height: 45vh; z-index: 2147483647; pointer-events: none; visibility: hidden; }
 .theme-tide.is-moving { visibility: visible; animation: var(--theme-switch) var(--theme-ease) both; }
 .theme-tide::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tide-glow) 0 0 / 100vw 100% repeat-x; }
 .theme-tide.is-moving::before { animation: var(--theme-switch) var(--theme-ease) both; }
 .theme-tide::after { content: ""; position: absolute; inset: 0; }
 .theme-tide.is-moving::after { animation: var(--theme-switch) ease-in-out both; }
-/* 潜るとき: 縁のすぐ下が明るく光り、泡が縁と一緒に昇る。泡は縁のすぐ下(帯の上から 15vh まで)に寄せる。離して散らすと、波が抜けたあとに泡が遅れて追いついてくるように見える。
-   小さい泡は縁と同じ速さで、大きい泡(::after)は揺れながら縁より速く昇り、縁に着いたところで消える。水面で弾けるように見える。 */
+/* 泡は帯の上から 15vh までに寄せる。離すと、波が抜けたあとに泡が遅れて追いついてくるように見える。 */
 html[data-theme-switch="dark"] .theme-tide {
   top: 0;
   --tide-glow: url(../assets/theme-switch/dive-glow.svg);
@@ -494,7 +475,6 @@ html[data-theme-switch="dark"] .theme-tide.is-moving::after { animation-name: th
   75% { background-position: 6px -11vh; }
   to { background-position: 0 -15vh; }
 }
-/* 浮かぶとき: 縁のすぐ上が日の光で暖かく光り、きらめきが散る。半分のきらめき(::after)は瞬く。 */
 html[data-theme-switch="light"] .theme-tide {
   top: -45vh;
   --tide-glow: url(../assets/theme-switch/surface-glow.svg);
@@ -612,7 +592,6 @@ html:active-view-transition-type(filter)::view-transition-new(.item):only-child 
   input, textarea, [contenteditable] { cursor: var(--cursor-text); } /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * { cursor: inherit; }
   canvas { cursor: var(--cursor-arrow); }
-  /* 名刺は手に取る物なので、開いた手と握った手にする。 */
   .bc-hit { cursor: var(--cursor-grab); }
   .bc-hit:active, .is-dragging .bc-hit { cursor: var(--cursor-grabbing); }
 }

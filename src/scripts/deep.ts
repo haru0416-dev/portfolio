@@ -4,7 +4,7 @@ import { createParticles } from './particles';
 type Bubble = { x: number; y: number; r: number; v: number; wob: number; phase: number; life: number };
 
 const BUBBLE = 64, BUBBLE_R = 30;
-/** テーマを切り替えてから最初の泡の柱までの秒数。切り替えの波(2.2 秒)が抜けて、少し落ち着いてから。 */
+/** テーマを切り替えてから最初の泡の柱までの秒数。切り替えの波(2.2 秒)が抜けてから。 */
 const AFTER_SWITCH = 5;
 function makeBubble(): HTMLCanvasElement {
   const c = document.createElement('canvas'); c.width = c.height = BUBBLE;
@@ -40,7 +40,6 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
     let vent = { x: 0.5, until: 0, next: 3 };
     const bubbleSprite = makeBubble();
     const snow = createParticles({ color: 'rgb(226,232,236)', area: 14000, dir: 1, alpha: [0.2, 0.7] });
-    // なぞるとときどき小さな泡が 1 つ、クリックすると大小の泡がまとまって昇る。泡は昇るほど速く、上で消える。
     bubbleAt = (x, y, strong) => {
       if (bubbles.length > 48) return;
       for (let i = 0, n = strong ? 5 + ((Math.random() * 3) | 0) : 1; i < n; i++) {
@@ -55,8 +54,7 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
         snow.resize(w, h);
       },
       start() {
-        // テーマの切り替えで深い海に入ったときは、切り替えの波が抜けてから泡の柱を立てる。波と重なると、泡が遅れて追いついてくるように見える。
-        // 前に深い海を見ていたときの泡も、昇る途中のまま現れるので片付ける。
+        // 切り替えの波と泡が重なると泡が遅れて追いつくように見えるので、波が抜けるまで待つ。前回の泡も昇る途中で現れるので捨てる。
         if (!document.documentElement.dataset.themeSwitch) return;
         bubbles.length = 0;
         vent = { ...vent, until: Math.min(vent.until, t), next: Math.max(vent.next, t + AFTER_SWITCH) };

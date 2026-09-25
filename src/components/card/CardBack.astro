@@ -1,26 +1,15 @@
 ---
-// 名刺の裏。サイトのライトテーマと同じ、日の当たる浅い海を上から見た景色。座標は mm。
-// 表(ダークテーマの深い海)と対になり、裏返すと海の中から水面の上へ出る。
-//
-// 見え方は実物の水に合わせている。
-// - 光の網は、光が集まるところほど細く明るい。線が 3 本出会う点がいちばん光り、線の一部は尖って消える。
-//   少数の線だけが強く光って続き、残りは淡い。網の目は波の進む向きに伸び、深いほど大きくなる。
-// - 太陽のある左上は浅く、砂の暖かい明るさ。右下へ深くなるほど青緑に沈み、網も太くぼける。
-// - 波紋は白い輪ではなく、水面のくぼみが底に落とす「影の帯と、それを囲む明るい縁」。輪は外ほど詰まる。
-// - 網の影を少しずらして水底に敷く。3D の札では、この層だけを傾きに合わせて動かし、水の厚みを出す。
-//
-// 水の中にあるものは、深さの霞と太陽の光の下にまとめて置く。上に載るのは紙に刷った文字だけ。
+// 名刺の裏。座標は mm。
 // 光も陰も白や灰色で描かず、その場所の水の色を明るく・暗くした色で描く。そうしないと水の上に貼ったように浮く。
 import { CARD, INK, marineSnow, causticCells } from '../../data/card';
 import { SITE } from '../../site';
 
 interface Props {
   id: string;
-  /** all は 1 枚の紙面。3D の札は網の影だけを別に動かすため、under(水)・shadow(網の影)・over(その上すべて)に分けて重ねる。 */
-  layer?: 'all' | 'under' | 'shadow' | 'over';
+  /** 3D の札は網の影だけを傾きに合わせて動かすため、under(水)・shadow(網の影)・over(その上すべて)に分けて重ねる。 */
+  layer: 'under' | 'shadow' | 'over';
 }
-const { id, layer = 'all' } = Astro.props;
-const has = (part: 'under' | 'shadow' | 'over') => layer === 'all' || layer === part;
+const { id, layer } = Astro.props;
 const { width: W, height: H, bleed: B, safe: S } = CARD;
 const host = 'haru0416.dev';
 
@@ -30,31 +19,29 @@ const f = (n: number) => n.toFixed(2);
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 /** 深さ。太陽のある左上で 0、右下の角で 1。 */
 const depth = ([x, y]: Point) => clamp01(Math.hypot(x, y) / Math.hypot(W, H));
-/** 波紋の影と網の影を落とす向き。太陽の反対(右下)へ。 */
+/** 影を落とす向き。太陽の反対(右下)へ。3D の札の網の影は business-card.ts が同じ 0.45mm だけずらす。 */
 const SHADOW_OFFSET: Point = [0.45, 0.45];
-/** 名前とドメインのまわり。ここには主役の光の筋を通さない。 */
+/** 名前とドメインのまわり。主役の光の筋と粒を通さない。 */
 const TEXT_BOX = { x0: 8, x1: 47, y0: 38, y1: 60 };
 const inText = ([x, y]: Point) => x > TEXT_BOX.x0 && x < TEXT_BOX.x1 && y > TEXT_BOX.y0 && y < TEXT_BOX.y1;
 
-/** 水滴の波紋。文字にかからない場所に落とす。R は一番外の輪、n は輪の数。 */
+/** 水滴の波紋。R は一番外の輪の半径、n は輪の数。 */
 const DROPS = [
   { x: 40.5, y: 73, R: 8.6, n: 6 },
   { x: 12.5, y: 20, R: 4.8, n: 4 },
 ];
 
-// 網の目の形。深いほど目を大きく(太陽の側から押し広げる)、波の進む向き(左上から右下へ約 30°)に少し引き伸ばす。
-// どちらも広げる向きの写像なので、裁ち落としの範囲は網で覆われたまま。
+// 網の目を深いほど大きく、波の進む向きに引き伸ばす。どちらも広げる向きの写像なので、裁ち落としの範囲は網で覆われたまま。
 const WAVE = (-28 * Math.PI) / 180;
 const flow = ([x, y]: Point): Point => {
   const g = 1 + 0.28 * depth([x, y]);
-  let px = x * g, py = y * g;
+  const px = x * g, py = y * g;
   const cx = W / 2, cy = H / 2, dx = px - cx, dy = py - cy;
   const u = dx * Math.cos(WAVE) + dy * Math.sin(WAVE), v = -dx * Math.sin(WAVE) + dy * Math.cos(WAVE);
   const su = u * 1.28;
   return [cx + su * Math.cos(WAVE) - v * Math.sin(WAVE), cy + su * Math.sin(WAVE) + v * Math.cos(WAVE)];
 };
-// 網の頂点を動かす。場所だけで決まる関数なので、隣り合うセルが共有する頂点は同じだけ動き、網は途切れない。
-// 水面のうねりで網全体がゆるく揺らぎ、波紋のまわりでは輪の形に押し広げられて曲がる。
+// 頂点の移動は場所だけで決まる関数にする。隣り合うセルが共有する頂点が同じだけ動き、網が途切れない。
 const sway = ([x, y]: Point): Point => [
   x + 0.55 * Math.sin(0.42 * y + 0.9) + 0.35 * Math.sin(0.23 * (x + y) + 2.1),
   y + 0.55 * Math.sin(0.38 * x + 1.7) + 0.35 * Math.sin(0.27 * (x - y) + 0.4),
@@ -77,7 +64,7 @@ const shrink = (poly: Point[], k: number): Point[] => {
   return poly.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]);
 };
 const mid = (a: Point, b: Point): Point => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-/** 角を、辺の中点をつなぐ 2 次ベジェで丸めた閉じた曲線。頂点の数だけの曲線で済み、紙面が重くならない。 */
+/** 角を、辺の中点をつなぐ 2 次ベジェで丸める。頂点の数だけの曲線で済み、紙面が重くならない。 */
 const smooth = (poly: Point[]) => {
   const start = mid(poly.at(-1)!, poly[0]);
   return `M${f(start[0])} ${f(start[1])}` + poly.map((p, i) => {
@@ -86,12 +73,10 @@ const smooth = (poly: Point[]) => {
   }).join('') + 'Z';
 };
 
-// 光の網。セルを丸めて少しずつ縮めた面を 3 枚重ね、網の線のすぐ近くだけを明るくする(明るい側から内へなだらかに暗くなる)。
 const coarse = causticCells(31, bleedBox, 7, 1).map(shape);
 const fine = causticCells(53, bleedBox, 12, 1).map(shape);
 const glow = [0.99, 0.955, 0.91];
 
-// 網の線。小さいセルほど光が集まっているので細く明るく、深いところほど太く薄くする。主役の筋を立てるため、全体は控えめにする。
 const areas = coarse.map(area);
 const aMin = Math.min(...areas), aMax = Math.max(...areas);
 const filaments = coarse.map((c, i) => {
@@ -99,7 +84,7 @@ const filaments = coarse.map((c, i) => {
   return { d: smooth(c), width: (0.12 + 0.15 * loose) * (1 + 1.1 * d), opacity: (0.7 - 0.3 * loose) * (1 - 0.5 * d) };
 });
 
-// 網の頂点と辺。頂点は同じ入力から同じ位置に動くので、座標の文字列でまとめられる。
+// 共有する頂点は同じ位置に動くので、座標の文字列でまとめられる。
 const keyOf = (p: Point) => `${p[0].toFixed(3)},${p[1].toFixed(3)}`;
 const pos = new Map<string, Point>();
 const links = new Map<string, Set<string>>();
@@ -110,11 +95,9 @@ for (const c of coarse) c.forEach((p, i) => {
   if (!links.has(b)) links.set(b, new Set());
   links.get(a)!.add(b); links.get(b)!.add(a);
 });
-// 線が 3 本出会う点。光線が重なるので、線そのものより明るい点として置く。
 const junctions = [...links.entries()].filter(([, n]) => n.size >= 3).map(([k]) => pos.get(k)!).map((p) => ({ p, d: depth(p) }));
 
-// 主役の光の筋。交点から出発し、曲がりの少ない辺を選んでたどる。曲線は網の丸めた角と同じ式で描くので、網からずれない。
-// 浅いところほど多く、強く光らせる。名前のまわりは通さない。
+// 主役の光の筋。交点から曲がりの少ない辺をたどる。網の丸めた角と同じ式で描くので、網からずれない。
 const rand = (() => { let s = 7; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
 const heroStarts = junctions.filter(({ p, d }) => d < 0.8 && !inText(p) && p[0] > 0 && p[0] < W && p[1] > 0 && p[1] < H)
   .map((j) => ({ ...j, w: (1 - j.d) * rand() }))
@@ -134,13 +117,11 @@ const heroes = heroStarts.map(({ p }) => {
   }
   if (path.length < 3) return null;
   const d = depth(centroid(path));
-  // 端は辺の中点から始めて中点で終える。途中の角は、網と同じく頂点を制御点にした 2 次ベジェで丸める。
   let dStr = `M${f(mid(path[0], path[1])[0])} ${f(mid(path[0], path[1])[1])}`;
   for (let i = 1; i < path.length - 1; i++) { const m = mid(path[i], path[i + 1]); dStr += `Q${f(path[i][0])} ${f(path[i][1])} ${f(m[0])} ${f(m[1])}`; }
   return { d: dStr, depth: d };
 }).filter((h): h is { d: string; depth: number } => h !== null);
 
-// 尖って消える線。いくつかのセルで、角から内側へ細くなって消える光の筋を足す。種を固定して毎回同じ場所に出す。
 const cusps = coarse.flatMap((c, i) => {
   if ((i * 2654435761) % 97 > 26) return [];
   const v = c[(i * 7) % c.length], [cx, cy] = centroid(c), d = depth(v);
@@ -154,8 +135,7 @@ const cusps = coarse.flatMap((c, i) => {
   }];
 });
 
-// 波紋。浅い水では短い波ほど速く進み、外側に細かい輪が詰まる。中心寄りは太くゆるい輪になる。
-// 各輪は、くぼみが落とす影の帯と、その外側に集まった光の明るい縁の組。影は太陽の反対へわずかにずれる。
+// 波紋。浅い水では短い波ほど速く進むため、外側ほど輪が詰まる。
 const ripples = DROPS.flatMap((drop) => Array.from({ length: drop.n }, (_, k) => {
   const t = (k + 1) / drop.n, r = drop.R * Math.sqrt(t), d = depth([drop.x, drop.y]);
   const soft = 1 + 0.8 * d, fade = (1 - 0.6 * t) * (1 - 0.3 * d);
@@ -163,22 +143,18 @@ const ripples = DROPS.flatMap((drop) => Array.from({ length: drop.n }, (_, k) =>
   return { x: drop.x, y: drop.y, r, band, rim, fade };
 }));
 
-// 粒は文字のまわりに撒かない。
 const motes = marineSnow(41, 46).filter((p) => !inText([p.x, p.y]));
 ---
 <defs>
-  {/* 浅い左上の、日の当たる砂の暖かい明るさから、深い右下の青緑へ。 */}
   <linearGradient id={`${id}-water`} x1="0" y1="0" x2={W * 0.8} y2={H} gradientUnits="userSpaceOnUse">
     <stop offset="0" stop-color={INK.shallowSand} /><stop offset=".48" stop-color={INK.shallowAqua} /><stop offset="1" stop-color={INK.deepTeal} />
   </linearGradient>
-  {/* 網の光。浅いところは太陽の暖かさ、深いところは明るい水の色を帯びる。 */}
   <linearGradient id={`${id}-filament`} x1="0" y1="0" x2={W} y2={H} gradientUnits="userSpaceOnUse">
     <stop offset="0" stop-color={INK.filamentWarm} /><stop offset="1" stop-color={INK.filamentCool} />
   </linearGradient>
   <radialGradient id={`${id}-node`}>
     <stop offset="0" stop-color={INK.filamentWarm} stop-opacity=".95" /><stop offset="1" stop-color={INK.filamentWarm} stop-opacity="0" />
   </radialGradient>
-  {/* サイトの太陽と同じ段(芯・暖かい光・霞)を、名刺の大きさに合わせる。 */}
   <radialGradient id={`${id}-sun`} cx="4" cy="-6" r="62" gradientUnits="userSpaceOnUse">
     <stop offset="0" stop-color="#ffffff" stop-opacity=".9" />
     <stop offset=".05" stop-color="#ffffff" stop-opacity=".75" />
@@ -186,30 +162,26 @@ const motes = marineSnow(41, 46).filter((p) => !inText([p.x, p.y]));
     <stop offset=".45" stop-color={INK.sunHaze} stop-opacity=".18" />
     <stop offset="1" stop-color={INK.sunHaze} stop-opacity="0" />
   </radialGradient>
-  {/* 波紋の明るい縁は、太陽のある左上の側が強い。 */}
   <linearGradient id={`${id}-crest`} x1="0" y1="0" x2="1" y2="1">
     <stop offset=".1" stop-color={INK.filamentWarm} stop-opacity=".95" />
     <stop offset=".9" stop-color={INK.filamentCool} stop-opacity=".35" />
   </linearGradient>
-  {/* 深さの霞。水の中にあるもの全部の上にかけ、深いほど水の色に沈める。 */}
   <linearGradient id={`${id}-sink`} x1="0" y1="30" x2={W * 0.3} y2={H + B} gradientUnits="userSpaceOnUse">
     <stop offset="0" stop-color={INK.deepTeal} stop-opacity="0" />
     <stop offset="1" stop-color={INK.deepTeal} stop-opacity=".6" />
   </linearGradient>
 </defs>
 
-{has('under') && <rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-water)`} />}
+{layer === 'under' && <rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-water)`} />}
 
-{has('shadow') && (
-  /* 網の影。光の線と同じ太さで、ずれた側にだけ薄く見せる。3D の札ではこの層だけを JS が傾きに合わせて動かし、紙面では太陽の反対へ固定でずらす。 */
-  <g transform={layer === 'all' ? `translate(${SHADOW_OFFSET[0]} ${SHADOW_OFFSET[1]})` : undefined} fill="none" stroke={INK.waterShade} opacity=".13">
+{layer === 'shadow' && (
+  <g fill="none" stroke={INK.waterShade} opacity=".13">
     {filaments.map((l) => <path d={l.d} stroke-width={f(l.width)} />)}
   </g>
 )}
 
-{has('over') && (
+{layer === 'over' && (
   <>
-    {/* ここから霞までが水の中。 */}
     <g fill="none" stroke={`url(#${id}-filament)`}>
       {filaments.map((l) => <path d={l.d} stroke-width={f(l.width)} opacity={f(l.opacity)} />)}
     </g>
@@ -217,19 +189,15 @@ const motes = marineSnow(41, 46).filter((p) => !inText([p.x, p.y]));
     {glow.map((k) => (
       <g fill={INK.waterShade} opacity=".045">{coarse.map((c) => <path d={smooth(shrink(c, k))} />)}</g>
     ))}
-    {/* 細かい網は薄く 2 枚だけ重ね、揺らぎの大小を出す。 */}
     {[0.95, 0.85].map((k) => (
       <g fill={INK.waterShade} opacity=".025">{fine.map((c) => <path d={smooth(shrink(c, k))} />)}</g>
     ))}
-    {/* 主役の光の筋。淡い光の帯の上に、細く強い芯を通す。 */}
     <g fill="none" stroke-linecap="round" stroke-linejoin="round">
       {heroes.map((h) => <path d={h.d} stroke={INK.sunGlow} stroke-width={f(1.1 * (1 + 0.6 * h.depth))} opacity={f(0.22 * (1 - 0.5 * h.depth))} />)}
       {heroes.map((h) => <path d={h.d} stroke={`url(#${id}-filament)`} stroke-width={f(0.3 * (1 + 0.6 * h.depth))} opacity={f(0.95 * (1 - 0.4 * h.depth))} />)}
     </g>
-    {/* 交点の光。深いほど大きくぼける。 */}
     {junctions.map(({ p, d }) => <circle cx={f(p[0])} cy={f(p[1])} r={f(0.42 * (1 + 0.7 * d))} fill={`url(#${id}-node)`} opacity={f(0.7 * (1 - 0.5 * d))} />)}
 
-    {/* 波紋。影の帯(太陽の反対へずらす)と、その外側の明るい縁。 */}
     {ripples.map((q) => (
       <g fill="none" opacity={f(q.fade)}>
         <circle cx={f(q.x + SHADOW_OFFSET[0] * 0.5)} cy={f(q.y + SHADOW_OFFSET[1] * 0.5)} r={f(Math.max(q.r - q.band / 2 - q.rim / 2, 0.2))} stroke={INK.waterShade} stroke-width={f(q.band)} opacity=".16" />
@@ -239,11 +207,10 @@ const motes = marineSnow(41, 46).filter((p) => !inText([p.x, p.y]));
 
     <g fill={INK.mote}>{motes.map((p) => <circle cx={p.x} cy={p.y} r={p.r * 0.8} opacity={p.a * 0.4} />)}</g>
 
-    {/* 深さの霞と太陽の光は、水の中にあるもの全部の上にかける。 */}
+    {/* 霞と太陽の光は水の中にあるもの全部の上にかけ、その上に紙に刷った文字だけを載せる。 */}
     <rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-sink)`} />
     <rect x={-B} y={-B} width={W + B * 2} height={H + B * 2} fill={`url(#${id}-sun)`} />
 
-    {/* 紙に刷った文字。ここだけが水の外。 */}
     <g text-anchor="middle">
       <text x={W / 2} y={50} class="t-name t-name-back" fill={INK.lightInk}>{SITE.name}<tspan fill={INK.accent}>.</tspan></text>
       <text x={W / 2} y={57} class="t-mono" fill={INK.lightInk2}>{host}</text>

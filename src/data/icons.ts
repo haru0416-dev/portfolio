@@ -24,9 +24,7 @@ export const ICONS = {
   bug: Bug,
 } as const;
 
-
 export type { IconName };
-export { ICON_NAMES };
 
 const registered = Object.keys(ICONS);
 if (registered.length !== ICON_NAMES.length || ICON_NAMES.some((name) => !registered.includes(name))) {
