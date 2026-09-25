@@ -12,6 +12,8 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
   const glCanvas = canvas.parentElement?.querySelector<HTMLCanvasElement>('canvas.caustic') ?? null;
   return runBackground(canvas, { theme: 'light', fps: FPS }, (ctx) => {
     const caustic = glCanvas && createCaustic(glCanvas);
+    // 網を描かない環境では Canvas ごと隠す。一度作って捨てた WebGL の Canvas は、テーマ切り替えの遷移のあとに白く塗られることがある。
+    if (glCanvas && !caustic) glCanvas.hidden = true;
     const motes = createParticles({ color: 'rgb(72,64,112)', area: 20000, dir: -1, alpha: [0.1, 0.32] });
     let now = 0;
     return {
