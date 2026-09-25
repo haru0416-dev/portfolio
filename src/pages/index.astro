@@ -34,8 +34,8 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         Rust や TypeScript でツールや対話プログラムを作っています。開発中に試したことや、ブラウザで動く実験も載せています。
       </p>
       <div class="mt-8 flex flex-wrap gap-2 hero-lead">
-        <a href="/works" class="pill pill-accent press">作品を見る</a>
-        <a href="/blog" class="pill glass press">記事を読む</a>
+        <a href="/works/" class="pill pill-accent press">作品を見る</a>
+        <a href="/blog/" class="pill glass press">記事を読む</a>
         <a href={SITE.github} class="pill glass press">GitHub</a>
       </div>
     </div>
@@ -50,7 +50,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
     <section class="lg:col-start-1 lg:row-start-1">
       <h2 class="eyebrow mb-2"><span>Recent posts</span></h2>
       <PostList posts={posts} compact />
-      <a href="/blog" class="u-link inline-block mt-4 text-sm text-muted hover:text-ink">すべての記事 →</a>
+      <a href="/blog/" class="u-link inline-block mt-4 text-sm text-muted hover:text-ink">すべての記事 →</a>
     </section>
 
     <section class="reveal lg:col-start-2 lg:row-start-1 lg:row-span-2">
@@ -68,7 +68,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
           </li>
         ))}
       </ul>
-      <a href="/works" class="u-link inline-block mt-4 text-sm text-muted hover:text-ink">すべての作品 →</a>
+      <a href="/works/" class="u-link inline-block mt-4 text-sm text-muted hover:text-ink">すべての作品 →</a>
     </section>
 
     <section class="reveal lg:col-start-1 lg:row-start-2">

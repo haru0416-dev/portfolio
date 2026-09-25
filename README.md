@@ -87,7 +87,7 @@ bun run pages:dev
 
 ### フォント
 
-ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、Fredoka・Nunito・JetBrains Mono は `/fonts.css` に `@font-face` をまとめる。
+ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、Fredoka・Nunito・JetBrains Mono は Astro の Fonts API と `<Font />` で各ページに `@font-face` を書き込む。
 
 和文見出しは、Zen Maru Gothic から作った 2 つのフォントで描く。どちらも先読みし、遅い回線でも見出しが後から差し替わらないようにする。再生成には uv と Python 3.12 以上が必要。
 

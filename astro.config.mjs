@@ -46,6 +46,8 @@ function shaderSource() {
 
 export default defineConfig({
   site: 'https://haru0416.dev',
+  // 静的な出力はディレクトリ形式(/about/index.html)。スラッシュなしの URL は Cloudflare Pages が 308 で転送し、移動のたびに 1 往復増える。
+  trailingSlash: 'always',
   vite: {
     plugins: [tailwindcss(), shaderSource()],
     // Tailscale 経由で dev サーバーを見るため

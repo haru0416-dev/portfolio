@@ -7,8 +7,7 @@ import { labFromPath } from '../data/lab';
 import { RAYS } from '../data/sea';
 import { rootColorStyle, THEME_COLOR } from '../palette';
 import { ClientRouter } from 'astro:transitions';
-import { componentDataByCssVariable } from 'virtual:astro:assets/fonts/internal';
-const fontPreloads = (vars: string[]) => vars.flatMap((v) => componentDataByCssVariable.get(v)?.preloads ?? []);
+import { Font } from 'astro:assets';
 
 interface Props {
   title?: string;
@@ -21,7 +20,6 @@ interface Props {
   mono?: boolean;
 }
 const { title, description = SITE.description, wide = false, image, type = 'website', jpHeadings = true, mono = false } = Astro.props;
-const preloads = fontPreloads(['--font-fredoka', '--font-nunito', ...(mono ? ['--font-jetbrains'] : [])]);
 const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const lab = labFromPath(Astro.url.pathname);
@@ -80,8 +78,9 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     <meta name="twitter:image" content={socialImage} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
     <slot name="head" />
-    {preloads.map((p) => <link rel="preload" href={p.url} as="font" type={`font/${p.type}`} crossorigin />)}
-    <link rel="stylesheet" href="/fonts.css" />
+    <Font cssVariable="--font-fredoka" preload />
+    <Font cssVariable="--font-nunito" preload />
+    <Font cssVariable="--font-jetbrains" preload={mono} />
     {jpHeadings && <link rel="preload" href="/fonts/zen-maru-kana-700.woff2" as="font" type="font/woff2" crossorigin />}
     {jpHeadings && <link rel="preload" href="/fonts/zen-maru-700.woff2" as="font" type="font/woff2" crossorigin />}
     {/* 最初に目にする矢印と指さしだけ先読みする。端末のテーマに合う方を読む。 */}
