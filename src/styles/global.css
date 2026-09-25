@@ -397,6 +397,107 @@ header.site.glass::before { content: none; }
 [data-astro-transition-fallback="old"] :is(main, main [data-astro-transition-scope]) { animation-name: astroFadeOut; }
 [data-astro-transition-fallback="new"] :is(main, main [data-astro-transition-scope]) { animation-name: astroFadeIn; }
 
+/* テーマの切り替え。ゆっくり見せる。
+   ライトからダークへは潜る。深い海が波打って下から満ちてきて、水面の裏が光り、泡が一緒に昇る。前の画面は光を失っていく。
+   ダークからライトへは浮かぶ。明るい水面が上から降りてきて、日の光の縁ときらめきが先に立つ。
+   波は画面の高さの 3 倍の絵を窓からずらして見せる。先を行く淡い 2 枚は、水面の手前の薄い水の層。
+   絵の縁は窓の位置 p に対して画面の (1.5 - 2p) × 高さにある。縁が画面のすぐ外にある 22% から 78% だけを動かし、何も見えない時間を作らない。
+   ページ移動用の遷移名が付いた要素が別々に動くと波が崩れるため、切り替えの間だけ外す。 */
+:root { --theme-switch: 2.2s; --theme-ease: cubic-bezier(.55, 0, .25, 1); }
+html[data-theme-switch] * { view-transition-name: none !important; }
+html[data-theme-switch]::view-transition-group(root) { animation-duration: var(--theme-switch); }
+html[data-theme-switch]::view-transition-old(root) { animation: var(--theme-switch) var(--theme-ease) both; }
+html[data-theme-switch]::view-transition-new(root) {
+  animation: var(--theme-switch) var(--theme-ease) both;
+  mask-size: 100vw 300%; mask-repeat: repeat-x;
+}
+html[data-theme-switch="dark"]::view-transition-old(root) { animation-name: theme-old-dive; }
+html[data-theme-switch="dark"]::view-transition-new(root) { animation-name: theme-dive; mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 300' preserveAspectRatio='none'><path d='M-11.7 141C-3.3 138.6 -3.3 138.6 5.0 141S13.3 143.4 21.7 141C30.0 138.6 30.0 138.6 38.3 141S46.7 143.4 55.0 141C63.3 138.6 63.3 138.6 71.7 141S80.0 143.4 88.3 141C96.7 138.6 96.7 138.6 105.0 141S113.3 143.4 121.7 141V300H-11.7Z' fill-opacity='0.2'/><path d='M-23.3 145.5C-15.0 142.5 -15.0 142.5 -6.7 145.5S1.7 148.5 10.0 145.5C18.3 142.5 18.3 142.5 26.7 145.5S35.0 148.5 43.3 145.5C51.7 142.5 51.7 142.5 60.0 145.5S68.3 148.5 76.7 145.5C85.0 142.5 85.0 142.5 93.3 145.5S101.7 148.5 110.0 145.5V300H-23.3Z' fill-opacity='0.45'/><path d='M-0.0 150C8.3 146.4 8.3 146.4 16.7 150S25.0 153.6 33.3 150C41.7 146.4 41.7 146.4 50.0 150S58.3 153.6 66.7 150C75.0 146.4 75.0 146.4 83.3 150S91.7 153.6 100.0 150C108.3 146.4 108.3 146.4 116.7 150S125.0 153.6 133.3 150V300H-0.0Z'/></svg>"); }
+html[data-theme-switch="light"]::view-transition-old(root) { animation-name: theme-old-surface; }
+html[data-theme-switch="light"]::view-transition-new(root) { animation-name: theme-surface; mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 300' preserveAspectRatio='none'><path d='M-11.7 159C-3.3 156.6 -3.3 156.6 5.0 159S13.3 161.4 21.7 159C30.0 156.6 30.0 156.6 38.3 159S46.7 161.4 55.0 159C63.3 156.6 63.3 156.6 71.7 159S80.0 161.4 88.3 159C96.7 156.6 96.7 156.6 105.0 159S113.3 161.4 121.7 159V0H-11.7Z' fill-opacity='0.2'/><path d='M-23.3 154.5C-15.0 151.5 -15.0 151.5 -6.7 154.5S1.7 157.5 10.0 154.5C18.3 151.5 18.3 151.5 26.7 154.5S35.0 157.5 43.3 154.5C51.7 151.5 51.7 151.5 60.0 154.5S68.3 157.5 76.7 154.5C85.0 151.5 85.0 151.5 93.3 154.5S101.7 157.5 110.0 154.5V0H-23.3Z' fill-opacity='0.45'/><path d='M-0.0 150C8.3 146.4 8.3 146.4 16.7 150S25.0 153.6 33.3 150C41.7 146.4 41.7 146.4 50.0 150S58.3 153.6 66.7 150C75.0 146.4 75.0 146.4 83.3 150S91.7 153.6 100.0 150C108.3 146.4 108.3 146.4 116.7 150S125.0 153.6 133.3 150V0H-0.0Z'/></svg>"); }
+/* 波は上下するあいだに横へも流れる。画面は上下に動かさない。淡い水の層の中で新旧の文字がずれて二重に見える。 */
+@keyframes theme-dive { from { mask-position: 0 22%; } to { mask-position: -60vw 78%; } }
+@keyframes theme-surface { from { mask-position: 0 78%; } to { mask-position: 60vw 22%; } }
+@keyframes theme-old-dive { to { filter: brightness(.85); } }
+@keyframes theme-old-surface { to { filter: brightness(1.2); } }
+
+/* 水面の縁の光。新しい画面の中に置くので、波の形に切り抜かれる。遷移が始まってから動かし、波と揃える。
+   縁は画面の 105vh から -5vh へ動く(浮かぶときは逆)。終わりには光の帯がまだ画面に残るので、薄れて消える。
+   光の線は本体の波と同じ形の絵で、同じだけ横へ流す。まっすぐな線だと、波打つ水の層の中に水平線が引かれて見える。
+   絵の中の波の中心は帯の端から 4vh の位置にあるので、帯はその分ずらす。浮かぶときは線が淡い層の側へ出ないよう、さらに 1vh 内へ寄せる。 */
+.theme-tide { position: fixed; left: 0; width: 100vw; height: 45vh; z-index: 2147483647; pointer-events: none; visibility: hidden; }
+.theme-tide.is-moving { visibility: visible; animation: var(--theme-switch) var(--theme-ease) both; }
+.theme-tide::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tide-glow) 0 0 / 100vw 100% repeat-x; }
+.theme-tide.is-moving::before { animation: var(--theme-switch) var(--theme-ease) both; }
+/* 潜るとき: 縁のすぐ下が明るく光り、泡がその下に続く。 */
+html[data-theme-switch="dark"] .theme-tide {
+  top: 0;
+  --tide-glow: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 45' preserveAspectRatio='none'><defs><linearGradient id='g' x2='0' y2='1'><stop offset='0' stop-color='white' stop-opacity='.38'/><stop offset='.35' stop-color='white' stop-opacity='.06'/><stop offset='1' stop-color='white' stop-opacity='0'/></linearGradient></defs><path d='M0 4C8.3 0.3999999999999999 8.3 0.3999999999999999 16.7 4S25.0 7.6 33.3 4C41.7 0.3999999999999999 41.7 0.3999999999999999 50.0 4S58.3 7.6 66.7 4C75.0 0.3999999999999999 75.0 0.3999999999999999 83.3 4S91.7 7.6 100.0 4V45H0Z' fill='url(%23g)'/><path d='M0 4C8.3 0.3999999999999999 8.3 0.3999999999999999 16.7 4S25.0 7.6 33.3 4C41.7 0.3999999999999999 41.7 0.3999999999999999 50.0 4S58.3 7.6 66.7 4C75.0 0.3999999999999999 75.0 0.3999999999999999 83.3 4S91.7 7.6 100.0 4' fill='none' stroke='oklch(90% .06 215)' stroke-width='2.5' stroke-opacity='.9' vector-effect='non-scaling-stroke'/></svg>");
+  background:
+    radial-gradient(circle at 33.1% 17.9%, oklch(95% .03 220 / .12) 0 3.5px, oklch(97% .03 220 / .75) 4.2px 4.9px, transparent 5.9px),
+    radial-gradient(circle at 9.0% 48.3%, oklch(95% .03 220 / .12) 0 2.6px, oklch(97% .03 220 / .75) 3.1px 3.6px, transparent 4.6px),
+    radial-gradient(circle at 7.6% 46.1%, oklch(95% .03 220 / .12) 0 1.5px, oklch(97% .03 220 / .75) 1.8px 2.2px, transparent 3.2px),
+    radial-gradient(circle at 43.6% 11.5%, oklch(95% .03 220 / .12) 0 1.7px, oklch(97% .03 220 / .75) 2.0px 2.4px, transparent 3.4px),
+    radial-gradient(circle at 42.8% 71.3%, oklch(95% .03 220 / .12) 0 1.8px, oklch(97% .03 220 / .75) 2.2px 2.6px, transparent 3.6px),
+    radial-gradient(circle at 23.4% 55.6%, oklch(95% .03 220 / .12) 0 4.4px, oklch(97% .03 220 / .75) 5.3px 6.3px, transparent 7.3px),
+    radial-gradient(circle at 57.4% 37.3%, oklch(95% .03 220 / .12) 0 4.5px, oklch(97% .03 220 / .75) 5.4px 6.4px, transparent 7.4px),
+    radial-gradient(circle at 6.5% 73.8%, oklch(95% .03 220 / .12) 0 2.3px, oklch(97% .03 220 / .75) 2.8px 3.3px, transparent 4.3px),
+    radial-gradient(circle at 15.8% 15.3%, oklch(95% .03 220 / .12) 0 2.4px, oklch(97% .03 220 / .75) 2.9px 3.4px, transparent 4.4px),
+    radial-gradient(circle at 80.3% 20.3%, oklch(95% .03 220 / .12) 0 3.2px, oklch(97% .03 220 / .75) 3.9px 4.6px, transparent 5.6px),
+    radial-gradient(circle at 63.3% 35.4%, oklch(95% .03 220 / .12) 0 3.1px, oklch(97% .03 220 / .75) 3.8px 4.5px, transparent 5.5px),
+    radial-gradient(circle at 8.0% 10.7%, oklch(95% .03 220 / .12) 0 2.0px, oklch(97% .03 220 / .75) 2.5px 2.9px, transparent 3.9px),
+    radial-gradient(circle at 67.3% 39.8%, oklch(95% .03 220 / .12) 0 2.4px, oklch(97% .03 220 / .75) 2.9px 3.4px, transparent 4.4px),
+    radial-gradient(circle at 58.2% 41.8%, oklch(95% .03 220 / .12) 0 2.3px, oklch(97% .03 220 / .75) 2.8px 3.3px, transparent 4.3px),
+    radial-gradient(circle at 78.3% 61.2%, oklch(95% .03 220 / .12) 0 2.2px, oklch(97% .03 220 / .75) 2.6px 3.1px, transparent 4.1px),
+    radial-gradient(circle at 57.1% 47.5%, oklch(95% .03 220 / .12) 0 4.2px, oklch(97% .03 220 / .75) 5.0px 5.9px, transparent 6.9px),
+    radial-gradient(circle at 72.0% 28.7%, oklch(95% .03 220 / .12) 0 4.5px, oklch(97% .03 220 / .75) 5.4px 6.4px, transparent 7.4px),
+    radial-gradient(circle at 13.3% 39.0%, oklch(95% .03 220 / .12) 0 3.8px, oklch(97% .03 220 / .75) 4.6px 5.4px, transparent 6.4px),
+    radial-gradient(circle at 16.6% 44.6%, oklch(95% .03 220 / .12) 0 1.5px, oklch(97% .03 220 / .75) 1.8px 2.2px, transparent 3.2px),
+    radial-gradient(circle at 66.1% 66.4%, oklch(95% .03 220 / .12) 0 3.2px, oklch(97% .03 220 / .75) 3.9px 4.6px, transparent 5.6px),
+    radial-gradient(circle at 86.0% 30.8%, oklch(95% .03 220 / .12) 0 3.6px, oklch(97% .03 220 / .75) 4.4px 5.1px, transparent 6.1px),
+    radial-gradient(circle at 59.1% 51.8%, oklch(95% .03 220 / .12) 0 2.8px, oklch(97% .03 220 / .75) 3.4px 4.1px, transparent 5.1px),
+    radial-gradient(circle at 82.6% 80.6%, oklch(95% .03 220 / .12) 0 2.9px, oklch(97% .03 220 / .75) 3.5px 4.1px, transparent 5.1px),
+    radial-gradient(circle at 65.8% 10.8%, oklch(95% .03 220 / .12) 0 3.6px, oklch(97% .03 220 / .75) 4.4px 5.2px, transparent 6.2px),
+    radial-gradient(circle at 64.1% 84.5%, oklch(95% .03 220 / .12) 0 4.0px, oklch(97% .03 220 / .75) 4.8px 5.7px, transparent 6.7px),
+    radial-gradient(circle at 29.3% 36.5%, oklch(95% .03 220 / .12) 0 3.5px, oklch(97% .03 220 / .75) 4.3px 5.0px, transparent 6.0px);
+}
+html[data-theme-switch="dark"] .theme-tide.is-moving { animation-name: theme-tide-dive; }
+html[data-theme-switch="dark"] .theme-tide.is-moving::before { animation-name: theme-tide-flow-dive; }
+@keyframes theme-tide-dive { from { transform: translateY(101vh); } 70% { opacity: 1; } to { transform: translateY(-9vh); opacity: 0; } }
+@keyframes theme-tide-flow-dive { to { background-position-x: -60vw; } }
+/* 浮かぶとき: 縁のすぐ上が日の光で暖かく光り、きらめきが散る。 */
+html[data-theme-switch="light"] .theme-tide {
+  top: -45vh;
+  --tide-glow: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 45' preserveAspectRatio='none'><defs><linearGradient id='g' x2='0' y2='1'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='.65' stop-color='%23fff6dc' stop-opacity='.1'/><stop offset='1' stop-color='%23fff6dc' stop-opacity='.7'/></linearGradient></defs><path d='M0 41C8.3 37.4 8.3 37.4 16.7 41S25.0 44.6 33.3 41C41.7 37.4 41.7 37.4 50.0 41S58.3 44.6 66.7 41C75.0 37.4 75.0 37.4 83.3 41S91.7 44.6 100.0 41V0H0Z' fill='url(%23g)'/><path d='M0 41C8.3 37.4 8.3 37.4 16.7 41S25.0 44.6 33.3 41C41.7 37.4 41.7 37.4 50.0 41S58.3 44.6 66.7 41C75.0 37.4 75.0 37.4 83.3 41S91.7 44.6 100.0 41' fill='none' stroke='oklch(99% .04 90)' stroke-width='2.5' stroke-opacity='.9' vector-effect='non-scaling-stroke'/></svg>");
+  background:
+    radial-gradient(circle at 4.2% 82.9%, oklch(100% 0 0 / .95) 0 1.0px, transparent 2.2px),
+    radial-gradient(circle at 13.2% 71.7%, oklch(100% 0 0 / .95) 0 1.9px, transparent 3.1px),
+    radial-gradient(circle at 14.4% 76.9%, oklch(100% 0 0 / .95) 0 1.3px, transparent 2.5px),
+    radial-gradient(circle at 85.7% 72.3%, oklch(100% 0 0 / .95) 0 1.4px, transparent 2.6px),
+    radial-gradient(circle at 54.7% 94.7%, oklch(100% 0 0 / .95) 0 1.9px, transparent 3.1px),
+    radial-gradient(circle at 84.9% 77.8%, oklch(100% 0 0 / .95) 0 1.4px, transparent 2.6px),
+    radial-gradient(circle at 36.4% 94.8%, oklch(100% 0 0 / .95) 0 2.1px, transparent 3.3px),
+    radial-gradient(circle at 16.5% 74.9%, oklch(100% 0 0 / .95) 0 1.1px, transparent 2.3px),
+    radial-gradient(circle at 24.4% 83.6%, oklch(100% 0 0 / .95) 0 1.6px, transparent 2.8px),
+    radial-gradient(circle at 27.2% 70.1%, oklch(100% 0 0 / .95) 0 1.4px, transparent 2.6px),
+    radial-gradient(circle at 37.4% 85.9%, oklch(100% 0 0 / .95) 0 2.1px, transparent 3.3px),
+    radial-gradient(circle at 68.3% 84.4%, oklch(100% 0 0 / .95) 0 1.7px, transparent 2.9px),
+    radial-gradient(circle at 66.9% 71.5%, oklch(100% 0 0 / .95) 0 2.1px, transparent 3.3px),
+    radial-gradient(circle at 76.9% 94.5%, oklch(100% 0 0 / .95) 0 1.9px, transparent 3.1px),
+    radial-gradient(circle at 39.7% 81.2%, oklch(100% 0 0 / .95) 0 0.9px, transparent 2.1px),
+    radial-gradient(circle at 62.9% 71.7%, oklch(100% 0 0 / .95) 0 0.9px, transparent 2.1px),
+    radial-gradient(circle at 22.0% 74.5%, oklch(100% 0 0 / .95) 0 1.3px, transparent 2.5px),
+    radial-gradient(circle at 7.0% 70.0%, oklch(100% 0 0 / .95) 0 1.0px, transparent 2.2px),
+    radial-gradient(circle at 11.7% 80.2%, oklch(100% 0 0 / .95) 0 0.8px, transparent 2.0px),
+    radial-gradient(circle at 85.9% 87.2%, oklch(100% 0 0 / .95) 0 1.0px, transparent 2.2px),
+    radial-gradient(circle at 26.2% 79.7%, oklch(100% 0 0 / .95) 0 1.3px, transparent 2.5px),
+    radial-gradient(circle at 13.8% 93.8%, oklch(100% 0 0 / .95) 0 2.2px, transparent 3.4px);
+}
+html[data-theme-switch="light"] .theme-tide.is-moving { animation-name: theme-tide-surface; }
+html[data-theme-switch="light"] .theme-tide.is-moving::before { animation-name: theme-tide-flow-surface; }
+@keyframes theme-tide-surface { from { transform: translateY(-2vh); } 70% { opacity: 1; } to { transform: translateY(108vh); opacity: 0; } }
+@keyframes theme-tide-flow-surface { to { background-position-x: 60vw; } }
+
 /* 新旧の本文が重なって読めない時間を作らないよう、古い本文を消し切ってから出す。 */
 ::view-transition-old(main) { animation: vt-out 120ms cubic-bezier(0.4, 0, 1, 1) both; }
 ::view-transition-new(main) { animation: vt-in 320ms var(--ease-out) 100ms both; }

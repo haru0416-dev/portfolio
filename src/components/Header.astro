@@ -110,10 +110,27 @@ const path = Astro.url.pathname;
       if (!(choice instanceof HTMLInputElement) || !choice.checked) return;
       const next = choice.value;
       if (next !== 'system' && next !== 'light' && next !== 'dark') return;
-      if (next === 'system') localStorage.removeItem('theme');
-      else localStorage.setItem('theme', next);
-      applySiteTheme?.();
-      sync();
+      const apply = () => {
+        if (next === 'system') localStorage.removeItem('theme');
+        else localStorage.setItem('theme', next);
+        applySiteTheme?.();
+        sync();
+      };
+      // 見た目のテーマが変わるときだけ、水面が上下する切り替えにする。
+      const toDark = next === 'system' ? matchMedia('(prefers-color-scheme: dark)').matches : next === 'dark';
+      if (toDark === isDark() || !document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        apply();
+        return;
+      }
+      const root = document.documentElement;
+      root.dataset.themeSwitch = toDark ? 'dark' : 'light';
+      // 水面の縁の光は新しい画面にだけ置き、波と同時に動かし始める。
+      const tide = document.createElement('div');
+      tide.className = 'theme-tide';
+      tide.setAttribute('aria-hidden', 'true');
+      const transition = document.startViewTransition(() => { document.body.append(tide); apply(); });
+      transition.ready.then(() => tide.classList.add('is-moving'), () => {});
+      transition.finished.finally(() => { tide.remove(); delete root.dataset.themeSwitch; });
     };
     let openedByKey = false;
     const markPointer = () => { openedByKey = false; };
