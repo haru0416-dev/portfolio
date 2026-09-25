@@ -1,4 +1,5 @@
 // @ts-check
+import { readFile } from 'node:fs/promises';
 import { defineConfig, fontProviders } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
@@ -11,10 +12,42 @@ import { lastmodByPath } from './src/data/lastmod.ts';
 
 const lastmod = lastmodByPath();
 
+/**
+ * シェーダーのソース(src/shaders の .glsl・.wgsl)を文字列として読み込む。ビルドではコメントと余分な空白を落とす。
+ * #version などのプリプロセッサの行は 1 行に独立させる。a - -b や a / *p は詰めると -- や /* になるので空白を残す。
+ * @param {string} src
+ */
+function minifyShader(src) {
+  const lines = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
+  let out = '';
+  for (const line of lines) out += line.startsWith('#') ? `${out && !out.endsWith('\n') ? '\n' : ''}${line}\n` : `${line} `;
+  return out
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ ?([{}();,:=<>[\]]) ?/g, '$1')
+    .replace(/ ([*/+-]) (?=[\w.(])/g, '$1')
+    .replace(/(?<=[\w.)\]]) ([*/+-])/g, '$1')
+    .trim();
+}
+
+/** @returns {import('vite').Plugin} */
+function shaderSource() {
+  let build = false;
+  return {
+    name: 'shader-source',
+    enforce: 'pre',
+    configResolved(config) { build = config.command === 'build'; },
+    async load(id) {
+      if (!/\.(glsl|wgsl)$/.test(id)) return;
+      const src = await readFile(id, 'utf8');
+      return `export default ${JSON.stringify(build ? minifyShader(src) : src)};`;
+    },
+  };
+}
+
 export default defineConfig({
   site: 'https://haru0416.dev',
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), shaderSource()],
     // Tailscale 経由で dev サーバーを見るため
     server: { allowedHosts: ['.ts.net'] },
     // lightningcss は animation-timeline を animation ショートハンドに畳み込んで無効化してしまう
