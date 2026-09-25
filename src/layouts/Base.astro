@@ -88,7 +88,7 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">
-    <div class="sea" aria-hidden="true">
+    <div class="sea" aria-hidden="true" transition:persist="sea">
       {RAYS.map((r) => <i class="ray" style={`--x:${r.x}%;--w:${r.w}%;--a:${r.a};--d:${r.d}s;--o:-${r.o}s`}></i>)}
       <i class="sun"></i>
       <canvas class="deep"></canvas>
@@ -130,7 +130,13 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
         bg = [s && startSurface(s), d && startDeep(d)].filter((x): x is BackgroundControl => !!x);
       };
       boot();
-      document.addEventListener('astro:after-swap', boot);
+      // 海の背景はページをまたいで残す(transition:persist)。移動のたびに作り直すと、光の網の WebGL とシェーダーの準備からやり直しになり、移動が重くなる。
+      // 残らなかったとき(Canvas が入れ替わったとき)だけ作り直す。
+      let booted = document.querySelector('canvas.surface');
+      document.addEventListener('astro:after-swap', () => {
+        const now = document.querySelector('canvas.surface');
+        if (now !== booted) { booted = now; boot(); }
+      });
       // カーソルで深い海に触れると、なぞった跡とクリックで泡が立つ。明るい水面は静かなまま、光の網だけを揺らす。
       // 動きを減らす設定では、深い海は止まっているので何もしない。
       const still = matchMedia('(prefers-reduced-motion: reduce)');

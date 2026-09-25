@@ -173,17 +173,19 @@ export type Caustic = {
   dispose(): void;
 };
 
+/**
+ * シェーダーのコンパイルとリンクを頼むだけで、結果は問い合わせない。
+ * 直後に成否を問い合わせると、コンパイルが終わるまでメインスレッドが止まる(初めてのときは数百 ms かかる環境がある)。
+ */
 function compile(gl: WebGL2RenderingContext, vs: string, fs: string) {
   const prog = gl.createProgram()!;
   for (const [type, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]] as const) {
     const sh = gl.createShader(type)!;
     gl.shaderSource(sh, src); gl.compileShader(sh);
-    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) ?? 'shader');
     gl.attachShader(prog, sh);
   }
   gl.bindAttribLocation(prog, 0, 'aPos');
   gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog) ?? 'link');
   return prog;
 }
 
@@ -201,13 +203,30 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
     gl.getExtension('WEBGL_lose_context')?.loseContext();
     return null;
   }
-  let netProg: WebGLProgram, composeProg: WebGLProgram;
-  try {
-    netProg = compile(gl, VERT, NET_FRAG);
-    composeProg = compile(gl, VERT, COMPOSE_FRAG);
-  } catch {
-    return null;
-  }
+  const netProg = compile(gl, VERT, NET_FRAG);
+  const composeProg = compile(gl, VERT, COMPOSE_FRAG);
+  // 並列コンパイルが使えれば、終わったかどうかを止まらずに確かめられる。終わるまでは描かない。使えなければ最初に描くときに一度だけ待つ。
+  const parallel = gl.getExtension('KHR_parallel_shader_compile');
+  let state: 'compiling' | 'ready' | 'failed' = 'compiling';
+  let u: Record<'netRes' | 'time' | 'scroll' | 'composeRes' | 'net', WebGLUniformLocation | null>;
+  const checkReady = () => {
+    if (state !== 'compiling') return state === 'ready';
+    const progs = [netProg, composeProg];
+    if (parallel && !progs.every((p) => gl.getProgramParameter(p, parallel.COMPLETION_STATUS_KHR))) return false;
+    if (!progs.every((p) => gl.getProgramParameter(p, gl.LINK_STATUS))) {
+      // 描けないときは Canvas ごと隠す(一度作った WebGL の Canvas は、遷移のあとに白く塗られることがある)。
+      state = 'failed';
+      canvas.hidden = true;
+      return false;
+    }
+    const loc = (prog: WebGLProgram, name: string) => gl.getUniformLocation(prog, name);
+    u = {
+      netRes: loc(netProg, 'uRes'), time: loc(netProg, 'uTime'), scroll: loc(netProg, 'uScroll'),
+      composeRes: loc(composeProg, 'uRes'), net: loc(composeProg, 'uNet'),
+    };
+    state = 'ready';
+    return true;
+  };
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
@@ -215,11 +234,6 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
   const tex = gl.createTexture();
   const fbo = gl.createFramebuffer();
-  const loc = (prog: WebGLProgram, name: string) => gl.getUniformLocation(prog, name);
-  const u = {
-    netRes: loc(netProg, 'uRes'), time: loc(netProg, 'uTime'), scroll: loc(netProg, 'uScroll'),
-    composeRes: loc(composeProg, 'uRes'), net: loc(composeProg, 'uNet'),
-  };
   let W = 0, H = 0, dpr = 1;
 
   return {
@@ -239,7 +253,7 @@ export function createCaustic(canvas: HTMLCanvasElement): Caustic | null {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     },
     render(time, scroll) {
-      if (!W || !H) return;
+      if (!W || !H || !checkReady()) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
       gl.useProgram(netProg);
