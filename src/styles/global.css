@@ -434,18 +434,42 @@ html:active-view-transition-type(filter)::view-transition-new(.item) { animation
 html:active-view-transition-type(filter)::view-transition-old(.item):only-child { display: block; animation: vt-title-out 150ms ease-out both; }
 html:active-view-transition-type(filter)::view-transition-new(.item):only-child { animation: vt-title-in 200ms ease-out 80ms both; }
 
-/* カーソル */
+/* カーソル。tools/cursors.py が生成する。 */
 @media (hover: hover) and (pointer: fine) {
   :root {
-    --cursor-arrow: url(/cursors/arrow.svg) 6 7, auto;
-    --cursor-hand:  url(/cursors/sprout.svg) 6 7, pointer;
-    --cursor-hand-down: url(/cursors/sprout-down.svg) 6 7, pointer;
-    --cursor-text:  url(/cursors/text.svg) 14 14, text;
+    --cursor-arrow: url(/cursors/arrow.svg) 8 8, auto;
+    --cursor-point: url(/cursors/point.svg) 12 6, pointer;
+    --cursor-point-down: url(/cursors/point-down.svg) 12 7, pointer;
+    --cursor-text: url(/cursors/text.svg) 16 16, text;
+    --cursor-grab: url(/cursors/grab.svg) 16 16, grab;
+    --cursor-grabbing: url(/cursors/grabbing.svg) 16 17, grabbing;
+  }
+  :root.dark {
+    --cursor-arrow: url(/cursors/arrow-dark.svg) 8 8, auto;
+    --cursor-point: url(/cursors/point-dark.svg) 12 6, pointer;
+    --cursor-point-down: url(/cursors/point-down-dark.svg) 12 7, pointer;
+    --cursor-text: url(/cursors/text-dark.svg) 16 16, text;
+    --cursor-grab: url(/cursors/grab-dark.svg) 16 16, grab;
+    --cursor-grabbing: url(/cursors/grabbing-dark.svg) 16 17, grabbing;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      --cursor-arrow: url(/cursors/arrow-dark.svg) 8 8, auto;
+      --cursor-point: url(/cursors/point-dark.svg) 12 6, pointer;
+      --cursor-point-down: url(/cursors/point-down-dark.svg) 12 7, pointer;
+      --cursor-text: url(/cursors/text-dark.svg) 16 16, text;
+      --cursor-grab: url(/cursors/grab-dark.svg) 16 16, grab;
+      --cursor-grabbing: url(/cursors/grabbing-dark.svg) 16 17, grabbing;
+    }
   }
   html, body { cursor: var(--cursor-arrow); }
-  a, button, [role="button"], summary, label { cursor: var(--cursor-hand); }
-  :is(a, button):active { cursor: var(--cursor-hand-down); }
+  a, button, [role="button"], summary, label, select { cursor: var(--cursor-point); }
+  :is(a, button, [role="button"], summary, label):active { cursor: var(--cursor-point-down); }
+  :is(button, input, select, textarea):disabled, [aria-disabled="true"] { cursor: var(--cursor-arrow); }
   input, textarea, [contenteditable] { cursor: var(--cursor-text); } /* 本文は矢印のまま(切り替わりの点滅を避ける) */
   a *, button * { cursor: inherit; }
   canvas { cursor: var(--cursor-arrow); }
+  /* 名刺は手に取る物なので、開いた手と握った手にする。 */
+  .bc-hit { cursor: var(--cursor-grab); }
+  .bc-hit:active, .is-dragging .bc-hit { cursor: var(--cursor-grabbing); }
 }

@@ -27,6 +27,10 @@ function makeBubble(): HTMLCanvasElement {
   return c;
 }
 
+/** カーソルが深い海に触れた位置から泡を出す。深い海の場面が始まる前は何もしない。 */
+let bubbleAt: ((x: number, y: number, strong: boolean) => void) | null = null;
+export function touchDeep(x: number, y: number, strong: boolean) { bubbleAt?.(x, y, strong); }
+
 export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
   return runBackground(canvas, { theme: 'dark', fps: 30, dpr: Math.min(devicePixelRatio || 1, 1.5), staticWhenReduced: true }, (ctx) => {
     let W = 0, H = 0, t = 0;
@@ -34,6 +38,14 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
     let vent = { x: 0.5, until: 0, next: 3 };
     const bubbleSprite = makeBubble();
     const snow = createParticles({ color: 'rgb(226,232,236)', area: 14000, dir: 1, alpha: [0.2, 0.7] });
+    // なぞるとときどき小さな泡が 1 つ、クリックすると大小の泡がまとまって昇る。泡は昇るほど速く、上で消える。
+    bubbleAt = (x, y, strong) => {
+      if (bubbles.length > 48) return;
+      for (let i = 0, n = strong ? 5 + ((Math.random() * 3) | 0) : 1; i < n; i++) {
+        const r = strong ? 1.5 + Math.random() * Math.random() * 6 : 1.2 + Math.random() * 1.6;
+        bubbles.push({ x: x + (Math.random() - 0.5) * (strong ? 16 : 4), y: y + Math.random() * (strong ? 10 : 2), r, v: 28 + r * 6, wob: 6 + Math.random() * 8, phase: Math.random() * 6.28, life: 1 });
+      }
+    };
 
     return {
       resize(w, h) {

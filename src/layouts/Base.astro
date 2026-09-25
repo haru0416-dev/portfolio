@@ -80,8 +80,11 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     {preloads.map((p) => <link rel="preload" href={p.url} as="font" type={`font/${p.type}`} crossorigin />)}
     <link rel="stylesheet" href="/fonts.css" />
     {jpHeadings && <link rel="preload" href="/fonts/zen-maru-kana-700.woff2" as="font" type="font/woff2" crossorigin />}
-    <link rel="preload" href="/cursors/arrow.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine)" />
-    <link rel="preload" href="/cursors/sprout.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine)" />
+    {/* 最初に目にする矢印と指さしだけ先読みする。端末のテーマに合う方を読む。 */}
+    <link rel="preload" href="/cursors/arrow.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: light)" />
+    <link rel="preload" href="/cursors/point.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: light)" />
+    <link rel="preload" href="/cursors/arrow-dark.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: dark)" />
+    <link rel="preload" href="/cursors/point-dark.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: dark)" />
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">
@@ -94,8 +97,9 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
-      import { startSurface } from '../scripts/surface';
-      import { startDeep } from '../scripts/deep';
+      import { startSurface, touchSurface } from '../scripts/surface';
+      import { startDeep, touchDeep } from '../scripts/deep';
+      import { isDark } from '../scripts/theme';
       import type { BackgroundControl } from '../scripts/background';
       import type { TransitionBeforePreparationEvent } from 'astro:transitions/client';
       installSmoothScroll();
@@ -126,6 +130,22 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
       };
       boot();
       document.addEventListener('astro:after-swap', boot);
+      // カーソルで海に触れる。明るい水面にはなぞった跡とクリックで波紋、深い海には泡が立つ。
+      // 動きを減らす設定では、水面は隠れ深い海は止まっているので何もしない。
+      const still = matchMedia('(prefers-reduced-motion: reduce)');
+      const touch = (x: number, y: number, strong: boolean) => (isDark() ? touchDeep : touchSurface)(x, y, strong);
+      let lastX = 0, lastY = 0, lastT = 0, travel = 0;
+      addEventListener('pointermove', (ev) => {
+        // 指の動きはスクロールなので数えない。
+        if (ev.pointerType !== 'mouse' || still.matches) return;
+        travel += Math.hypot(ev.clientX - lastX, ev.clientY - lastY);
+        lastX = ev.clientX; lastY = ev.clientY;
+        // 波紋は細かく、泡はまばらに出す。
+        if (travel < (isDark() ? 140 : 36) || ev.timeStamp - lastT < 50) return;
+        travel = 0; lastT = ev.timeStamp;
+        touch(ev.clientX, ev.clientY, false);
+      }, { passive: true });
+      addEventListener('pointerdown', (ev) => { if (!still.matches) touch(ev.clientX, ev.clientY, true); }, { passive: true });
       const grid = () => import('../scripts/design-grid');
       addEventListener('keydown', (ev) => {
         if ((ev.key !== 'g' && ev.key !== 'G') || ev.metaKey || ev.ctrlKey || ev.altKey || ev.isComposing) return;

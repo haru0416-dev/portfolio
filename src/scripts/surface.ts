@@ -9,6 +9,10 @@ const LIGHT = [-0.7, -0.7];
 const NET = 72; // CSS px / 網目 1 つ
 const NET_DEPTH = 0.9; // 画面上端からこの割合までに網を描く
 
+/** カーソルが水面に触れた位置に水滴を落とす。水面の場面が始まる前は何もしない。 */
+let dropAt: ((x: number, y: number, strong: boolean) => void) | null = null;
+export function touchSurface(x: number, y: number, strong: boolean) { dropAt?.(x, y, strong); }
+
 export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
   return runBackground(canvas, { theme: 'light', fps: FPS }, (ctx) => {
     let W = 0, H = 0, cw = 0, ch = 0;
@@ -28,6 +32,12 @@ export function startSurface(canvas: HTMLCanvasElement): BackgroundControl {
     const drops: Drop[] = [];
     const drop = (r: number, amp: number, frames: number) => {
       drops.push({ x: 2 + (Math.random() * (cw - 4)) | 0, y: 2 + (Math.random() * (ch - 4)) | 0, r, amp, left: frames, total: frames });
+    };
+    // なぞった跡は小さく浅い波紋、クリックは自然に落ちる大きな水滴と同じ強さ。動かし続けても溜まらないよう数を抑える。
+    dropAt = (x, y, strong) => {
+      if (!cw || drops.length > 16) return;
+      const cx = Math.min(cw - 3, Math.max(2, Math.round(x / CELL))), cy = Math.min(ch - 3, Math.max(2, Math.round(y / CELL)));
+      drops.push(strong ? { x: cx, y: cy, r: 4, amp: 3.2, left: 6, total: 6 } : { x: cx, y: cy, r: 2, amp: 0.8, left: 3, total: 3 });
     };
     const applyDrops = () => {
       for (let k = drops.length - 1; k >= 0; k--) {
