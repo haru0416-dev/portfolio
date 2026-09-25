@@ -401,7 +401,10 @@ header.site.glass::before { content: none; }
    ライトからダークへは潜る。深い海が波打って下から満ちてきて、水面の裏が光り、泡が一緒に昇る。前の画面は光を失っていく。
    ダークからライトへは浮かぶ。明るい水面が上から降りてきて、日の光の縁ときらめきが先に立つ。
    波は画面の高さの 3 倍の絵を窓からずらして見せる。先を行く淡い 2 枚は、水面の手前の薄い水の層。
-   絵は tools/theme-waves.py が作る(src/assets/theme-switch)。絵の縁は窓の位置 p に対して画面の (1.5 - 2p) × 高さにある。縁が画面のすぐ外にある 22% から 78% だけを動かし、何も見えない時間を作らない。
+   絵は tools/theme-waves.py が作る(src/assets/theme-switch)。絵の本体の縁は、絵の上端から 150vh。
+   絵の大きさと位置は % ではなく vh で決める。遷移の画面の高さは 100vh と一致するとは限らない(iOS の Safari では vh がツールバーを畳んだ大きい画面の高さで、
+   遷移の画面より高い)。% で決めると、vh で動かす縁の光と (1.5 - 2p) × 高さの差だけずれ、光の線が遅れて追いついてくるように見える。
+   縁が画面のすぐ外にある位置(106vh と -6vh)の間だけを動かし、何も見えない時間を作らない。
    ページ移動用の遷移名が付いた要素が別々に動くと波が崩れるため、切り替えの間だけ外す。 */
 :root { --theme-switch: 2.2s; --theme-ease: cubic-bezier(.55, 0, .25, 1); }
 html[data-theme-switch] * { view-transition-name: none !important; }
@@ -409,20 +412,22 @@ html[data-theme-switch]::view-transition-group(root) { animation-duration: var(-
 html[data-theme-switch]::view-transition-old(root) { animation: var(--theme-switch) var(--theme-ease) both; }
 html[data-theme-switch]::view-transition-new(root) {
   animation: var(--theme-switch) var(--theme-ease) both;
-  mask-size: 100vw 300%; mask-repeat: repeat-x;
+  mask-size: 100vw 300vh; mask-repeat: repeat-x;
 }
 html[data-theme-switch="dark"]::view-transition-old(root) { animation-name: theme-old-dive; }
 html[data-theme-switch="dark"]::view-transition-new(root) { animation-name: theme-dive; mask-image: url(../assets/theme-switch/dive-mask.svg); }
 html[data-theme-switch="light"]::view-transition-old(root) { animation-name: theme-old-surface; }
 html[data-theme-switch="light"]::view-transition-new(root) { animation-name: theme-surface; mask-image: url(../assets/theme-switch/surface-mask.svg); }
 /* 波は上下するあいだに横へも流れる。画面は上下に動かさない。淡い水の層の中で新旧の文字がずれて二重に見える。 */
-@keyframes theme-dive { from { mask-position: 0 22%; } to { mask-position: -60vw 78%; } }
-@keyframes theme-surface { from { mask-position: 0 78%; } to { mask-position: 60vw 22%; } }
+@keyframes theme-dive { from { mask-position: 0 -44vh; } to { mask-position: -60vw -156vh; } }
+@keyframes theme-surface { from { mask-position: 0 -156vh; } to { mask-position: 60vw -44vh; } }
 @keyframes theme-old-dive { to { filter: brightness(.85); } }
 @keyframes theme-old-surface { to { filter: brightness(1.2); } }
 
 /* 水面の縁の光。新しい画面の中に置くので、波の形に切り抜かれる。遷移が始まってから動かし、波と揃える。
-   縁は画面の 105vh から -5vh へ動く(浮かぶときは逆)。終わりには光の帯がまだ画面に残るので、薄れて消える。
+   縁は画面の 106vh から -6vh へ動く(浮かぶときは逆)。終わりには光の帯がまだ画面に残るので、薄れて消える。
+   帯は transform ではなく top で動かし、メインスレッドでしか動かない波のマスク(mask-position)と同じコマで動かす。
+   transform だと帯だけ別の描画スレッドで動き、メインスレッドが詰まる瞬間(ダークに入るときの深い海の準備)に波だけが止まる。
    光の線は本体の波と同じ形の絵で、同じだけ横へ流す。まっすぐな線だと、波打つ水の層の中に水平線が引かれて見える。
    絵の中の波の中心は帯の端から 4vh の位置にあるので、帯はその分ずらす。浮かぶときは線が淡い層の側へ出ないよう、さらに 1vh 内へ寄せる。 */
 .theme-tide { position: fixed; left: 0; width: 100vw; height: 45vh; z-index: 2147483647; pointer-events: none; visibility: hidden; }
@@ -459,7 +464,7 @@ html[data-theme-switch="dark"] .theme-tide {
 }
 html[data-theme-switch="dark"] .theme-tide.is-moving { animation-name: theme-tide-dive; }
 html[data-theme-switch="dark"] .theme-tide.is-moving::before { animation-name: theme-tide-flow-dive; }
-@keyframes theme-tide-dive { from { transform: translateY(101vh); } 70% { opacity: 1; } to { transform: translateY(-9vh); opacity: 0; } }
+@keyframes theme-tide-dive { from { top: 102vh; } 70% { opacity: 1; } to { top: -10vh; opacity: 0; } }
 @keyframes theme-tide-flow-dive { to { background-position-x: -60vw; } }
 /* 浮かぶとき: 縁のすぐ上が日の光で暖かく光り、きらめきが散る。 */
 html[data-theme-switch="light"] .theme-tide {
@@ -491,7 +496,7 @@ html[data-theme-switch="light"] .theme-tide {
 }
 html[data-theme-switch="light"] .theme-tide.is-moving { animation-name: theme-tide-surface; }
 html[data-theme-switch="light"] .theme-tide.is-moving::before { animation-name: theme-tide-flow-surface; }
-@keyframes theme-tide-surface { from { transform: translateY(-2vh); } 70% { opacity: 1; } to { transform: translateY(108vh); opacity: 0; } }
+@keyframes theme-tide-surface { from { top: -48vh; } 70% { opacity: 1; } to { top: 64vh; opacity: 0; } }
 @keyframes theme-tide-flow-surface { to { background-position-x: 60vw; } }
 
 /* 新旧の本文が重なって読めない時間を作らないよう、古い本文を消し切ってから出す。 */
