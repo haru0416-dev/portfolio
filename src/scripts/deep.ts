@@ -4,6 +4,8 @@ import { createParticles } from './particles';
 type Bubble = { x: number; y: number; r: number; v: number; wob: number; phase: number; life: number };
 
 const BUBBLE = 64, BUBBLE_R = 30;
+/** テーマを切り替えてから最初の泡の柱までの秒数。切り替えの波(2.2 秒)が抜けて、少し落ち着いてから。 */
+const AFTER_SWITCH = 5;
 function makeBubble(): HTMLCanvasElement {
   const c = document.createElement('canvas'); c.width = c.height = BUBBLE;
   const g = c.getContext('2d')!, m = BUBBLE / 2, R = BUBBLE_R;
@@ -51,6 +53,13 @@ export function startDeep(canvas: HTMLCanvasElement): BackgroundControl {
       resize(w, h) {
         W = w; H = h;
         snow.resize(w, h);
+      },
+      start() {
+        // テーマの切り替えで深い海に入ったときは、切り替えの波が抜けてから泡の柱を立てる。波と重なると、泡が遅れて追いついてくるように見える。
+        // 前に深い海を見ていたときの泡も、昇る途中のまま現れるので片付ける。
+        if (!document.documentElement.dataset.themeSwitch) return;
+        bubbles.length = 0;
+        vent = { ...vent, until: Math.min(vent.until, t), next: Math.max(vent.next, t + AFTER_SWITCH) };
       },
       step(dt) {
         t += dt;

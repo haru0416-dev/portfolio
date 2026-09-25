@@ -6,6 +6,8 @@ export type Scene = {
   /** dt は秒。 */
   step(dt: number): void;
   render(): void;
+  /** 動き始めたとき(表示するテーマになったときなど)。 */
+  start?(): void;
   /** 止めたときに、2D の Canvas 以外に描いたものを消す。 */
   stop?(): void;
   dispose?(): void;
@@ -37,7 +39,7 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     }
     raf = requestAnimationFrame(frame);
   };
-  const start = () => { if (running || reduce.matches || !active() || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
+  const start = () => { if (running || reduce.matches || !active() || document.hidden) return; running = true; last = 0; scene?.start?.(); raf = requestAnimationFrame(frame); };
   const stop = () => { running = false; cancelAnimationFrame(raf); ctx?.clearRect(0, 0, W, H); scene?.stop?.(); };
   const sync = () => {
     if (disposed) return;
