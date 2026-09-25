@@ -83,7 +83,7 @@ bun run pages:dev
 
 文字は 16px × 1.25ⁿ の型スケール、行送りと高さは 8px の倍数、角丸は 4・6・8・12・16・24・32px に揃える。`G` キー、フッターの Grid、または URL の `?grid` で、8px グリッドと本文の列、ホバーした要素の寸法を重ねて表示できる。実装は `src/scripts/design-grid.ts` で、開いたときに初めて読み込む。
 
-背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面の Canvas を隠す。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
+背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面の Canvas を隠す。背景の Canvas と描画用画像は、表示するテーマで初めて使うときだけ初期化する。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
 
 ### フォント
 

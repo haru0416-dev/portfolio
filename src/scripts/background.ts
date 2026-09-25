@@ -10,10 +10,10 @@ export type Scene = {
 export type BackgroundControl = { dispose(): void };
 
 export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' | 'dark'; fps: number; dpr?: number; staticWhenReduced?: boolean }, make: (ctx: CanvasRenderingContext2D) => Scene): BackgroundControl {
-  const ctx = canvas.getContext('2d', { alpha: true })!;
+  let ctx: CanvasRenderingContext2D | undefined;
+  let scene: Scene | undefined;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const dpr = opts.dpr ?? 1;
-  const scene = make(ctx);
   const active = () => (opts.theme === 'dark') === isDark();
 
   let W = 0, H = 0, raf = 0, running = false, last = 0, disposed = false;
@@ -22,25 +22,30 @@ export function runBackground(canvas: HTMLCanvasElement, opts: { theme: 'light' 
     if (!w || !h || (w === W && h === H)) return false;
     W = w; H = h;
     canvas.width = W * dpr; canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    scene.resize(W, H);
+    ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scene!.resize(W, H);
     return true;
   };
   const frame = (now: number) => {
     if (!running) return;
     if (now - last >= 1000 / opts.fps) {
       const dt = Math.min(0.1, last ? (now - last) / 1000 : 1 / opts.fps); last = now;
-      scene.step(dt); scene.render();
+      scene!.step(dt); scene!.render();
     }
     raf = requestAnimationFrame(frame);
   };
   const start = () => { if (running || reduce.matches || !active() || document.hidden) return; running = true; last = 0; raf = requestAnimationFrame(frame); };
-  const stop = () => { running = false; cancelAnimationFrame(raf); ctx.clearRect(0, 0, W, H); };
+  const stop = () => { running = false; cancelAnimationFrame(raf); ctx?.clearRect(0, 0, W, H); };
   const sync = () => {
     if (disposed) return;
     if (!active() || document.hidden || (reduce.matches && !opts.staticWhenReduced)) {
       stop();
       return;
+    }
+    // 非表示テーマや動きを減らす設定では、オフスクリーン画像も 2D context も作らない。
+    if (!scene) {
+      ctx = canvas.getContext('2d', { alpha: true })!;
+      scene = make(ctx);
     }
     // 表示するテーマだけバッファを確保する。切り替え時に最新の寸法を反映する。
     const resized = resize();
