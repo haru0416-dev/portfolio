@@ -14,10 +14,12 @@ import { CARD } from '../data/card';
         <span class="bc-light" aria-hidden="true"></span>
       </div>
       <div class="bc-face bc-back" data-face="back" aria-hidden="true">
-        {/* 裏は水・網の影・その上すべての 3 層。網の影だけを JS が傾きに合わせて動かし、水の厚みを出す。 */}
-        <CardArt side="back" id="bc-back-under" layer="under" />
-        <span class="bc-net-shadow" aria-hidden="true"><CardArt side="back" id="bc-back-shadow" layer="shadow" /></span>
-        <CardArt side="back" id="bc-back-over" layer="over" />
+        {/* 裏は水・網の影・その上すべての 3 層。網の影だけを JS が傾きに合わせて動かし、水の厚みを出す。
+            裏の絵は千を超える図形でできている。ページに入れた瞬間にその全部のスタイル計算・レイアウト・描画が走り、ページ移動が重くなるので、
+            template に入れておき、表示し終えて手が空いてから組み立てる(business-card.ts)。裏は裏返すまで見えない。 */}
+        <template data-card-art><CardArt side="back" id="bc-back-under" layer="under" /></template>
+        <span class="bc-net-shadow" aria-hidden="true"><template data-card-art><CardArt side="back" id="bc-back-shadow" layer="shadow" /></template></span>
+        <template data-card-art><CardArt side="back" id="bc-back-over" layer="over" /></template>
         <span class="bc-paper" aria-hidden="true"></span>
         <span class="bc-light" aria-hidden="true"></span>
       </div>
@@ -47,6 +49,11 @@ import { CARD } from '../data/card';
     --mm: calc(16rem / var(--card-w)); --tilt-angle: -4deg;
     display: grid; place-items: center;
     padding: 2rem calc(var(--card-h) * var(--mm) / 2 * sin(abs(var(--tilt-angle))) - var(--card-w) * var(--mm) / 2 * (1 - cos(var(--tilt-angle)))) 3rem;
+    /* 名刺はページの下のほうにあり、移動した直後には見えない。見えるまでは、3D の層と表の絵のスタイル計算・レイアウト・描画を省く。
+       省いている間の大きさは、中身(余白を除く)の札の大きさ 16rem × 26.5rem(16rem × 91/55)。幅も必ず指定する。
+       高さだけのつもりで 1 つの値を書くと幅にも効き、スマホでは画面からはみ出して画面の幅が変わり、ページ移動のアニメーションが中止される。
+       影は余白の内側に収まるので、描画の切り抜きで欠けない。 */
+    content-visibility: auto; contain-intrinsic-size: auto 16rem auto 26.5rem;
   }
 
   .bc-stage {

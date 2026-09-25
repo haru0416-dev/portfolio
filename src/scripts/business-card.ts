@@ -19,6 +19,9 @@ function step(s: Spring, target: number, dt: number, k = STIFFNESS, c = DAMPING)
   s.x += s.v * dt;
 }
 
+/** 裏の絵を組み立てるまでの待ち時間(ms)。ページ移動のアニメーション(0.5 秒ほど)が終わってから。 */
+const MOUNT_BACK_AFTER = 1500;
+
 export function startBusinessCard(stage: HTMLElement): () => void {
   const hit = stage.querySelector<HTMLButtonElement>('.bc-hit')!;
   // 毎フレーム書き換えるのは、ここで取った要素の transform と opacity だけにする。
@@ -38,6 +41,21 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   const ac = new AbortController();
   const on = <K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (e: HTMLElementEventMap[K]) => void) =>
     el.addEventListener(type, fn, { signal: ac.signal });
+
+  // 裏の絵は template に入れてある。裏返しそうになったとき(カーソルが乗った・押した・キーボードで選んだ)に組み立てる。
+  // それ以外は、ページ移動のアニメーションが終わるのを待ってから手が空いたときに組み立てる。
+  // 「手が空いたら」だけだと、アニメーション中のメインスレッドは空いて見えるので、その最中に千を超える図形を組み立てて描き、アニメーションが止まる。
+  const mountBack = () => stage.querySelectorAll<HTMLTemplateElement>('template[data-card-art]').forEach((t) => t.replaceWith(t.content));
+  const later = setTimeout(() => {
+    if ('requestIdleCallback' in globalThis) {
+      const id = requestIdleCallback(mountBack, { timeout: 2000 });
+      ac.signal.addEventListener('abort', () => cancelIdleCallback(id));
+    } else mountBack();
+  }, MOUNT_BACK_AFTER);
+  ac.signal.addEventListener('abort', () => clearTimeout(later));
+  on(stage, 'pointerenter', mountBack);
+  on(hit, 'pointerdown', mountBack);
+  on(hit, 'focus', mountBack);
 
   // 表からの枚数。偶数で表、奇数で裏。何回転しても角度が飛ばないよう、足し引きだけで増減させる。
   let face = 0;
