@@ -30,6 +30,19 @@ function loadBackArt() {
   return backArt;
 }
 
+/** 表のイラストは、見出しのイラストが読み込んだファイル(画面の大きさに合わせて選ばれている)を使い、同じ画像を 2 度読み込まない。 */
+function showFrontIllustration(stage: HTMLElement) {
+  const image = stage.querySelector<SVGImageElement>('[data-card-illustration]');
+  if (!image) return;
+  const avatar = document.querySelector<HTMLImageElement>('.sticker-art img');
+  const set = () => image.setAttribute('href', avatar?.currentSrc || image.dataset.src!);
+  if (!avatar || (avatar.complete && avatar.currentSrc)) set();
+  else {
+    avatar.addEventListener('load', set, { once: true });
+    avatar.addEventListener('error', set, { once: true });
+  }
+}
+
 export function startBusinessCard(stage: HTMLElement): () => void {
   const hit = stage.querySelector<HTMLButtonElement>('.bc-hit')!;
   // 毎フレーム書き換えるのは、ここで取った要素の transform と opacity だけにする。
@@ -63,6 +76,7 @@ export function startBusinessCard(stage: HTMLElement): () => void {
       });
     }, () => {});
   };
+  showFrontIllustration(stage);
   const later = setTimeout(() => {
     if ('requestIdleCallback' in globalThis) {
       const id = requestIdleCallback(mountBack, { timeout: 2000 });

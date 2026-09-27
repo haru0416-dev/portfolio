@@ -8,10 +8,11 @@ interface Props {
 }
 const { sizes, class: cls } = Astro.props;
 ---
-{/* 台紙は画像内。最初の画面に出るため遅延読み込みせず、操作は avatar-play.ts に任せる。 */}
+{/* 台紙は画像内。操作は avatar-play.ts に任せる。トップは画面幅で出し分ける 2 枚を置くので、遅延読み込みにして
+    隠れている方を読み込ませない(eager だと display: none でも読み込まれる)。見えている方はすぐ読み込まれる。 */}
 <span class:list={['sticker-hit', cls]} style={`--art-ratio: ${haru.width} / ${haru.height}`} aria-hidden="true">
   <span class="sticker sticker-fill sticker-art sticker-lift">
-    <Image src={haru} alt="" widths={[128, 256, 384, 640]} sizes={sizes} loading="eager" draggable="false" />
+    <Image src={haru} alt="" widths={[128, 256, 384, 640]} sizes={sizes} loading="lazy" draggable="false" />
   </span>
 </span>
 

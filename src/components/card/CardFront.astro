@@ -82,6 +82,7 @@ const bubbles = [0, 0.13, 0.24, 0.38, 0.5, 0.63, 0.77, 0.9].map((t) => {
 const ART = { cx: W / 2, cy: 30, height: 36 };
 const artWidth = ART.height * (haru.width / haru.height);
 // 名刺は幅 16rem で表示する。36mm の高さを 3 倍の画面でも粗くならない幅で書き出す。
+// 画像は business-card.ts が入れる。同じページの見出しのイラスト(Avatar)が読み込んだファイルがあればそれを使い、2 度読み込まない。
 const art = await getImage({ src: haru, width: 480, format: 'webp' });
 ---
 <defs>
@@ -141,7 +142,7 @@ const art = await getImage({ src: haru, width: 480, format: 'webp' });
 
 <text x={S} y={S + 2.2} class="t-eyebrow" fill={INK.silver}>NOTES &amp; EXPERIMENTS</text>
 
-<image href={art.src} x={f(-artWidth / 2)} y={f(-ART.height / 2)} width={f(artWidth)} height={ART.height} transform={`translate(${ART.cx} ${ART.cy}) rotate(-8)`} filter={`url(#${id}-art-shadow)`} />
+<image data-card-illustration data-src={art.src} x={f(-artWidth / 2)} y={f(-ART.height / 2)} width={f(artWidth)} height={ART.height} transform={`translate(${ART.cx} ${ART.cy}) rotate(-8)`} filter={`url(#${id}-art-shadow)`} />
 
 <text x={S} y={59} class="t-role" fill={INK.silver}>Developer — Rust / TypeScript</text>
 <text x={S - 0.6} y={71.2} class="t-name" fill={INK.white}>{SITE.name}<tspan fill={INK.accent}>.</tspan></text>
