@@ -3,6 +3,7 @@ import { getPublishedPosts, getWorks } from '../data/collections';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
 import { formatDate } from '../date';
+import { terminalArt } from '../data/terminal-art';
 
 export async function GET() {
   const posts = (await getPublishedPosts())
@@ -11,7 +12,7 @@ export async function GET() {
   const works = (await getWorks())
     .map((w) => ({ name: w.data.name, status: w.data.status, url: w.data.status === 'soon' ? null : (w.data.url ?? w.data.repo ?? null) }));
   const lab = LAB.map((l) => ({ title: l.title, description: l.description, path: `/lab/${l.slug}/` }));
-  return new Response(JSON.stringify({ name: SITE.name, tagline: SITE.description, github: SITE.github, posts, works, lab }), {
+  return new Response(JSON.stringify({ name: SITE.name, tagline: SITE.description, github: SITE.github, posts, works, lab, art: await terminalArt() }), {
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
   });
 }

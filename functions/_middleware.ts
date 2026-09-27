@@ -3,6 +3,8 @@ type Meta = {
   posts: { title: string; date: string; path: string }[];
   works: { name: string; status: string; url: string | null }[];
   lab: { title: string; description: string; path: string }[];
+  /** 見出しのイラストを色付きのブロック文字にしたもの(src/data/terminal-art.ts)。1 要素が 1 行。 */
+  art?: string[];
 };
 
 const CLI = /^(curl|wget|httpie|xh|aria2|fetch)\b/i;
@@ -70,20 +72,26 @@ function render(m: Meta, origin: string, color: boolean) {
     ? { b: (s: string) => `\x1b[1m${s}\x1b[0m`, p: (s: string) => `\x1b[38;2;242;109;153m${s}\x1b[0m`, d: (s: string) => `\x1b[2m${s}\x1b[0m` }
     : { b: (s: string) => s, p: (s: string) => s, d: (s: string) => s };
   const L = (label: string, text: string) => `  ${c.d(pad(label, 8))}${text}`;
+  const links = [L('web', `${origin}/`), L('rss', `${origin}/rss.xml`), L('github', m.github)];
   const lines: string[] = [];
   lines.push('');
-  lines.push(`  ${c.b(m.name)}${c.p('.')}`);
-  lines.push(`  ${m.tagline}`);
+  // 色を出せるときは、イラストの右に名前とリンクを並べる。長い行は下に回し、80 桁の端末に収める。
+  const art = color ? m.art ?? [] : [];
+  if (art.length) {
+    const side = [`${c.b(m.name)}${c.p('.')}`, m.tagline, '', ...links.map((l) => l.trimStart())];
+    const top = Math.max(0, Math.floor((art.length - side.length) / 2));
+    art.forEach((row, i) => lines.push(`  ${row}   ${side[i - top] ?? ''}`.trimEnd()));
+  } else {
+    lines.push(`  ${c.b(m.name)}${c.p('.')}`);
+    lines.push(`  ${m.tagline}`);
+  }
   lines.push('');
   const tw = Math.max(...m.posts.map((p) => width(p.title)));
   m.posts.forEach((p, i) => lines.push(L(i === 0 ? 'blog' : '', `${pad(p.title, tw)}  ${c.d(p.date.replaceAll('-', '.'))}`)));
   lines.push('');
   lines.push(L('works', m.works.map((w) => (w.status === 'soon' ? c.d(`${w.name} (soon)`) : w.name)).join(c.d(' · '))));
   m.lab.forEach((l, i) => lines.push(L(i === 0 ? 'lab' : '', `${l.title}  ${c.d(l.description)}`)));
-  lines.push('');
-  lines.push(L('web', `${origin}/`));
-  lines.push(L('rss', `${origin}/rss.xml`));
-  lines.push(L('github', m.github));
+  if (!art.length) lines.push('', ...links);
   lines.push('');
   lines.push(`  ${c.d('curl に ?html を付けると HTML、?plain を付けると色なし')}`);
   lines.push('');
