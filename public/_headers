@@ -5,7 +5,8 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
-  Content-Security-Policy: frame-ancestors 'none'
+  # 読み込んでよい先。ビルドのときに astro.config.mjs の contentSecurityPolicy() が、出力した HTML に合わせて置き換える。
+  Content-Security-Policy: CSP_PLACEHOLDER
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 
 # ファイル名に内容のハッシュが入るので、変わることがない
