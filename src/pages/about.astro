@@ -46,8 +46,8 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
       <span class="display block text-lg leading-8 sm:text-xl text-ink-2 hero-lead">Hi, I'm</span>
       <span class="display block text-5xl min-[22.5rem]:text-6xl sm:text-7xl tracking-[-0.01em]"><Wordmark text={SITE.name} /><span class="text-accent">.</span></span>
     </h1>
-    {/* 下端を名前の行の下端にそろえる。 */}
-    <div aria-hidden="true" class="about-hero-art hero-lead">
+    {/* 下端を名前の行の下端にそろえる。絵は下の段へはみ出すので、その段より上に置いて足元まで触れるようにする。 */}
+    <div aria-hidden="true" class="about-hero-art hero-lead relative z-10">
       <Avatar lift eager sizes="(min-width: 64rem) 320px, (min-width: 40rem) 256px, (min-width: 22.5rem) 150px, 128px" />
     </div>
   </header>

@@ -16,9 +16,9 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 <Base wide>
   <section class="min-h-[round(down,calc(50dvh-4rem),8px)] lg:portrait:min-h-0 pb-12 lg:pb-[5.5rem] flex items-center">
     <div class="w-full lg:w-2/3 parallax">
-      {/* 狭い画面では、シールを右上に重ねる。見出しの文字(左端から約 206px)と 16px 空く大きさにとどめる。 */}
+      {/* 狭い画面では、シールを右上に重ねる。見出しの文字(左端から約 206px)と 16px 空く大きさにとどめる。下の段落の箱より上に置き、足元まで触れるようにする。 */}
       <div class="relative">
-        <div class="lg:hidden hero-lead absolute top-0 right-0 size-[min(9.5rem,calc(100vw-14.875rem))] sm:size-48">
+        <div class="lg:hidden hero-lead absolute z-10 top-0 right-0 size-[min(9.5rem,calc(100vw-14.875rem))] sm:size-48">
           <Avatar lift eager sizes="(min-width: 40rem) 192px, 152px" />
         </div>
         <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
