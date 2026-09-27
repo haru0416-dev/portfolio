@@ -19,7 +19,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
       {/* 狭い画面では、シールを右上に重ねる。見出しの文字(左端から約 206px)と 16px 空く大きさにとどめる。下の段落の箱より上に置き、足元まで触れるようにする。 */}
       <div class="relative">
         <div class="lg:hidden hero-lead absolute z-10 top-0 right-0 size-[min(9.5rem,calc(100vw-14.875rem))] sm:size-48">
-          <Avatar lift eager sizes="(min-width: 40rem) 192px, 152px" />
+          <Avatar sizes="(min-width: 40rem) 192px, 152px" />
         </div>
         <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
         <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
@@ -42,7 +42,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
     {/* 下端を次の段との間の余白へはみ出させ、見出しと記事・作品の段をつなぐ。傾けた角は下へ 21px 出るので、見出しの下の余白を 2.5rem 足して記事・作品の見出しから離す。 */}
     <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-end self-end -mb-8">
       <div class="hero-lead shrink-0 size-80">
-        <Avatar lift eager sizes="320px" />
+        <Avatar sizes="320px" />
       </div>
     </div>
   </section>

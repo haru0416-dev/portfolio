@@ -4,26 +4,16 @@ import haru from '../assets/avatar/haru.png';
 interface Props {
   /** 表示する大きさ(img の sizes)。枠の大きさに合わせる。 */
   sizes: string;
-  /** ホバーで持ち上げる。見出しのイラストで、つつく・撫でる仕掛け(avatar-play.ts)も付く。 */
-  lift?: boolean;
-  /** 最初の画面に見える位置なら、遅延読み込みにしない。 */
-  eager?: boolean;
   class?: string;
 }
-const { sizes, lift = false, eager = false, class: cls } = Astro.props;
+const { sizes, class: cls } = Astro.props;
 ---
-{/* 台紙の縁は画像に描いてある(tools/sticker.py)。傾き・影・持ち上げは .sticker と同じ。 */}
-{lift ? (
-  <span class:list={['sticker-hit', cls]} style={`--art-ratio: ${haru.width} / ${haru.height}`} aria-hidden="true">
-    <span class="sticker sticker-fill sticker-art sticker-lift">
-      <Image src={haru} alt="" widths={[128, 256, 384, 640]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} draggable="false" />
-    </span>
+{/* 見出しのイラスト。台紙の縁は画像に描いてある(tools/sticker.py)。傾き・影・持ち上げは .sticker と同じで、つつく・撫でる仕掛けは avatar-play.ts。どれも最初の画面に出るので遅延読み込みにしない。 */}
+<span class:list={['sticker-hit', cls]} style={`--art-ratio: ${haru.width} / ${haru.height}`} aria-hidden="true">
+  <span class="sticker sticker-fill sticker-art sticker-lift">
+    <Image src={haru} alt="" widths={[128, 256, 384, 640]} sizes={sizes} loading="eager" draggable="false" />
   </span>
-) : (
-  <span class:list={['sticker', 'sticker-fill', 'sticker-art', cls]} aria-hidden="true">
-    <Image src={haru} alt="" widths={[128, 256, 384, 640]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} />
-  </span>
-)}
+</span>
 
 <script>
   import { startAvatarPlay } from '../scripts/avatar-play';
