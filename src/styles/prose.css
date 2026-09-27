@@ -14,15 +14,15 @@
 .prose code { font-size: .8944em; line-height: 1; background: var(--surface); padding: 0 .25rem; border-radius: .25rem; } /* コードで行高を押し広げない */
 .prose pre code { background: none; padding: 0; }
 /* figure.code-block は src/data/code-theme.ts の変換が作る。 */
+.prose figure { margin-inline: 0; }
 .prose .code-block {
   /* code-theme.ts の CODE_BG と同じ値。 */
   --code-bg: light-dark(oklch(94.5% 0.022 var(--h)), oklch(22% 0.028 var(--h)));
-  position: relative; margin-inline: 0; margin-bottom: 0;
+  position: relative; margin-bottom: 0;
   background: var(--code-bg); border: 1px solid var(--line); border-radius: 1rem;
 }
-.prose .code-block pre { padding: 1.5rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; }
 /* 上端の余白は言語名がコードの 1 行目にかからないためのもの。 */
-.prose .code-block pre { padding-top: 2.5rem; }
+.prose .code-block pre { padding: 2.5rem 1.5rem 1.5rem; overflow-x: auto; font-size: var(--text-sm); line-height: 1.5rem; }
 .prose .code-block::before {
   content: attr(data-lang); position: absolute; top: .75rem; left: 1.5rem;
   font: 700 var(--text-xs)/1rem var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
@@ -60,7 +60,6 @@
 }
 .prose blockquote { background: var(--surface); border-radius: 1rem; padding: 1rem 1.5rem; color: var(--ink-2); }
 .prose img { border-radius: 1rem; width: 100%; }
-.prose figure:not(.code-block) { margin-inline: 0; }
 .prose figcaption { margin-top: .75rem; font-size: var(--text-sm); line-height: 1.5rem; color: var(--muted); text-align: center; text-wrap: balance; }
 .prose hr { height: auto; border: 0; text-align: center; margin: 3rem 0; line-height: 2rem; } /* Tailwind の初期化が height: 0 にするので戻す */
 .prose hr::before { content: "♡"; color: var(--muted); letter-spacing: .5em; }
@@ -94,7 +93,6 @@
 .prose .footnotes li:target { animation: fn-flash 2s ease-out; }
 @keyframes fn-flash { from, 30% { background: var(--accent-soft); } }
 .prose .footnotes li + li { margin-top: .25rem; }
-.prose .footnotes li::marker { color: var(--muted); }
 .prose .data-footnote-backref { text-decoration: none; margin-left: .25rem; padding: .25rem; }
 
 @supports (corner-shape: squircle) {

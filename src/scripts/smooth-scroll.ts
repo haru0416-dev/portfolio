@@ -69,9 +69,13 @@ function deferScrollSaves() {
     replace(merged, '');
   };
   const onlyScroll = (next: HistoryState, current: HistoryState) => {
-    const keys = new Set([...Object.keys(next), ...Object.keys(current)]);
-    keys.delete('scrollX'); keys.delete('scrollY');
-    return [...keys].every((k) => next[k] === current[k]);
+    for (const key of Object.keys(next)) {
+      if (key !== 'scrollX' && key !== 'scrollY' && next[key] !== current[key]) return false;
+    }
+    for (const key of Object.keys(current)) {
+      if (key !== 'scrollX' && key !== 'scrollY' && next[key] !== current[key]) return false;
+    }
+    return true;
   };
   Object.defineProperty(history, 'state', { configurable: true, get: withScroll });
   history.replaceState = (state: unknown, unused: string, url?: string | URL | null) => {

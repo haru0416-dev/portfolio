@@ -23,7 +23,6 @@ const fxLayer = () => {
   return layer;
 };
 
-/** (x, y) から昇って消える小さな絵を 1 つ出す。 */
 function emit(svg: string, x: number, y: number, size: number, rise: number, drift: number, duration: number, delay = 0) {
   const el = document.createElement('span');
   el.className = 'avatar-fx-item';
@@ -57,14 +56,19 @@ export function startAvatarPlay(root: HTMLElement): () => void {
     }
   };
 
-  let lastPet = 0, wiggle: Animation | null = null, petUntil = 0;
+  let lastPet = 0, wiggle: Animation | null = null, wiggleTimer = 0, petUntil = 0;
   const pet = (x: number, y: number) => {
     const now = performance.now();
     petUntil = now + 600;
     if (!wiggle) {
       wiggle = art.animate([{ rotate: '0deg' }, { rotate: '-4deg' }, { rotate: '0deg' }, { rotate: '4deg' }, { rotate: '0deg' }], { duration: 560, iterations: Infinity });
-      const stop = () => { if (performance.now() < petUntil) return void requestAnimationFrame(stop); wiggle?.cancel(); wiggle = null; };
-      requestAnimationFrame(stop);
+      const stop = () => {
+        const remaining = petUntil - performance.now();
+        if (remaining > 0) { wiggleTimer = window.setTimeout(stop, remaining); return; }
+        wiggle?.cancel();
+        wiggle = null;
+      };
+      wiggleTimer = window.setTimeout(stop, 600);
     }
     if (now - lastPet < PET_EVERY) return;
     lastPet = now;
@@ -88,15 +92,19 @@ export function startAvatarPlay(root: HTMLElement): () => void {
   on('pointerleave', () => { turns = []; });
 
   // タッチ: 長押しで撫でる。押している間はハートを出し続ける。
-  let holdTimer = 0, holdFrame = 0, holding = false, petted = false, touchPoint = { x: 0, y: 0 };
-  const petLoop = () => { if (!holding) return; pet(touchPoint.x, touchPoint.y); holdFrame = requestAnimationFrame(petLoop); };
+  let holdTimer = 0, petTimer = 0, holding = false, petted = false, touchPoint = { x: 0, y: 0 };
+  const petLoop = () => {
+    if (!holding) return;
+    pet(touchPoint.x, touchPoint.y);
+    petTimer = window.setTimeout(petLoop, Math.max(16, PET_EVERY - (performance.now() - lastPet)));
+  };
   on('pointerdown', (e) => {
     petted = false;
     if (e.pointerType === 'mouse' || REDUCE.matches) return;
     touchPoint = { x: e.clientX, y: e.clientY };
     holdTimer = window.setTimeout(() => { holding = petted = true; petLoop(); }, HOLD);
   });
-  const release = () => { clearTimeout(holdTimer); cancelAnimationFrame(holdFrame); holding = false; };
+  const release = () => { clearTimeout(holdTimer); clearTimeout(petTimer); holding = false; };
   on('pointerup', release);
   on('pointercancel', release);
   on('pointermove', (e) => { if (e.pointerType !== 'mouse' && Math.hypot(e.clientX - touchPoint.x, e.clientY - touchPoint.y) > 10 && !holding) clearTimeout(holdTimer); });
@@ -107,5 +115,5 @@ export function startAvatarPlay(root: HTMLElement): () => void {
     poke(e.clientX, e.clientY);
   });
 
-  return () => { ac.abort(); release(); wiggle?.cancel(); };
+  return () => { ac.abort(); release(); clearTimeout(wiggleTimer); wiggle?.cancel(); };
 }

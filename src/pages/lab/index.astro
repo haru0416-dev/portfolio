@@ -9,29 +9,29 @@ import { dotted } from '../../date';
 // サムネイルは実験の画面を撮ったもの。テーマで見た目が変わる実験は <slug>-light / <slug>-dark、変わらないものは <slug> を置く。
 const shots = import.meta.glob<{ default: ImageMetadata }>('../../assets/lab/*.png', { eager: true });
 const shot = (name: string) => shots[`../../assets/lab/${name}.png`]?.default;
-const thumbs = LAB.map((l) => {
-  const light = shot(`${l.slug}-light`), dark = shot(`${l.slug}-dark`);
-  if (light && dark) return [{ src: light, when: 'when-light' }, { src: dark, when: 'when-dark' }];
-  const one = shot(l.slug);
-  if (!one) throw new Error(`Lab「${l.slug}」のサムネイルがありません。src/assets/lab/${l.slug}.png を置いてください。`);
-  return [{ src: one, when: '' }];
+const entries = LAB.map((lab) => {
+  const light = shot(`${lab.slug}-light`), dark = shot(`${lab.slug}-dark`);
+  if (light && dark) return { lab, thumbs: [{ src: light, when: 'when-light' }, { src: dark, when: 'when-dark' }] };
+  const one = shot(lab.slug);
+  if (!one) throw new Error(`Lab「${lab.slug}」のサムネイルがありません。src/assets/lab/${lab.slug}.png を置いてください。`);
+  return { lab, thumbs: [{ src: one, when: '' }] };
 });
 ---
 <Base title="Lab" wide>
   <Hero title="Lab" lead="ブラウザで動かせる実験を置いています。" />
   <ul role="list" class="grid gap-x-6 gap-y-8 sm:grid-cols-2">
-    {LAB.map((l, i) => (
+    {entries.map(({ lab, thumbs }, i) => (
       <li class="reveal">
-        <a href={`/lab/${l.slug}/`} class:list={['work-card group', l.darkScene && 'on-dark']}>
+        <a href={`/lab/${lab.slug}/`} class:list={['work-card group', lab.darkScene && 'on-dark']}>
           <span class="cover" aria-hidden="true">
-            {thumbs[i].map(({ src, when }) => <Image src={src} alt="" widths={[480, 960]} sizes="(min-width: 40rem) 50vw, 100vw" loading={i < 2 ? 'eager' : 'lazy'} class:list={['cover-img', when]} />)}
+            {thumbs.map(({ src, when }) => <Image src={src} alt="" widths={[480, 960]} sizes="(min-width: 40rem) 50vw, 100vw" loading={i < 2 ? 'eager' : 'lazy'} class:list={['cover-img', when]} />)}
           </span>
           <span class="caption">
-            <span transition:name={`lab-${l.slug}`} transition:animate="initial" class="vt-swap display block w-fit text-lg leading-6">{l.title}</span>
-            <time datetime={l.date} class="block text-xs leading-4 mt-1 opacity-80 tabular-nums">{dotted(l.date)}</time>
+            <span transition:name={`lab-${lab.slug}`} transition:animate="initial" class="vt-swap display block w-fit text-lg leading-6">{lab.title}</span>
+            <time datetime={lab.date} class="block text-xs leading-4 mt-1 opacity-80 tabular-nums">{dotted(lab.date)}</time>
           </span>
         </a>
-        <p class="phrase mt-4 text-sm text-ink-2">{l.description}</p>
+        <p class="phrase mt-4 text-sm text-ink-2">{lab.description}</p>
       </li>
     ))}
   </ul>

@@ -73,8 +73,8 @@ const path = Astro.url.pathname;
     font-size: var(--text-sm);
     line-height: 1.5rem;
   }
-  .theme-options label:has(:checked) { background: var(--paper-2); }
-  .theme-options label:has(:focus-visible) { outline: 3px solid var(--ink); outline-offset: 0; }
+  .theme-options label:has(> input:checked) { background: var(--paper-2); }
+  .theme-options label:has(> input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 0; }
   .theme-options input { flex-shrink: 0; accent-color: var(--accent-ink); cursor: inherit; }
   /* 枠は行(label)に描くので、ラジオ自体の枠は重ねない。 */
   .theme-options input:focus-visible { outline: none; }

@@ -8,15 +8,15 @@ import Avatar from '../components/Avatar.astro';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
 
-const posts = (await getPublishedPosts()).slice(0, 5);
-const works = await getWorks();
+const [allPosts, works] = await Promise.all([getPublishedPosts(), getWorks()]);
+const posts = allPosts.slice(0, 5);
 const lab = LAB.slice(0, 3);
 const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 ---
 <Base wide>
   <section class="min-h-[round(down,calc(50dvh-4rem),8px)] lg:portrait:min-h-0 pb-12 lg:pb-[5.5rem] flex items-center">
     <div class="w-full lg:w-2/3 parallax">
-      {/* 狭い画面では、シールを右上に重ねる。見出しの文字(左端から約 206px)と 16px 空く大きさにとどめる。下の段落の箱より上に置き、足元まで触れるようにする。 */}
+      {/* モバイルではシールと見出しの間隔を保ち、段落の上に重ねて足元まで触れられるようにする。 */}
       <div class="relative">
         <div class="lg:hidden hero-lead absolute z-10 top-0 right-0 size-[min(9.5rem,calc(100vw-14.875rem))] sm:size-48">
           <Avatar sizes="(min-width: 40rem) 192px, 152px" />
@@ -38,8 +38,7 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         <a href={SITE.github} class="pill glass press">GitHub</a>
       </div>
     </div>
-    {/* 縦長の画面(iPad Pro の縦など)で PC の並びになると、画面の高さで決めた見出しの高さが中身より大きくなり、下端にそろえたイラストだけが下へ離れる。そのときは高さを中身に合わせる(section の lg:portrait:min-h-0)。 */}
-    {/* 下端を次の段との間の余白へはみ出させ、見出しと記事・作品の段をつなぐ。傾けた角は下へ 21px 出るので、見出しの下の余白を 2.5rem 足して記事・作品の見出しから離す。 */}
+    {/* 縦長の広い画面では見出しの最小高さを外し、下端に置く絵が本文から離れないようにする。絵は次の段の余白にはみ出す。 */}
     <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-end self-end -mb-8">
       <div class="hero-lead shrink-0 size-80">
         <Avatar sizes="320px" />

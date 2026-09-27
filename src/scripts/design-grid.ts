@@ -14,6 +14,11 @@ let on = false;
 let root: HTMLElement | undefined;
 let legend: HTMLElement | undefined;
 let card: HTMLElement | undefined;
+let fixed: HTMLElement;
+let label: HTMLElement;
+let boxes: [HTMLElement, HTMLElement, HTMLElement];
+let typeHit: Element | null = null;
+let radiusHit: Element | null = null;
 let sizeObserver: ResizeObserver | undefined;
 let frame = 0;
 
@@ -47,12 +52,13 @@ function build() {
   el('style', '', root).textContent = css;
   const grid = el('div', 'dg-grid', root);
   el('div', 'dg-col dg-col-l', grid);
-  el('div', 'dg-col dg-col-r', grid);
-  el('div', 'dg-col-label', grid);
-  const fixed = el('div', 'dg-fixed', root);
-  el('div', 'dg-margin', fixed);
-  el('div', 'dg-padding', fixed);
-  el('div', 'dg-content', fixed);
+  label = el('div', 'dg-col-label', grid);
+  fixed = el('div', 'dg-fixed', root);
+  boxes = [
+    el('div', 'dg-margin', fixed),
+    el('div', 'dg-padding', fixed),
+    el('div', 'dg-content', fixed),
+  ];
   // 数値カードは凡例より手前に出すため、層の外に置く。
   card = el('div', 'dg-card');
   card.setAttribute('aria-hidden', 'true');
@@ -84,7 +90,6 @@ function measure() {
   // html の scrollHeight は重ねた層自身を含んで縮まなくなるため、body で測る。
   root.style.height = `${document.body.offsetHeight}px`;
   const main = document.querySelector('main');
-  const label = root.querySelector<HTMLElement>('.dg-col-label')!;
   if (!main) return;
   const r = main.getBoundingClientRect();
   const cs = getComputedStyle(main);
@@ -98,11 +103,12 @@ function measure() {
 
 function inspect(target: Element | null) {
   if (!root) return;
-  const fixed = root.querySelector<HTMLElement>('.dg-fixed')!;
   const skip = !target || target === document.documentElement || target === document.body || !!target.closest('.dg-root, .dg-legend, .sea');
   fixed.classList.toggle('dg-active', !skip);
   card!.hidden = skip;
-  document.querySelectorAll('.dg-legend [data-hit]').forEach((e) => e.removeAttribute('data-hit'));
+  typeHit?.removeAttribute('data-hit');
+  radiusHit?.removeAttribute('data-hit');
+  typeHit = radiusHit = null;
   if (skip) return;
 
   const e = target as HTMLElement;
@@ -115,7 +121,7 @@ function inspect(target: Element | null) {
     Object.assign(box.style, { left: `${x}px`, top: `${y}px`, width: `${Math.max(0, w)}px`, height: `${Math.max(0, h)}px` });
     if (widths) box.style.borderWidth = widths.map((v) => `${v}px`).join(' ');
   };
-  const [marginBox, padBox, contentBox] = [...fixed.children] as HTMLElement[];
+  const [marginBox, padBox, contentBox] = boxes;
   place(marginBox, r.left - m[3], r.top - m[0], r.width + m[1] + m[3], r.height + m[0] + m[2], m);
   place(padBox, r.left + b[3], r.top + b[0], r.width - b[1] - b[3], r.height - b[0] - b[2], p);
   place(contentBox, r.left + b[3] + p[3], r.top + b[0] + p[0], r.width - b[1] - b[3] - p[1] - p[3], r.height - b[0] - b[2] - p[0] - p[2]);
@@ -126,7 +132,11 @@ function inspect(target: Element | null) {
   const name = e.tagName.toLowerCase() + [...e.classList].filter((c) => !c.startsWith('astro-')).slice(0, 3).map((c) => `.${c}`).join('');
   rows.push(`<div class="dg-name">${name.replace(/</g, '&lt;')}</div>`);
   rows.push(`<div><b>size</b>${chip(Math.round(r.width * 100) / 100)} × ${chip(Math.round(r.height * 100) / 100)}</div>`);
-  if ([...e.childNodes].some((c) => c.nodeType === Node.TEXT_NODE && c.textContent!.trim())) {
+  let hasText = false;
+  for (const child of e.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE && child.textContent!.trim()) { hasText = true; break; }
+  }
+  if (hasText) {
     const fs = px(cs.fontSize);
     const { n, hit } = typeStep(fs);
     const step = hit ? `${hit[0] ? hit[0] + ' · ' : ''}1.25<sup>${fmt(n)}</sup>` : '<span class="dg-off">スケール外</span>';
@@ -135,7 +145,10 @@ function inspect(target: Element | null) {
     if (!Number.isNaN(lh)) rows.push(`<div><b>line</b>${chip(lh)} <small>×${fmt(lh / fs)}</small></div>`);
     const ls = px(cs.letterSpacing);
     if (ls) rows.push(`<div><b>track</b>${fmt(ls / fs)}em</div>`);
-    if (hit) document.querySelector(`.dg-ladder [data-n="${hit[1]}"]`)?.setAttribute('data-hit', '');
+    if (hit) {
+      typeHit = legend!.querySelector(`[data-n="${hit[1]}"]`);
+      typeHit?.setAttribute('data-hit', '');
+    }
   }
   if (p.some(Boolean)) rows.push(`<div><b>pad</b>${sides(p)}</div>`);
   if (m.some(Boolean)) rows.push(`<div><b>margin</b>${sides(m)}</div>`);
@@ -145,7 +158,10 @@ function inspect(target: Element | null) {
   if (rad > 0) {
     const pill = rad >= Math.min(r.width, r.height) / 2;
     rows.push(`<div><b>radius</b>${pill ? '全丸' : RADII.includes(rad) ? `${rad}` : `<span class="dg-off">${fmt(rad)}</span>`}${cs.getPropertyValue('corner-shape').includes('squircle') ? ' <small>squircle</small>' : ''}</div>`);
-    if (!pill) document.querySelector(`.dg-radii [data-r="${rad}"]`)?.setAttribute('data-hit', '');
+    if (!pill) {
+      radiusHit = legend!.querySelector(`[data-r="${rad}"]`);
+      radiusHit?.setAttribute('data-hit', '');
+    }
   }
   card!.innerHTML = rows.join('');
   const cw = card!.offsetWidth, ch = card!.offsetHeight;
@@ -156,18 +172,25 @@ function inspect(target: Element | null) {
 }
 
 let lastTarget: Element | null = null;
+const scheduleInspect = () => {
+  if (!frame) frame = requestAnimationFrame(() => { frame = 0; inspect(lastTarget); });
+};
 const onMove = (ev: PointerEvent) => {
   if (ev.pointerType !== 'mouse') return;
   lastTarget = document.elementFromPoint(ev.clientX, ev.clientY);
-  cancelAnimationFrame(frame);
-  frame = requestAnimationFrame(() => inspect(lastTarget));
+  scheduleInspect();
 };
-const onScroll = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => inspect(lastTarget)); };
-const onLeave = () => { lastTarget = null; inspect(null); };
+const onScroll = scheduleInspect;
+const onLeave = () => {
+  cancelAnimationFrame(frame);
+  frame = 0;
+  lastTarget = null;
+  inspect(null);
+};
 
 function observe() {
-  sizeObserver?.disconnect();
-  sizeObserver = new ResizeObserver(measure);
+  if (!sizeObserver) sizeObserver = new ResizeObserver(measure);
+  else sizeObserver.disconnect();
   sizeObserver.observe(document.body);
 }
 
@@ -197,6 +220,8 @@ function set(next: boolean) {
     document.removeEventListener('pointerleave', onLeave);
     removeEventListener('resize', measure);
     lastTarget = null;
+    cancelAnimationFrame(frame);
+    frame = 0;
   }
   syncButtons();
 }

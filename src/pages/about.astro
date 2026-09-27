@@ -17,10 +17,12 @@ import ArrowUp from '@lucide/astro/icons/arrow-up';
 import Flask from '@lucide/astro/icons/flask-conical';
 import GitHubMark from '../assets/icons/github.svg';
 
-const works = await getWorks();
+const [works, posts] = await Promise.all([getWorks(), getPublishedPosts()]);
 // このサイト自体も Astro の使用例として数える。
 const uses = new Map<string, number>([['Astro', 1]]);
-for (const s of works.flatMap((w) => w.data.stack)) uses.set(s, (uses.get(s) ?? 0) + 1);
+for (const work of works) {
+  for (const name of work.data.stack) uses.set(name, (uses.get(name) ?? 0) + 1);
+}
 const skills = [
   { label: '言語', items: LANGUAGES.filter((s) => uses.has(s)) },
   { label: 'ランタイム・ライブラリ', items: [...uses.keys()].filter((s) => !LANGUAGES.includes(s)).sort((a, b) => uses.get(b)! - uses.get(a)! || a.localeCompare(b, 'en')) },
@@ -34,11 +36,18 @@ const KINDS = {
 } as const;
 type Kind = keyof typeof KINDS;
 const log = [
-  ...(await getPublishedPosts()).map((p) => ({ kind: 'blog' as Kind, date: formatDate(p.data.pubDate), title: p.data.title, description: p.data.description, href: `/blog/${p.id}/` })),
+  ...posts.map((p) => ({ kind: 'blog' as Kind, date: formatDate(p.data.pubDate), title: p.data.title, description: p.data.description, href: `/blog/${p.id}/` })),
   ...LAB.map((l) => ({ kind: 'lab' as Kind, date: l.date, title: l.title, description: l.description, href: `/lab/${l.slug}/` })),
 ].sort((a, b) => b.date.localeCompare(a.date) || a.kind.localeCompare(b.kind));
-const years = [...new Set(log.map((e) => e.date.slice(0, 4)))].map((year) => ({ year, entries: log.filter((e) => e.date.startsWith(year)) }));
-const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, log.filter((e) => e.kind === k).length]));
+const years: { year: string; entries: typeof log }[] = [];
+const counts: Record<Kind, number> = { blog: 0, lab: 0 };
+for (const entry of log) {
+  counts[entry.kind]++;
+  const year = entry.date.slice(0, 4);
+  const current = years.at(-1);
+  if (current?.year === year) current.entries.push(entry);
+  else years.push({ year, entries: [entry] });
+}
 ---
 <Base title="About" description="自己紹介。Rust や TypeScript でツールや研究的なものを作ったりしてます。" wide image={{ src: '/og/about.png', alt: `自己紹介「Hi, I'm ${SITE.name}.」と haru0416.dev` }}>
   <header class="flex items-end justify-between gap-6 pt-4">
@@ -184,8 +193,7 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
 </script>
 
 <style>
-  /* 狭い画面では、名前(1 文字ずつ分けてあり折り返しを止められない)が 1 行に収まる大きさにとどめる。名前は 48px で約 138px、60px で約 172px。
-     絵は縦長(1197:1458)で、正方形の枠から下へ幅の約 22% はみ出して描かれる。その分を下の余白に取り、絵の下端を名前の行にそろえて区切り線から離す。 */
+  /* 名前と絵を狭い画面でも 1 行に収める。絵は正方形の枠から下へ幅の 261/1197 はみ出すので、同じ分の余白を取って区切り線から離す。 */
   .about-hero-art { --w: min(8rem, calc(100vw - 12.5rem)); flex-shrink: 0; width: var(--w); aspect-ratio: 1; margin-bottom: calc(var(--w) * 261 / 1197); }
   @media (min-width: 22.5rem) { .about-hero-art { --w: min(9.375rem, calc(100vw - 14.5rem)); } }
   @media (min-width: 40rem) { .about-hero-art { --w: 14rem; } }

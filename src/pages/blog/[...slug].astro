@@ -15,14 +15,18 @@ import PostList from '../../components/PostList.astro';
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts();
-  // 関連記事は、共有するタグが多い順、同数なら新しい順に 3 件まで。
-  const related = (post: (typeof posts)[number]) => posts
-    .filter((p) => p.id !== post.id)
-    .map((p) => ({ p, shared: p.data.tags.filter((t) => post.data.tags.includes(t)).length }))
-    .filter(({ shared }) => shared > 0)
-    .sort((a, b) => b.shared - a.shared || b.p.data.pubDate.valueOf() - a.p.data.pubDate.valueOf())
-    .slice(0, 3)
-    .map(({ p }) => p);
+  // 公開日時順の posts を保ち、同点の記事は新しい順にする。
+  const related = (post: (typeof posts)[number]) => {
+    const tags = new Set(post.data.tags);
+    const matches: { p: (typeof posts)[number]; shared: number }[] = [];
+    for (const p of posts) {
+      if (p.id === post.id) continue;
+      let shared = 0;
+      for (const tag of p.data.tags) if (tags.has(tag)) shared++;
+      if (shared) matches.push({ p, shared });
+    }
+    return matches.sort((a, b) => b.shared - a.shared).slice(0, 3).map(({ p }) => p);
+  };
   return posts.map((post, i) => ({
     params: { slug: post.id },
     props: { post, newer: posts[i - 1], older: posts[i + 1], related: related(post) },
@@ -201,19 +205,26 @@ const jsonLd = {
     wide.addEventListener('change', syncOpen);
     const links = new Map([...toc.querySelectorAll<HTMLAnchorElement>('a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
     const headings = [...links.keys()].map((id) => document.getElementById(id)).filter((h): h is HTMLElement => !!h);
+    let active: HTMLAnchorElement | undefined;
     const update = () => {
       // 画面の上から 3 割の線を越えた最後の見出しを、読んでいる章とみなす。
       const line = innerHeight * 0.3;
       let current = headings[0];
-      for (const h of headings) if (h.getBoundingClientRect().top <= line) current = h;
+      for (let i = headings.length - 1; i >= 0; i--) {
+        if (headings[i].getBoundingClientRect().top <= line) { current = headings[i]; break; }
+      }
       if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) current = headings.at(-1)!;
-      links.forEach((a, id) => {
-        if (id === current?.id) a.setAttribute('aria-current', 'true');
-        else a.removeAttribute('aria-current');
-      });
+      const next = links.get(current?.id ?? '');
+      if (next === active) return;
+      active?.removeAttribute('aria-current');
+      next?.setAttribute('aria-current', 'true');
+      active = next;
     };
     let raf = 0;
-    const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; update(); });
+    };
     update();
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', onScroll);

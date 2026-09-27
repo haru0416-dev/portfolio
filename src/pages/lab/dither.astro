@@ -1,22 +1,16 @@
 ---
 import Lab from '../../layouts/Lab.astro';
 import { PALETTES } from '../../scripts/dither';
-const groups = [
-  { id: 'palette', label: 'パレット', items: Object.entries(PALETTES).map(([value, p]) => ({ value, label: p.label })), initial: 'violet' },
-];
+const palettes = Object.entries(PALETTES);
 ---
 <Lab slug="dither">
   <div class="@container">
     <canvas id="dither" role="img" aria-label="惑星の縁と星空をディザで描いたアニメーション" class="w-full rounded-3xl golden bg-black pixelated"></canvas>
   </div>
   <div class="mt-4 flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
-    <div class="flex flex-wrap gap-x-8 gap-y-4">
-      {groups.map((g) => (
-        <div role="group" aria-label={g.label} data-group={g.id} class="flex flex-wrap items-center gap-2">
-          <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">{g.label}</span>
-          {g.items.map((it) => <button type="button" class="chip glass press" data-value={it.value} aria-pressed={it.value === g.initial ? "true" : "false"}>{it.label}</button>)}
-        </div>
-      ))}
+    <div role="group" aria-label="パレット" data-group="palette" class="flex flex-wrap items-center gap-2">
+      <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">パレット</span>
+      {palettes.map(([value, palette]) => <button type="button" class="chip glass press" data-value={value} aria-pressed={value === 'violet' ? 'true' : 'false'}>{palette.label}</button>)}
     </div>
     <button type="button" id="dither-pause" class="chip glass press" aria-pressed="false">一時停止</button>
   </div>

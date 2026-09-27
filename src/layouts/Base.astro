@@ -40,16 +40,16 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     <meta name="theme-color" content={THEME_COLOR.light} media="(prefers-color-scheme: light)" data-light={THEME_COLOR.light} data-dark={THEME_COLOR.dark} />
     <meta name="theme-color" content={THEME_COLOR.dark} media="(prefers-color-scheme: dark)" data-light={THEME_COLOR.light} data-dark={THEME_COLOR.dark} />
     <script is:inline>
-      // 初回描画より先に実行し、保存済みテーマとのちらつきを防ぐ。
+      // 初回描画とページ交換の前に適用し、保存済みテーマで画面を撮る。
       (() => {
-        const apply = () => {
+        const apply = (doc = document) => {
           const t = localStorage.getItem('theme');
-          const h = document.documentElement;
+          const h = doc.documentElement;
           h.classList.toggle('dark', t === 'dark');
           h.classList.toggle('light', t === 'light');
-          const scheme = document.querySelector('meta[name="color-scheme"]');
+          const scheme = doc.querySelector('meta[name="color-scheme"]');
           if (scheme) scheme.content = t === 'light' || t === 'dark' ? t : 'light dark';
-          document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+          doc.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
             m.content = t === 'light' || t === 'dark' ? m.dataset[t] : m.media.includes('dark') ? m.dataset.dark : m.dataset.light;
           });
         };
@@ -57,6 +57,7 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
         apply();
         if (!globalThis.__themeSwapBound) {
           globalThis.__themeSwapBound = true;
+          document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
           document.addEventListener('astro:after-swap', () => globalThis.applySiteTheme());
         }
       })();
@@ -80,13 +81,7 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     <Font cssVariable="--font-nunito" preload />
     {/* 等幅はコードやキー表示にしか使わず、最初の画面に出ることが少ない。先読みすると、サイト内の移動で「使われなかった先読み」の警告が出る。 */}
     <Font cssVariable="--font-jetbrains" />
-    {jpHeadings && <link rel="preload" href="/fonts/zen-maru-kana-700.woff2" as="font" type="font/woff2" crossorigin />}
     {jpHeadings && <link rel="preload" href="/fonts/zen-maru-700.woff2" as="font" type="font/woff2" crossorigin />}
-    {/* 最初に目にする矢印と指さしだけ先読みする。端末のテーマに合う方を読む。 */}
-    <link rel="preload" href="/cursors/arrow.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: light)" />
-    <link rel="preload" href="/cursors/point.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: light)" />
-    <link rel="preload" href="/cursors/arrow-dark.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: dark)" />
-    <link rel="preload" href="/cursors/point-dark.svg" as="image" type="image/svg+xml" media="(hover: hover) and (pointer: fine) and (prefers-color-scheme: dark)" />
     <ClientRouter />
   </head>
   <body class="min-h-dvh flex flex-col">

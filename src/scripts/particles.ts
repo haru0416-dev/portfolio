@@ -37,15 +37,20 @@ export function createParticles(opts: ParticleOptions) {
   const sprites = makeSprites(opts.color);
   let W = 0, H = 0, t = 0;
   let items: Particle[] = [];
-  const make = (anywhere: boolean): Particle => {
+  const make = (anywhere: boolean, p: Particle = {} as Particle): Particle => {
     // 奥の粒を多くし、手前の大きな粒はまれにする。
     const depth = Math.random() ** 1.8;
     const blur = depth > 0.8 ? 2 : depth > 0.55 ? 1 : 0;
-    return {
-      x: Math.random() * W, y: anywhere ? Math.random() * H : opts.dir > 0 ? -12 : H + 12,
-      r: 0.35 + depth * depth * 1.4, v: 3 + depth * 9, depth, phase: Math.random() * 6.28,
-      sprite: blur * SHAPES + ((Math.random() * SHAPES) | 0), spin: (Math.random() - 0.5) * 0.6, angle: Math.random() * 6.28,
-    };
+    p.x = Math.random() * W;
+    p.y = anywhere ? Math.random() * H : opts.dir > 0 ? -12 : H + 12;
+    p.r = 0.35 + depth * depth * 1.4;
+    p.v = 3 + depth * 9;
+    p.depth = depth;
+    p.phase = Math.random() * 6.28;
+    p.sprite = blur * SHAPES + ((Math.random() * SHAPES) | 0);
+    p.spin = (Math.random() - 0.5) * 0.6;
+    p.angle = Math.random() * 6.28;
+    return p;
   };
   return {
     resize(w: number, h: number) {
@@ -60,7 +65,7 @@ export function createParticles(opts: ParticleOptions) {
         p.y += p.v * opts.dir * dt;
         p.x += Math.sin(t * 0.5 + p.phase) * 3 * dt;
         p.angle += p.spin * dt;
-        if (p.y > H + 12 || p.y < -12) Object.assign(p, make(false));
+        if (p.y > H + 12 || p.y < -12) make(false, p);
       }
     },
     render(ctx: CanvasRenderingContext2D) {

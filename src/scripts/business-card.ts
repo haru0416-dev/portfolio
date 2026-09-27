@@ -70,9 +70,10 @@ export function startBusinessCard(stage: HTMLElement): () => void {
 
   // 札は斜めに置いてあるため、画面上の向きを札の縦横に直してから使う。
   const tiltRad = (parseFloat(getComputedStyle(stage).rotate) || 0) * (Math.PI / 180);
+  const tiltCos = Math.cos(tiltRad), tiltSin = Math.sin(tiltRad);
   const toCard = (x: number, y: number) => ({
-    x: x * Math.cos(tiltRad) + y * Math.sin(tiltRad),
-    y: -x * Math.sin(tiltRad) + y * Math.cos(tiltRad),
+    x: x * tiltCos + y * tiltSin,
+    y: -x * tiltSin + y * tiltCos,
   });
 
   const showSide = () => {
@@ -199,8 +200,8 @@ export function startBusinessCard(stage: HTMLElement): () => void {
     const tilt = Math.min(1, Math.hypot(dev, rx.x) / MAX_TILT);
     const up = Math.max(0, lift.x), down = Math.max(0, -lift.x);
     const rad = Math.PI / 180;
+    const w = stage.offsetWidth, h = stage.offsetHeight;
     card.style.transform = `translateZ(${((up - down) * 24).toFixed(2)}px) rotateX(${rx.x.toFixed(2)}deg) rotateY(${ry.x.toFixed(2)}deg)`;
-
     // 影は札と一緒に回さず、下に落ちたものとして傾きと逆へずらす。
     const devClamped = Math.max(-MAX_TILT * 1.5, Math.min(MAX_TILT * 1.5, dev));
     const sw = Math.max(0.06, Math.abs(Math.cos(ry.x * rad))) * (1 - up * 0.05);
@@ -216,7 +217,6 @@ export function startBusinessCard(stage: HTMLElement): () => void {
     show(shadowNear, far < 0.99);
 
     // 光の点の移動を translate、光の点から一番遠い角までの距離(グラデーションの半径)を scale で表す。
-    const w = stage.offsetWidth, h = stage.offsetHeight;
     const gx = (0.5 + (dev / MAX_TILT) * 0.4) * w, gy = (0.5 - (rx.x / MAX_TILT) * 0.4) * h;
     const reach = Math.hypot(Math.max(gx, w - gx), Math.max(gy, h - gy)) / (Math.hypot(w, h) / 2);
     const light = `translate(${(gx - w / 2).toFixed(1)}px, ${(gy - h / 2).toFixed(1)}px) scale(${reach.toFixed(3)})`;

@@ -33,13 +33,14 @@ const DROPS = [
 
 // 網の目を深いほど大きく、波の進む向きに引き伸ばす。どちらも広げる向きの写像なので、裁ち落としの範囲は網で覆われたまま。
 const WAVE = (-28 * Math.PI) / 180;
+const WAVE_COS = Math.cos(WAVE), WAVE_SIN = Math.sin(WAVE);
 const flow = ([x, y]: Point): Point => {
   const g = 1 + 0.28 * depth([x, y]);
   const px = x * g, py = y * g;
   const cx = W / 2, cy = H / 2, dx = px - cx, dy = py - cy;
-  const u = dx * Math.cos(WAVE) + dy * Math.sin(WAVE), v = -dx * Math.sin(WAVE) + dy * Math.cos(WAVE);
+  const u = dx * WAVE_COS + dy * WAVE_SIN, v = -dx * WAVE_SIN + dy * WAVE_COS;
   const su = u * 1.28;
-  return [cx + su * Math.cos(WAVE) - v * Math.sin(WAVE), cy + su * Math.sin(WAVE) + v * Math.cos(WAVE)];
+  return [cx + su * WAVE_COS - v * WAVE_SIN, cy + su * WAVE_SIN + v * WAVE_COS];
 };
 // 頂点の移動は場所だけで決まる関数にする。隣り合うセルが共有する頂点が同じだけ動き、網が途切れない。
 const sway = ([x, y]: Point): Point => [
@@ -73,12 +74,13 @@ const smooth = (poly: Point[]) => {
   }).join('') + 'Z';
 };
 
-const coarse = causticCells(31, bleedBox, 7, 1).map(shape);
-const fine = causticCells(53, bleedBox, 12, 1).map(shape);
+// under / shadow / over は別々に描かれる。各層で使わない幾何を生成しない。
+const coarse = layer === 'under' ? [] : causticCells(31, bleedBox, 7, 1).map(shape);
+const fine = layer === 'over' ? causticCells(53, bleedBox, 12, 1).map(shape) : [];
 const glow = [0.99, 0.955, 0.91];
 
 const areas = coarse.map(area);
-const aMin = Math.min(...areas), aMax = Math.max(...areas);
+const aMin = areas.length ? Math.min(...areas) : 0, aMax = areas.length ? Math.max(...areas) : 0;
 const filaments = coarse.map((c, i) => {
   const loose = (areas[i] - aMin) / (aMax - aMin), d = depth(centroid(c));
   return { d: smooth(c), width: (0.12 + 0.15 * loose) * (1 + 1.1 * d), opacity: (0.7 - 0.3 * loose) * (1 - 0.5 * d) };
@@ -88,7 +90,7 @@ const filaments = coarse.map((c, i) => {
 const keyOf = (p: Point) => `${p[0].toFixed(3)},${p[1].toFixed(3)}`;
 const pos = new Map<string, Point>();
 const links = new Map<string, Set<string>>();
-for (const c of coarse) c.forEach((p, i) => {
+if (layer === 'over') for (const c of coarse) c.forEach((p, i) => {
   const a = keyOf(p), b = keyOf(c[(i + 1) % c.length]);
   pos.set(a, p);
   if (!links.has(a)) links.set(a, new Set());
@@ -117,12 +119,13 @@ const heroes = heroStarts.map(({ p }) => {
   }
   if (path.length < 3) return null;
   const d = depth(centroid(path));
-  let dStr = `M${f(mid(path[0], path[1])[0])} ${f(mid(path[0], path[1])[1])}`;
+  const first = mid(path[0], path[1]);
+  let dStr = `M${f(first[0])} ${f(first[1])}`;
   for (let i = 1; i < path.length - 1; i++) { const m = mid(path[i], path[i + 1]); dStr += `Q${f(path[i][0])} ${f(path[i][1])} ${f(m[0])} ${f(m[1])}`; }
   return { d: dStr, depth: d };
 }).filter((h): h is { d: string; depth: number } => h !== null);
 
-const cusps = coarse.flatMap((c, i) => {
+const cusps = layer === 'over' ? coarse.flatMap((c, i) => {
   if ((i * 2654435761) % 97 > 26) return [];
   const v = c[(i * 7) % c.length], [cx, cy] = centroid(c), d = depth(v);
   const tip: Point = [v[0] + (cx - v[0]) * 0.42, v[1] + (cy - v[1]) * 0.42];
@@ -133,7 +136,7 @@ const cusps = coarse.flatMap((c, i) => {
     d: `M${f(v[0] + nx * w)} ${f(v[1] + ny * w)}Q${f(ctrl[0])} ${f(ctrl[1])} ${f(tip[0])} ${f(tip[1])}Q${f(ctrl[0] - nx * w * 0.6)} ${f(ctrl[1] - ny * w * 0.6)} ${f(v[0] - nx * w)} ${f(v[1] - ny * w)}Z`,
     opacity: 0.5 * (1 - 0.5 * d),
   }];
-});
+}) : [];
 
 // 波紋。浅い水では短い波ほど速く進むため、外側ほど輪が詰まる。
 const ripples = DROPS.flatMap((drop) => Array.from({ length: drop.n }, (_, k) => {
@@ -143,7 +146,7 @@ const ripples = DROPS.flatMap((drop) => Array.from({ length: drop.n }, (_, k) =>
   return { x: drop.x, y: drop.y, r, band, rim, fade };
 }));
 
-const motes = marineSnow(41, 46).filter((p) => !inText([p.x, p.y]));
+const motes = layer === 'over' ? marineSnow(41, 46).filter((p) => !inText([p.x, p.y])) : [];
 ---
 <defs>
   <linearGradient id={`${id}-water`} x1="0" y1="0" x2={W * 0.8} y2={H} gradientUnits="userSpaceOnUse">

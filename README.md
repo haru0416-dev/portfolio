@@ -77,7 +77,9 @@ bun run pages:dev
 
 ## スタイルと生成アセット
 
-色と寸法は `src/styles/global.css` にまとめている。色は OKLCH と `light-dark()` で指定し、ヘッダーで端末設定・ライト・ダークを切り替える。レイアウトの最大幅は `--container-reading`（通常、`41rem`）と `--container-site`（`wide`、`64rem`）で定義する。
+色と寸法は `src/styles/global.css` にまとめている。色は OKLCH と `light-dark()` で指定し、ヘッダーで端末設定・ライト・ダークを切り替える。ページ遷移では `astro:before-swap` で遷移先の文書に保存済みテーマを適用し、選択中のナビだけ一瞬ダーク配色になるのを防ぐ。レイアウトの最大幅は `--container-reading`（通常、`41rem`）と `--container-site`（`wide`、`64rem`）で定義する。
+
+全画面で使う色・部品・遷移は `global.css`、特定ページのレイアウトはその `.astro` の `<style>`、記事と作品の本文だけに必要な装飾は `prose.css` に置く。作品・Lab のカードの高さは直上の一覧項目（作品詳細では `article`）を CSS コンテナとして測るため、カードを別の親へ移すときはコンテナ指定も合わせて見直す。
 
 本文内の `transition:name` には `transition:animate="initial"` を併記する。要素ごとのフェードCSSを生成せず、通常の遷移と非対応ブラウザ向けのフェードを `global.css` で定義している。
 
@@ -89,7 +91,7 @@ bun run pages:dev
 
 ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、Fredoka・Nunito・JetBrains Mono は Astro の Fonts API と `<Font />` で各ページに `@font-face` を書き込む。
 
-和文見出しは、Zen Maru Gothic から作った 2 つのフォントで描く。どちらも先読みし、遅い回線でも見出しが後から差し替わらないようにする。再生成には uv と Python 3.12 以上が必要。
+和文見出しは、Zen Maru Gothic から作った 2 つのフォントで描く。漢字のサブセットは和文見出しのあるページで先読みし、かな・約物の派生フォントは使われるときに読み込む。再生成には uv と Python 3.12 以上が必要。
 
 - かなと約物を詰めた派生フォント。かなを優先して当てる。
 
@@ -103,7 +105,7 @@ bun run pages:dev
   bun run build && uv run scripts/zen-maru.py
   ```
 
-出力は `public/fonts/zen-maru-kana-700.woff2` と `public/fonts/zen-maru-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと先読みを省ける。
+出力は `public/fonts/zen-maru-kana-700.woff2` と `public/fonts/zen-maru-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと漢字サブセットの先読みを省ける。
 
 ### OG 画像とカーソル
 
@@ -114,6 +116,8 @@ OG 画像はビルド時に 1200×630 の PNG として生成する。サイト�
 ```sh
 python3 tools/cursors.py
 ```
+
+クリックするまで使わないカーソルの SVG は先読みせず、CSS の `cursor` から必要時に取得する。
 
 ## Cloudflare 固有の応答
 

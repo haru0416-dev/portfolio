@@ -207,13 +207,22 @@ export interface CardImage {
 
 export const postEyebrow = (date: Date) => `BLOG · ${dotted(formatDate(date))}`;
 
-export async function lucideIcon(name: string) {
-  const path = join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`);
-  const svg = await readFile(path, 'utf8').catch((err: NodeJS.ErrnoException) => {
-    if (err.code === 'ENOENT') throw new Error(`lucide-static に ${name}.svg がありません。src/data/icon-names.ts の名前とパッケージがずれています。`, { cause: err });
-    throw err;
-  });
-  return `data:image/svg+xml,${encodeURIComponent(svg.replace(/<!--.*?-->/s, '').replaceAll('currentColor', C.accent))}`;
+const icons = new Map<string, Promise<string>>();
+
+export function lucideIcon(name: string): Promise<string> {
+  let icon = icons.get(name);
+  if (!icon) {
+    const path = join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`);
+    icon = readFile(path, 'utf8')
+      .then((svg) => `data:image/svg+xml,${encodeURIComponent(svg.replace(/<!--.*?-->/s, '').replaceAll('currentColor', C.accent))}`)
+      .catch((err: NodeJS.ErrnoException) => {
+        icons.delete(name);
+        if (err.code === 'ENOENT') throw new Error(`lucide-static に ${name}.svg がありません。src/data/icon-names.ts の名前とパッケージがずれています。`, { cause: err });
+        throw err;
+      });
+    icons.set(name, icon);
+  }
+  return icon;
 }
 
 type Place = (e: Omit<El, 'x' | 'y'>, at: (o: Box) => [number, number]) => Promise<Box>;

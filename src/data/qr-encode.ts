@@ -217,10 +217,15 @@ function linePenalty(line: boolean[]): number {
 
 function penalty(g: Grid): number {
   const { size, modules: m } = g;
-  let score = 0;
+  let score = 0, dark = 0;
+  const column = new Array<boolean>(size);
   for (let i = 0; i < size; i++) {
     score += linePenalty(m[i]);
-    score += linePenalty(m.map((row) => row[i]));
+    for (let j = 0; j < size; j++) {
+      column[j] = m[j][i];
+      if (m[i][j]) dark++;
+    }
+    score += linePenalty(column);
   }
   for (let y = 0; y < size - 1; y++) {
     for (let x = 0; x < size - 1; x++) {
@@ -229,7 +234,6 @@ function penalty(g: Grid): number {
     }
   }
   // N4: 暗いモジュールの割合が 50% から 5% 離れるごとに 10 点。
-  const dark = m.flat().filter(Boolean).length;
   const total = size * size;
   score += (Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
   return score;
@@ -253,10 +257,11 @@ export function encodeQr(text: string, ecc: Ecc) {
     drawFormatBits(g, ecc, m);
     return g;
   };
-  let best = 0, bestScore = Infinity;
-  for (let m = 0; m < MASKS.length; m++) {
-    const score = penalty(render(m));
-    if (score < bestScore) { best = m; bestScore = score; }
+  let bestGrid = render(0), bestScore = penalty(bestGrid);
+  for (let m = 1; m < MASKS.length; m++) {
+    const grid = render(m);
+    const score = penalty(grid);
+    if (score < bestScore) { bestGrid = grid; bestScore = score; }
   }
-  return { size, modules: render(best).modules };
+  return { size, modules: bestGrid.modules };
 }

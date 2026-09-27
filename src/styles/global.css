@@ -205,9 +205,9 @@ header.site.glass::before { content: none; }
 .work-hero { border-radius: 2rem; }
 @media (min-width: 40rem) { .work-hero { aspect-ratio: 12 / 5; } }
 @media (min-width: 64rem) { .work-hero { aspect-ratio: 3 / 1; } }
-/* 高さを 8px の倍数に丸めて行送りのグリッドに乗せる。cqi が親の幅を指すよう、親をコンテナにする。 */
+/* コンテナ単位 cqi はカード自身ではなく直上の列幅を参照する。一覧と作品詳細の親に絞る。 */
 @supports (height: round(1px, 8px)) {
-  :has(> .work-card) { container-type: inline-size; }
+  :is(li, article):has(> .work-card) { container-type: inline-size; }
   .work-card { aspect-ratio: auto; height: round(100cqi * 9 / 16, 8px); }
   @media (min-width: 40rem) { .work-hero { height: round(100cqi * 5 / 12, 8px); } }
   @media (min-width: 64rem) { .work-hero { height: round(100cqi / 3, 8px); } }
@@ -244,7 +244,6 @@ header.site.glass::before { content: none; }
 /* 写真のカバーだけは、題名が読めるよう下端を紙色でぼかす。 */
 .work-card:has(.cover-img) .caption { background: linear-gradient(to top, color-mix(in oklch, var(--paper) 85%, transparent), transparent); }
 
-/* .pill・.chip・.link-row は押し込みの transform を自分の transition に含める。 */
 .press:active { transform: scale(0.94); }
 .press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out), color 150ms ease, background-color 150ms ease; }
 

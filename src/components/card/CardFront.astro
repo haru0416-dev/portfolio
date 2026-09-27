@@ -32,6 +32,7 @@ const aim = (x: number, half: number, a: number): Ray => {
 };
 const broad = CARD_RAYS.map((r) => aim(r.x + r.w / 2, r.w * 0.32, r.a * 0.42));
 const sharp = [9.5, 23, 38.5].map((x, i) => aim(x, 0.32, [0.55, 0.42, 0.34][i]));
+const rays = [...broad, ...sharp];
 /** 筋の多角形。上端から RAY_LENGTH だけ伸ばし、太陽からの距離に比例して太らせる。 */
 const rayPath = (r: Ray, k: number) => {
   const n: Point = [-r.u[1], r.u[0]];
@@ -43,7 +44,7 @@ const rayPath = (r: Ray, k: number) => {
 /** その点が光の筋の中にどれだけ入っているか(0〜1)。水中の粒は筋の中でだけ明るく見える。 */
 const lit = ([x, y]: Point) => {
   let sum = 0;
-  for (const r of [...broad, ...sharp]) {
+  for (const r of rays) {
     const px = x - SUN[0], py = y - SUN[1], along = px * r.u[0] + py * r.u[1];
     if (along < r.dist) continue;
     const across = Math.abs(px * r.u[1] - py * r.u[0]), half = r.half * (along / r.dist) * 1.3;

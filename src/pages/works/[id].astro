@@ -16,9 +16,8 @@ export async function getStaticPaths() {
   }));
 }
 const { work, hue, prev, next } = Astro.props;
-const { Content } = await render(work);
 const d = work.data;
-const hasBody = Boolean(work.body?.trim());
+const Content = work.body?.trim() ? (await render(work)).Content : null;
 const showRepo = d.repo && d.status !== 'soon';
 const Ext = ICONS['external-link'], Code = ICONS.code, Bug = ICONS.bug;
 const links = [
@@ -64,7 +63,7 @@ const jsonLd = {
     <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
       <div class="max-w-reading">
         <p class="phrase text-base sm:text-[1.118rem] sm:leading-8 text-ink">{d.summary}</p>
-        {hasBody && <div class="prose mt-12"><Content /></div>}
+        {Content && <div class="prose mt-12"><Content /></div>}
       </div>
 
       {links.length > 0 && (

@@ -23,7 +23,7 @@ const promises = [
       <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text="Privacy" /></h1>
       <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead phrase">このサイトが集める情報と、その扱いについて。</p>
     </div>
-    <div aria-hidden="true" class="privacy-art hero-lead"><Sticker icon={ShieldCheck} lift /></div>
+    <div aria-hidden="true" class="hero-lead shrink-0 size-22 sm:size-32"><Sticker icon={ShieldCheck} lift /></div>
   </header>
 
   <ul role="list" class="grid gap-3 sm:grid-cols-3 sm:gap-4 hero-lead">
@@ -38,7 +38,7 @@ const promises = [
     ))}
   </ul>
 
-  <div class="prose mt-16 privacy-details privacy-body">
+  <div class="prose mt-16 max-w-reading">
     <h2 id="analytics">アクセス解析</h2>
     <p>どのページがどれだけ読まれているか、表示が遅くないかを知るために、<a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a> を使っています。ページを開くと、次の情報が Cloudflare に送られます。</p>
     <ul>
@@ -73,13 +73,10 @@ const promises = [
     <p>このページについての質問は、<a href={`${SITE.repo}/issues`}>このサイトのリポジトリの Issues</a> へお願いします。内容を変えるときはこのページを更新し、下の最終更新日を改めます。</p>
   </div>
 
-  <p class="privacy-body mt-12 flex items-center gap-2 text-sm text-muted">最終更新日<time datetime={UPDATED} class="tag tabular-nums">{UPDATED.replaceAll('-', '.')}</time></p>
+  <p class="max-w-reading mt-12 flex items-center gap-2 text-sm text-muted">最終更新日<time datetime={UPDATED} class="tag tabular-nums">{UPDATED.replaceAll('-', '.')}</time></p>
 </Base>
 
 <style>
-  /* 見出しの文字(Privacy)と 1 行に並ぶ大きさ。 */
-  .privacy-art { flex-shrink: 0; width: 5.5rem; aspect-ratio: 1; }
-  @media (min-width: 40rem) { .privacy-art { width: 8rem; } }
   .promise-icon {
     display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: .75rem;
     color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper));
@@ -87,5 +84,4 @@ const promises = [
   /* 狭い画面ではアイコンと文を横に並べて低く、3 列に並ぶ幅ではアイコンを上に置く。 */
   .promise { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 1.5rem; }
   @media (min-width: 40rem) { .promise { flex-direction: column; align-items: flex-start; gap: .875rem; padding: 1.5rem; border-radius: 2rem; } }
-  .privacy-body { max-width: var(--container-reading); }
 </style>
