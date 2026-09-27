@@ -42,28 +42,60 @@ const onKey = (e: KeyboardEvent) => {
   if (SCROLL_KEYS.includes(e.key)) stop();
 };
 
-// Astro のスクロール位置保存を間引き、ブラウザの history 更新制限を避ける。
-// 保留分は pushState・popstate・pagehide で流し、履歴項目の順序を保つ。
-const HISTORY_INTERVAL = 150;
-function throttleHistory() {
+type HistoryState = Record<string, unknown> & { index?: number; scrollX?: number; scrollY?: number };
+
+/**
+ * Astro はスクロールが止まるたびに、位置を replaceState で保存する。replaceState のたびに Navigation API の navigate が起き、
+ * Cloudflare Web Analytics(SPA の計測)はそれを 1 回の閲覧として送るため、スクロールするたびに計測が増える。
+ * 位置だけを変える保存は書き込まずに履歴の項目(index)ごとに持っておき、history.state には持っている値を重ねて見せる。
+ * 書き込むのは、次へ進む直前・ページを離れる/隠れるとき・戻る/進むで移ったとき。
+ * popstate は Astro の処理が先に動くことがあるため、持っている値は今の項目の index と一致するときだけ見せる。
+ */
+function deferScrollSaves() {
+  const stateGetter = Object.getOwnPropertyDescriptor(History.prototype, 'state')!.get!;
+  const stored = () => stateGetter.call(history) as HistoryState | null;
   const replace = history.replaceState.bind(history), push = history.pushState.bind(history);
-  let last = 0, pending: Parameters<History['replaceState']> | undefined, timer = 0;
-  const flush = () => { clearTimeout(timer); if (pending) { const args = pending; pending = undefined; last = performance.now(); replace(...args); } };
-  history.replaceState = (...args) => {
-    if (performance.now() - last >= HISTORY_INTERVAL) { pending = undefined; clearTimeout(timer); last = performance.now(); replace(...args); return; }
-    pending = args;
-    clearTimeout(timer);
-    timer = window.setTimeout(flush, HISTORY_INTERVAL);
+  const scrolls = new Map<number, { scrollX: unknown; scrollY: unknown }>();
+  const withScroll = () => {
+    const state = stored();
+    const scroll = typeof state?.index === 'number' ? scrolls.get(state.index) : undefined;
+    return state && scroll ? { ...state, ...scroll } : state;
   };
-  history.pushState = (...args) => { flush(); push(...args); };
-  addEventListener('popstate', flush, { capture: true });
+  const flush = () => {
+    const state = stored();
+    if (typeof state?.index !== 'number' || !scrolls.has(state.index)) return;
+    const merged = withScroll();
+    scrolls.delete(state.index);
+    replace(merged, '');
+  };
+  const onlyScroll = (next: HistoryState, current: HistoryState) => {
+    const keys = new Set([...Object.keys(next), ...Object.keys(current)]);
+    keys.delete('scrollX'); keys.delete('scrollY');
+    return [...keys].every((k) => next[k] === current[k]);
+  };
+  Object.defineProperty(history, 'state', { configurable: true, get: withScroll });
+  history.replaceState = (state: unknown, unused: string, url?: string | URL | null) => {
+    const current = stored();
+    if (url == null && current && typeof current.index === 'number' && state && typeof state === 'object' && onlyScroll(state as HistoryState, current)) {
+      const { scrollX, scrollY } = state as HistoryState;
+      scrolls.set(current.index, { scrollX, scrollY });
+      return;
+    }
+    flush();
+    replace(state, unused, url);
+  };
+  history.pushState = (...args: Parameters<History['pushState']>) => { flush(); push(...args); };
+  addEventListener('popstate', flush);
+  // 再読み込みでは pagehide の中の書き込みが捨てられる。beforeunload の中なら残る。
+  addEventListener('beforeunload', flush);
   addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 }
 
 export function installSmoothScroll() {
   if (installed) return;
   installed = true;
-  throttleHistory();
+  deferScrollSaves();
   addEventListener('wheel', onWheel, { passive: false });
   addEventListener('scroll', sync, { passive: true });
   addEventListener('keydown', onKey, { capture: true });
