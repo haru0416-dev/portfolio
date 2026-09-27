@@ -5,7 +5,7 @@ const REDUCE = matchMedia('(prefers-reduced-motion: reduce)');
 /** 撫でていると判断する、左右の往復の回数と、その間の時間(ms)。 */
 const RUBS = 3, RUB_WINDOW = 900, RUB_MIN = 12;
 const HOLD = 450;
-const PET_EVERY = 280;
+const PET_EVERY = 380;
 
 const BUBBLE = `<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.6" fill="oklch(92% .04 220 / .18)" stroke="white" stroke-opacity=".85" stroke-width="1.4"/><ellipse cx="7" cy="6.8" rx="2.4" ry="1.5" transform="rotate(-40 7 6.8)" fill="white" opacity=".9"/></svg>`;
 const FISH = `<svg viewBox="0 0 24 16"><path d="M3 8c3-5 10-6 15-2l4-3v10l-4-3c-5 4-12 3-15-2z" fill="oklch(78% .1 245)"/><circle cx="7.5" cy="7" r="1.3" fill="white"/></svg>`;
@@ -48,27 +48,27 @@ export function startAvatarPlay(root: HTMLElement): () => void {
   const poke = (x: number, y: number) => {
     art.animate([
       { scale: '1 1' }, { scale: '1.12 .86' }, { scale: '.92 1.1' }, { scale: '1.05 .96' }, { scale: '.98 1.02' }, { scale: '1 1' },
-    ], { duration: 620, easing: 'ease-out' });
-    for (let i = 0; i < 6; i++) emit(BUBBLE, x + (Math.random() - 0.5) * 40, y + (Math.random() - 0.5) * 20, 8 + Math.random() * 12, 70 + Math.random() * 70, (Math.random() - 0.5) * 30, 1000 + Math.random() * 500, i * 50);
+    ], { duration: 950, easing: 'ease-out' });
+    for (let i = 0; i < 6; i++) emit(BUBBLE, x + (Math.random() - 0.5) * 40, y + (Math.random() - 0.5) * 20, 8 + Math.random() * 12, 70 + Math.random() * 70, (Math.random() - 0.5) * 30, 1500 + Math.random() * 700, i * 80);
     const fishes = 1 + (Math.random() < 0.5 ? 1 : 0);
     for (let i = 0; i < fishes; i++) {
       const dir = Math.random() < 0.5 ? -1 : 1;
-      emit(FISH, x + dir * 10, y, 18 + Math.random() * 6, 60 + Math.random() * 40, dir * (40 + Math.random() * 30), 1300, 80 + i * 120);
+      emit(FISH, x + dir * 10, y, 18 + Math.random() * 6, 60 + Math.random() * 40, dir * (40 + Math.random() * 30), 1900, 120 + i * 180);
     }
   };
 
   let lastPet = 0, wiggle: Animation | null = null, petUntil = 0;
   const pet = (x: number, y: number) => {
     const now = performance.now();
-    petUntil = now + 400;
+    petUntil = now + 600;
     if (!wiggle) {
-      wiggle = art.animate([{ rotate: '0deg' }, { rotate: '-4deg' }, { rotate: '0deg' }, { rotate: '4deg' }, { rotate: '0deg' }], { duration: 360, iterations: Infinity });
+      wiggle = art.animate([{ rotate: '0deg' }, { rotate: '-4deg' }, { rotate: '0deg' }, { rotate: '4deg' }, { rotate: '0deg' }], { duration: 560, iterations: Infinity });
       const stop = () => { if (performance.now() < petUntil) return void requestAnimationFrame(stop); wiggle?.cancel(); wiggle = null; };
       requestAnimationFrame(stop);
     }
     if (now - lastPet < PET_EVERY) return;
     lastPet = now;
-    emit(Math.random() < 0.6 ? HEART : NOTE, x + (Math.random() - 0.5) * 30, y - 10, 14 + Math.random() * 6, 60 + Math.random() * 30, (Math.random() - 0.5) * 40, 1100);
+    emit(Math.random() < 0.6 ? HEART : NOTE, x + (Math.random() - 0.5) * 30, y - 10, 14 + Math.random() * 6, 60 + Math.random() * 30, (Math.random() - 0.5) * 40, 1600);
   };
 
   // マウス: 左右の往復を数える。
