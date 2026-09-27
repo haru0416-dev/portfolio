@@ -47,7 +47,7 @@ bun run pages:dev
 
 `src/content/works/<id>.md` に登録する。必須項目は `name`、`summary`、`stack`。本文を書けば `/works/<id>/` の説明として表示される。
 
-任意項目は `icon`、`cover`、`repo`、`url`、`issues`、`status`、`order`。`cover` は一覧と作品ページのサムネイルに使う画像で、`src/content/works/` からの相対パスで指定する。指定がなければ `icon` を使ったカバー画像を生成する。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
+任意項目は `icon`、`cover`、`repo`、`url`、`issues`、`status`、`order`。`cover` は一覧と作品ページに表示する画像で、`src/content/works/` からの相対パスで指定する。省略した場合は `icon` を使ったカバーを表示する。`status` は `active`、`wip`、`soon`、`archived` から選び、`order` の小さい順に並ぶ。`soon` の作品はリポジトリへのリンクを表示しない。
 
 `issues` には、受付を有効にした公開 GitHub Issues の URL を指定する。作品ページに掲載される。アイコンを追加するときは `src/data/icons.ts` にも登録する。
 
@@ -56,6 +56,8 @@ bun run pages:dev
 ### Lab
 
 `src/pages/lab/<slug>.astro` を作り、`src/data/lab.ts` に登録する。ページは `src/layouts/Lab.astro` の `<Lab slug="...">` で囲む。題名・説明・日付・OG 情報は登録内容から表示される。
+
+一覧のサムネイルも必要。`src/assets/lab/<slug>.png` を置くか、テーマで画面が変わる場合は `<slug>-light.png` と `<slug>-dark.png` の両方を置く。画像がないと一覧のビルドは失敗する。
 
 ## 主なファイル
 
@@ -109,7 +111,7 @@ bun run pages:dev
 
 ### OG 画像とカーソル
 
-OG 画像はビルド時に 1200×630 の PNG として生成する。サイト共通は `/og.png`、記事用は `/og/blog/<slug>.png`、作品用は `/og/works/<id>.png`。配色はダークテーマに合わせ、作品のアイコンは題名の左に置く。
+OG 画像はビルド時に 1200×630 の PNG として生成する。サイト共通は `/og.png`、記事用は `/og/blog/<slug>.png`、作品用は `/og/works/<id>.png`、Lab 用は `/og/lab/<slug>.png`。配色はダークテーマに合わせ、作品のアイコンは題名の左に置く。
 
 カーソルは `tools/cursors.py` で定義する。次のコマンドは `public/cursors/` の SVG と `global.css` のカーソル設定を更新する。
 
