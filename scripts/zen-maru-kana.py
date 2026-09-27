@@ -6,7 +6,7 @@
 
     uv run scripts/zen-maru-kana.py
 
-出力: public/fonts/zen-maru-kana-700.woff2(ライセンスは同じ場所の zen-maru-kana-OFL.txt)
+出力: public/fonts/zen-maru-kana-700.woff2(ライセンスは同じ場所の OFL.txt。元フォントの著作権表示を変えたらそちらも直す)
 """
 
 import io
@@ -20,7 +20,6 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTFont
 
 SRC = "https://github.com/google/fonts/raw/main/ofl/zenmarugothic/ZenMaruGothic-Bold.ttf"
-LICENSE = "https://github.com/google/fonts/raw/main/ofl/zenmarugothic/OFL.txt"
 OUT = Path(__file__).resolve().parent.parent / "public" / "fonts"
 FAMILY = "Zen Maru Kana"
 
@@ -105,7 +104,6 @@ def main() -> None:
     font.flavor = "woff2"
     out = OUT / "zen-maru-kana-700.woff2"
     font.save(out)
-    (OUT / "zen-maru-kana-OFL.txt").write_bytes(urllib.request.urlopen(LICENSE).read())
     print(f"{out} {out.stat().st_size / 1024:.1f} KiB, {len(font.getGlyphOrder())} glyphs")
     print(f"unicode-range: {UNICODE_RANGE}")
 

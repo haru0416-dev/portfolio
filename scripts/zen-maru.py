@@ -9,7 +9,7 @@
 
 Google の分割版は漢字を 120 ほどのファイルに分けて持ち、どれが要るかはページを組み立てるまで分からない。
 先読みできず、遅い回線では見出しの漢字だけが後から差し替わるので、使う文字を 1 つにまとめて先読みする。
-出力: public/fonts/zen-maru-700.woff2(ライセンスは同じ場所の zen-maru-kana-OFL.txt と同じ OFL)
+出力: public/fonts/zen-maru-700.woff2(ライセンスは同じ場所の OFL.txt)
 """
 
 import sys
@@ -83,6 +83,8 @@ def main() -> None:
         CACHE.write_bytes(urllib.request.urlopen(SRC).read())
     font = TTFont(CACHE)
     opts = subset.Options()
+    # 著作権表示とライセンスの欄を残す(既定では落ちる)。OFL は複製にライセンスを付けることを求める。
+    opts.name_IDs = ["*"]
     opts.hinting = False
     sub = subset.Subsetter(opts)
     sub.populate(text="".join(sorted(used())))

@@ -1,8 +1,14 @@
+The fonts on this site (haru0416.dev) are licensed under the SIL Open Font License, Version 1.1.
+The license is copied below, and is also available with a FAQ at: https://openfontlicense.org/
+
+Copyright 2016 The Fredoka Project Authors (https://github.com/hafontia/Fredoka-One)
+Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
+Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
 Copyright 2021 The Zen Maru Gothic Project Authors (https://github.com/googlefonts/zen-marugothic)
 
-This Font Software is licensed under the SIL Open Font License, Version 1.1.
-This license is copied below, and is also available with a FAQ at:
-http://scripts.sil.org/OFL
+zen-maru-700.woff2 and zen-maru-kana-700.woff2 in this folder are Modified Versions of Zen Maru Gothic Bold:
+zen-maru-700.woff2 keeps only the characters this site's headings use, and zen-maru-kana-700.woff2 ("Zen Maru Kana")
+also tightens the spacing of kana and punctuation. Both are distributed under the same license.
 
 
 -----------------------------------------------------------

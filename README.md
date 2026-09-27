@@ -105,7 +105,7 @@ bun run pages:dev
   bun run build && uv run scripts/zen-maru.py
   ```
 
-出力は `public/fonts/zen-maru-kana-700.woff2` と `public/fonts/zen-maru-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [zen-maru-kana-OFL.txt](public/fonts/zen-maru-kana-OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと漢字サブセットの先読みを省ける。
+出力は `public/fonts/zen-maru-kana-700.woff2` と `public/fonts/zen-maru-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを、サイトの他のフォントの分とまとめて [OFL.txt](public/fonts/OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと漢字サブセットの先読みを省ける。
 
 ### OG 画像とカーソル
 
