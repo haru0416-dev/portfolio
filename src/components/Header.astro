@@ -11,14 +11,15 @@ const nav = [
 const path = Astro.url.pathname;
 ---
 <header transition:name="header" transition:animate="none" class="site glass sticky top-0 z-10 line-bottom rounded-none">
-  <div class="max-w-site mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
+  <div class="max-w-site mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-2 max-[23.625rem]:gap-1 sm:gap-4">
+    {/* ロゴの文字が出て 4 項目と並ぶと 378px 要る。それより狭い間は、隙間を詰めて右の余白に収める。 */}
     <Logo href="/" collapse />
-    <nav aria-label="メイン" class="flex shrink-0 items-center gap-1 sm:gap-2 text-xs tracking-[.04em] min-[25rem]:tracking-[.08em] uppercase">
+    <nav aria-label="メイン" class="flex shrink-0 items-center gap-1 max-[23.625rem]:gap-0.5 sm:gap-2 text-xs tracking-[.04em] min-[25rem]:tracking-[.08em] uppercase">
       {nav.map((n) => (
         <a
           href={n.href}
           aria-current={path.startsWith(n.href) ? 'page' : undefined}
-          class:list={['inline-flex shrink-0 items-center h-8 rounded-lg px-1 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
+          class:list={['inline-flex shrink-0 items-center h-8 rounded-lg px-1 max-[23.625rem]:px-0.5 sm:px-3 whitespace-nowrap transition-colors font-bold', path.startsWith(n.href) ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
         >{n.label}</a>
       ))}
       <button id="theme-settings" type="button" commandfor="theme-options" command="toggle-popover" aria-label="テーマを選ぶ" aria-expanded="false" aria-controls="theme-options" class="press inline-flex shrink-0 items-center justify-center w-8 h-8 rounded-lg text-muted hover:text-ink hover:bg-paper-2">
