@@ -1,0 +1,69 @@
+---
+import Base from '../layouts/Base.astro';
+import Sticker from '../components/Sticker.astro';
+import Wordmark from '../components/Wordmark.astro';
+import { SITE } from '../site';
+import '../styles/prose.css';
+import HeartHandshake from '@lucide/astro/icons/heart-handshake';
+import FileText from '@lucide/astro/icons/file-text';
+
+const fonts = [
+  { name: 'Fredoka', use: '英字の見出し', href: 'https://fonts.google.com/specimen/Fredoka' },
+  { name: 'Nunito', use: '本文の英字', href: 'https://fonts.google.com/specimen/Nunito' },
+  { name: 'JetBrains Mono', use: 'コード', href: 'https://fonts.google.com/specimen/JetBrains+Mono' },
+  { name: 'Zen Maru Gothic', use: '和文の見出し', href: 'https://fonts.google.com/specimen/Zen+Maru+Gothic' },
+];
+
+const tools = [
+  { name: 'Astro', use: 'サイトの生成', license: 'MIT', href: 'https://astro.build/' },
+  { name: 'Tailwind CSS', use: 'スタイル', license: 'MIT', href: 'https://tailwindcss.com/' },
+  { name: 'Lucide', use: 'アイコン', license: 'ISC', href: 'https://lucide.dev/' },
+  { name: 'Takumi', use: '共有用の画像', license: 'MIT または Apache-2.0', href: 'https://github.com/kane50613/takumi' },
+  { name: 'Cloudflare Pages', use: '配信', license: undefined, href: 'https://pages.cloudflare.com/' },
+];
+---
+<Base wide title="Credits" description="このサイトで使っているフォントやライブラリと、文章や画像の扱いについて。">
+  <header class="flex items-end justify-between gap-6 pt-4 pb-12">
+    <div>
+      <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text="Credits" /></h1>
+      <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead phrase">このサイトで使っているものと、文章や画像の扱いについて。</p>
+    </div>
+    <div aria-hidden="true" class="hero-lead shrink-0 size-22 sm:size-32"><Sticker icon={HeartHandshake} lift /></div>
+  </header>
+
+  <div class="prose max-w-reading">
+    <h2 id="content-rights">文章と画像</h2>
+    <p>記事や作品紹介の文章、スクリーンショットや図などの画像の著作権は {SITE.name} にあります。</p>
+    <p>引用は自由にしてください。そのときは、次のことを守ってもらえると助かります。</p>
+    <ul>
+      <li>出典として、引用したページの URL を書く</li>
+      <li>どこからどこまでが引用か、分かるようにする</li>
+      <li>引用した部分に手を加えない</li>
+    </ul>
+    <p>記事を丸ごと載せるなど、引用の範囲を超えて使いたいときは、<a href={`${SITE.repo}/issues`}>このサイトのリポジトリの Issues</a> から連絡してください。</p>
+    <p>スクリーンショットに写っている他のサービスの画面やロゴは、それぞれの持ち主のものです。Works で紹介している作品のソースコードは、それぞれのリポジトリの定めに従います。</p>
+  </div>
+
+  <div class="prose max-w-reading mt-16">
+    <h2 id="fonts">フォント</h2>
+    <p>このサイトの文字は、次の 4 つのフォントで表示しています。どれも <a href="https://openfontlicense.org/">SIL Open Font License 1.1</a> のもとで公開されているフォントで、Google などの外部からではなく、このサイトから配信しています。</p>
+    <ul>
+      {fonts.map((f) => <li><a href={f.href}>{f.name}</a>({f.use})</li>)}
+    </ul>
+    <p>和文の見出しは、Zen Maru Gothic を元にした 2 つの派生フォントで表示しています。</p>
+    <ul>
+      <li>このサイトの見出しで使う漢字だけを取り出したもの。数千字あるフォントを、見出しの文字だけに絞って軽くしています。</li>
+      <li>かなと約物の字間を詰めた「Zen Maru Kana」。見出しの文字の並びを締めるために作りました。</li>
+    </ul>
+    <p>どちらも元のフォントと同じライセンスで配布しています。各フォントの著作権表示とライセンスの全文は、次のファイルにまとめています。</p>
+  </div>
+  <a href="/fonts/OFL.txt" class="pill glass press mt-6"><FileText size={16} stroke-width={2.25} aria-hidden="true" />著作権表示とライセンスの全文</a>
+
+  <div class="prose max-w-reading mt-16">
+    <h2 id="tools">作るのに使ったもの</h2>
+    <p>このサイトは Astro で HTML を書き出し、Cloudflare Pages から配信しています。見た目は Tailwind CSS で整え、アイコンは Lucide を使っています。記事を SNS で共有したときに出る画像は、Takumi でビルドのときに描いています。</p>
+    <ul>
+      {tools.map((t) => <li><a href={t.href}>{t.name}</a>({t.use}{t.license && `、${t.license} ライセンス`})</li>)}
+    </ul>
+  </div>
+</Base>
