@@ -14,7 +14,7 @@ const lab = LAB.slice(0, 3);
 const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 ---
 <Base wide>
-  <section class="min-h-[round(down,calc(50dvh-4rem),8px)] pb-12 flex items-center">
+  <section class="min-h-[round(down,calc(50dvh-4rem),8px)] lg:portrait:min-h-0 pb-12 lg:pb-[5.5rem] flex items-center">
     <div class="w-full lg:w-2/3 parallax">
       {/* 狭い画面では、シールを右上に重ねる。見出しの文字(左端から約 206px)と 16px 空く大きさにとどめる。 */}
       <div class="relative">
@@ -38,7 +38,8 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         <a href={SITE.github} class="pill glass press">GitHub</a>
       </div>
     </div>
-    {/* 下端を次の段との間の余白へはみ出させ、見出しと記事・作品の段をつなぐ。傾けた角が下へ出るぶん、記事・作品の見出しに届かない量にとどめる。 */}
+    {/* 縦長の画面(iPad Pro の縦など)で PC の並びになると、画面の高さで決めた見出しの高さが中身より大きくなり、下端にそろえたイラストだけが下へ離れる。そのときは高さを中身に合わせる(section の lg:portrait:min-h-0)。 */}
+    {/* 下端を次の段との間の余白へはみ出させ、見出しと記事・作品の段をつなぐ。傾けた角は下へ 21px 出るので、見出しの下の余白を 2.5rem 足して記事・作品の見出しから離す。 */}
     <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-end self-end -mb-8">
       <div class="hero-lead shrink-0 size-80">
         <Avatar lift eager sizes="320px" />
