@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import haru from '../assets/avatar/haru.png';
 interface Props {
   /** 表示する大きさ(img の sizes)。枠の大きさに合わせる。 */
@@ -7,12 +7,24 @@ interface Props {
   class?: string;
 }
 const { sizes, class: cls } = Astro.props;
+
+// AVIF は画質 50 でも線のにじみがほとんど見えず、WebP(既定の画質)の約半分になる。対応していない環境には WebP を出す。
+// <Picture> は画質を全形式に同じ値で当てるので、候補は形式ごとに作る。
+const WIDTHS = [128, 256, 384, 640];
+const candidates = (format: 'avif' | 'webp', quality?: number) =>
+  Promise.all(WIDTHS.map((width) => getImage({ src: haru, width, format, quality })))
+    .then((images) => ({ images, srcset: images.map((image, i) => `${image.src} ${WIDTHS[i]}w`).join(', ') }));
+const avif = await candidates('avif', 50);
+const webp = await candidates('webp');
 ---
 {/* 台紙は画像内。操作は avatar-play.ts に任せる。トップは画面幅で出し分ける 2 枚を置くので、遅延読み込みにして
     隠れている方を読み込ませない(eager だと display: none でも読み込まれる)。見えている方はすぐ読み込まれる。 */}
 <span class:list={['sticker-hit', cls]} style={`--art-ratio: ${haru.width} / ${haru.height}`} aria-hidden="true">
   <span class="sticker sticker-fill sticker-art sticker-lift">
-    <Image src={haru} alt="" widths={[128, 256, 384, 640]} sizes={sizes} loading="lazy" draggable="false" />
+    <picture>
+      <source type="image/avif" srcset={avif.srcset} sizes={sizes} />
+      <img src={webp.images[2].src} srcset={webp.srcset} sizes={sizes} width={haru.width} height={haru.height} alt="" loading="lazy" decoding="async" draggable="false" />
+    </picture>
   </span>
 </span>
 

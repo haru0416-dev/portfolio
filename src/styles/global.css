@@ -137,7 +137,9 @@ time, .tabular-nums { white-space: nowrap; }
 }
 .sticker > svg { grid-area: 1 / 1; overflow: visible; }
 .sticker-fill, .sticker-fill > svg { width: 100%; height: 100%; }
-.sticker-art > img { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; -webkit-touch-callout: none; user-select: none; }
+/* 画像は <picture> に入っている。picture を箱として扱わず、画像を直接並べる。 */
+.sticker-art > picture { display: contents; }
+.sticker-art img { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; -webkit-touch-callout: none; user-select: none; }
 /* 見出しのイラストは、つついたり撫でたりできる(avatar-play.ts)。泡やハートは画面に固定した層に出す。
    触れる範囲は動かない外枠(.sticker-hit)にする。持ち上げで傾くシール自体で受けると、縁ではホバーが外れては戻ってカーソルがちらつく。
    外枠は置いたときのシールと同じだけ傾け、中身の傾きはそこからの差にする。縦長の絵は正方形の枠の上端から下へはみ出して描かれるので、
@@ -154,8 +156,8 @@ time, .tabular-nums { white-space: nowrap; }
 @media (prefers-color-scheme: dark) { :root:not(.light) .sticker .sticker-ink { filter: brightness(.72); } }
 :root.dark .sticker .sticker-ink { filter: brightness(.72); }
 /* イラストのシールは台紙ごと落とし、台紙を描いたシールと同じ明るさにする。 */
-@media (prefers-color-scheme: dark) { :root:not(.light) .sticker-art > img { filter: brightness(.86); } }
-:root.dark .sticker-art > img { filter: brightness(.86); }
+@media (prefers-color-scheme: dark) { :root:not(.light) .sticker-art img { filter: brightness(.86); } }
+:root.dark .sticker-art img { filter: brightness(.86); }
 @media (hover: hover) and (pointer: fine) {
   .sticker-lift:hover { rotate: -3deg; }
   .sticker-hit:hover > .sticker-lift { rotate: 5deg; }
