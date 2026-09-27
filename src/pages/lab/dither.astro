@@ -8,7 +8,7 @@ const palettes = Object.entries(PALETTES);
     <canvas id="dither" role="img" aria-label="惑星の縁と星空をディザで描いたアニメーション" class="w-full rounded-3xl golden bg-black pixelated"></canvas>
   </div>
   <div class="mt-4 flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
-    <div role="group" aria-label="パレット" data-group="palette" class="flex flex-wrap items-center gap-2">
+    <div role="group" aria-label="パレット" id="dither-palette" class="flex flex-wrap items-center gap-2">
       <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">パレット</span>
       {palettes.map(([value, palette]) => <button type="button" class="chip glass press" data-value={value} aria-pressed={value === 'violet' ? 'true' : 'false'}>{palette.label}</button>)}
     </div>
@@ -24,23 +24,21 @@ const palettes = Object.entries(PALETTES);
 </style>
 
 <script>
-  import { startDither, type DitherOptions } from '../../scripts/dither';
+  import { startDither, type PaletteName } from '../../scripts/dither';
   document.addEventListener('astro:page-load', () => {
     const canvas = document.getElementById('dither') as HTMLCanvasElement | null;
     const pause = document.getElementById('dither-pause') as HTMLButtonElement | null;
-    if (!canvas || !pause) return;
-    const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
-    const read = (): DitherOptions => {
-      const pick = (id: string) => groups.find((g) => g.dataset.group === id)?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.dataset.value;
-      return { palette: (pick('palette') ?? 'violet') as DitherOptions['palette'] };
-    };
-    const ctl = startDither(canvas, read());
-    groups.forEach((g) => g.addEventListener('click', (event) => {
+    const palette = document.getElementById('dither-palette');
+    if (!canvas || !pause || !palette) return;
+    const selected = palette.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+    if (!selected) return;
+    const ctl = startDither(canvas, { palette: selected.dataset.value as PaletteName });
+    palette.addEventListener('click', (event) => {
       const button = (event.target as Element).closest<HTMLButtonElement>('button[data-value]');
-      if (!button) return;
-      g.querySelectorAll('button[data-value]').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
-      ctl.set(read());
-    }));
+      if (!button || !palette.contains(button) || button.getAttribute('aria-pressed') === 'true') return;
+      palette.querySelectorAll('button[data-value]').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+      ctl.set({ palette: button.dataset.value as PaletteName });
+    });
     pause.addEventListener('click', () => {
       const paused = pause.getAttribute('aria-pressed') !== 'true';
       pause.setAttribute('aria-pressed', String(paused));

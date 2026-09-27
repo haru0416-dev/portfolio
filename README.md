@@ -79,13 +79,13 @@ bun run pages:dev
 
 色と寸法は `src/styles/global.css` にまとめている。色は OKLCH と `light-dark()` で指定し、ヘッダーで端末設定・ライト・ダークを切り替える。ページ遷移では `astro:before-swap` で遷移先の文書に保存済みテーマを適用し、選択中のナビだけ一瞬ダーク配色になるのを防ぐ。レイアウトの最大幅は `--container-reading`（通常、`41rem`）と `--container-site`（`wide`、`64rem`）で定義する。
 
-全画面で使う色・部品・遷移は `global.css`、特定ページのレイアウトはその `.astro` の `<style>`、記事と作品の本文だけに必要な装飾は `prose.css` に置く。作品・Lab のカードの高さは直上の一覧項目（作品詳細では `article`）を CSS コンテナとして測るため、カードを別の親へ移すときはコンテナ指定も合わせて見直す。
+全画面で使う色・部品・遷移は `global.css`、特定ページのレイアウトはその `.astro` の `<style>`、記事と作品の本文だけに必要な装飾は `prose.css` に置く。作品・Lab のカードの高さは直上の一覧項目（作品詳細では `article`）を CSS コンテナとして測る。カードを別の親へ移すときは、その親に `card-container` を付ける。
 
 本文内の `transition:name` には `transition:animate="initial"` を併記する。要素ごとのフェードCSSを生成せず、通常の遷移と非対応ブラウザ向けのフェードを `global.css` で定義している。
 
 文字は 16px × 1.25ⁿ の型スケール、行送りと高さは 8px の倍数、角丸は 4・6・8・12・16・24・32px に揃える。`G` キー、フッターの Grid、または URL の `?grid` で、8px グリッドと本文の列、ホバーした要素の寸法を重ねて表示できる。実装は `src/scripts/design-grid.ts` で、開いたときに初めて読み込む。
 
-背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面の Canvas を隠す。背景の Canvas と描画用画像は、表示するテーマで初めて使うときだけ初期化する。Petals は WebGPU を使い、利用できない場合は Canvas 2D に切り替える。
+背景と花びらは `prefers-reduced-motion` に対応する。動きを減らす設定では深海を静止画にし、水面の Canvas を隠す。背景の Canvas と描画用画像は、表示するテーマで初めて使うときだけ初期化する。Lab のテーマ別サムネイルは遅延読み込みし、Petals は WebGPU が利用できないときだけ Canvas 2D の描画コードを読み込む。
 
 ### フォント
 

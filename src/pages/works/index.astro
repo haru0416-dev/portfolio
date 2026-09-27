@@ -6,6 +6,7 @@ import WorkCover from '../../components/WorkCover.astro';
 import { LANGUAGES } from '../../data/stack';
 import { SITE } from '../../site';
 const works = await getWorks();
+const hasWorks = works.length > 0;
 // 技術ごとに絞ると大半が 1 件になるため、言語だけで絞る。
 const stacks = LANGUAGES.filter((l) => works.some((w) => w.data.stack.includes(l)));
 ---
@@ -25,7 +26,7 @@ const stacks = LANGUAGES.filter((l) => works.some((w) => w.data.stack.includes(l
   <div id="work-results">
     <ul role="list" class="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {works.map((w, i) => (
-        <li class="reveal" data-work data-stack={JSON.stringify(w.data.stack)}>
+        <li class="reveal card-container" data-work data-stack={JSON.stringify(w.data.stack)}>
           <a href={`/works/${w.id}/`} transition:name={`work-${w.id}`} transition:animate="initial" class="work-card group">
             <WorkCover id={w.id} icon={w.data.icon} cover={w.data.cover} hue={i} iconSize={80} loading={i < 3 ? 'eager' : 'lazy'} />
             {WORK_STATUS_LABELS[w.data.status] && <span class="tag badge absolute top-4 left-6 z-1 uppercase">{WORK_STATUS_LABELS[w.data.status]}</span>}
@@ -37,9 +38,9 @@ const stacks = LANGUAGES.filter((l) => works.some((w) => w.data.stack.includes(l
         </li>
       ))}
     </ul>
-    <div id="stack-empty" hidden={works.length > 0}>
-      <p class="text-sm text-muted">{works.length === 0 ? 'まだ作品がありません。' : 'この言語を使った作品はありません。'}</p>
-      {works.length > 0 && <button id="stack-reset" type="button" class="chip glass press mt-4" aria-controls="work-results">すべての作品を表示</button>}
+    <div id="stack-empty" hidden={hasWorks}>
+      <p class="text-sm text-muted">{hasWorks ? 'この言語を使った作品はありません。' : 'まだ作品がありません。'}</p>
+      {hasWorks && <button id="stack-reset" type="button" class="chip glass press mt-4" aria-controls="work-results">すべての作品を表示</button>}
     </div>
   </div>
 

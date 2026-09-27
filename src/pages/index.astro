@@ -11,7 +11,10 @@ import { LAB } from '../data/lab';
 const [allPosts, works] = await Promise.all([getPublishedPosts(), getWorks()]);
 const posts = allPosts.slice(0, 5);
 const lab = LAB.slice(0, 3);
-const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
+const firstSentence = (s: string) => {
+  const end = s.indexOf('。');
+  return end === -1 ? s : s.slice(0, end + 1);
+};
 ---
 <Base wide>
   <section class="min-h-[round(down,calc(50dvh-4rem),8px)] lg:portrait:min-h-0 pb-12 lg:pb-[5.5rem] flex items-center">

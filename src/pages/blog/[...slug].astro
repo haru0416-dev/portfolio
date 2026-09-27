@@ -15,7 +15,7 @@ import PostList from '../../components/PostList.astro';
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts();
-  // 公開日時順の posts を保ち、同点の記事は新しい順にする。
+  // 共通タグ数が同点なら、posts の公開日時順を保つ（安定ソート）。
   const related = (post: (typeof posts)[number]) => {
     const tags = new Set(post.data.tags);
     const matches: { p: (typeof posts)[number]; shared: number }[] = [];
@@ -203,6 +203,7 @@ const jsonLd = {
     const syncOpen = () => { if (wide.matches && details) details.open = true; };
     syncOpen();
     wide.addEventListener('change', syncOpen);
+    details?.addEventListener('toggle', syncOpen);
     const links = new Map([...toc.querySelectorAll<HTMLAnchorElement>('a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
     const headings = [...links.keys()].map((id) => document.getElementById(id)).filter((h): h is HTMLElement => !!h);
     let active: HTMLAnchorElement | undefined;
@@ -230,7 +231,8 @@ const jsonLd = {
     addEventListener('resize', onScroll);
     offToc = () => {
       removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll);
-      wide.removeEventListener('change', syncOpen); cancelAnimationFrame(raf);
+      wide.removeEventListener('change', syncOpen); details?.removeEventListener('toggle', syncOpen);
+      cancelAnimationFrame(raf);
     };
   });
 

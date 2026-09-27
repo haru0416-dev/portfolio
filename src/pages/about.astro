@@ -96,7 +96,7 @@ for (const entry of log) {
       {years.map(({ year, entries }) => (
         <section aria-labelledby={`cl-${year}`} class="cl-year">
           <h3 id={`cl-${year}`} class="display text-xl leading-8">{year}</h3>
-          <ol role="list" class="cl-list mt-4">
+          <ol role="list" class="mt-4 flex flex-col gap-6">
             {entries.map((e) => {
               const { action, Icon } = KINDS[e.kind];
               return (
@@ -200,7 +200,6 @@ for (const entry of log) {
   @media (min-width: 64rem) { .about-hero-art { --w: 16rem; } }
   @supports (corner-shape: squircle) { .tile, .cl-card { corner-shape: squircle; } }
 
-  .cl-list { display: flex; flex-direction: column; gap: 1.5rem; }
   .cl-item { position: relative; padding-left: 2rem; }
   /* 後ろに見えている項目があるときだけ、次のアイコンまで線を伸ばす。 */
   .cl-item:has(~ .cl-item:not([hidden]))::before { content: ""; position: absolute; left: .6875rem; top: 1.5rem; bottom: -1.5rem; border-left: 2px dotted var(--rule); }

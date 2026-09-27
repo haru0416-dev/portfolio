@@ -26,6 +26,10 @@ const links = [
   d.issues && { href: d.issues, label: '感想・不具合を送る', Icon: Bug, accent: false },
 ].filter((l): l is Exclude<typeof l, false | '' | undefined> => Boolean(l));
 const shortUrl = (href: string) => href.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const neighbors = [
+  { entry: prev, label: '← Prev', align: 'left' },
+  { entry: next, label: 'Next →', align: 'right' },
+] as const;
 
 const url = new URL(`/works/${work.id}/`, Astro.site).href;
 const jsonLd = {
@@ -48,7 +52,7 @@ const jsonLd = {
   image={{ src: `/og/works/${work.id}.png`, alt: `作品「${d.name}」の名前とアイコン、haru0416.dev` }}
 >
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
-  <article>
+  <article class="card-container">
     <BackLink href="/works/" label="Works" />
     <header transition:name={`work-${work.id}`} transition:animate="initial" class="work-card work-hero mb-12">
       <WorkCover id={work.id} icon={d.icon} cover={d.cover} hue={hue} iconSize={160} loading="eager" sizes="(min-width: 68rem) 60rem, 100vw" widths={[640, 1200, 1920]} />
@@ -89,27 +93,18 @@ const jsonLd = {
   </article>
 
   {(prev || next) && <nav aria-label="前後の作品" class="mt-16 pt-8 dotted grid grid-cols-2 gap-4 sm:gap-8 text-sm">
-    <div>
-      {prev && (
-        <a href={`/works/${prev.work.id}/`} class="group flex items-center gap-4">
-          <span transition:name={`work-${prev.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover id={prev.work.id} icon={prev.work.data.icon} cover={prev.work.data.cover} hue={prev.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
-          <span class="min-w-0">
-            <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">← Prev</span>
-            <span transition:name={`work-title-${prev.work.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit text-base group-hover:text-accent-ink transition-colors">{prev.work.data.name}</span>
-          </span>
-        </a>
-      )}
-    </div>
-    <div class="text-right">
-      {next && (
-        <a href={`/works/${next.work.id}/`} class="group flex flex-row-reverse items-center gap-4">
-          <span transition:name={`work-${next.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover id={next.work.id} icon={next.work.data.icon} cover={next.work.data.cover} hue={next.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
-          <span class="min-w-0">
-            <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">Next →</span>
-            <span transition:name={`work-title-${next.work.id}`} transition:animate="initial" class="vt-swap display-jp block w-fit ml-auto text-base group-hover:text-accent-ink transition-colors">{next.work.data.name}</span>
-          </span>
-        </a>
-      )}
-    </div>
+    {neighbors.map(({ entry, label, align }) => (
+      <div class:list={[align === 'right' && 'text-right']}>
+        {entry && (
+          <a href={`/works/${entry.work.id}/`} class:list={['group flex items-center gap-4', align === 'right' && 'flex-row-reverse']}>
+            <span transition:name={`work-${entry.work.id}`} transition:animate="initial" class="cover-thumb hidden sm:block"><WorkCover id={entry.work.id} icon={entry.work.data.icon} cover={entry.work.data.cover} hue={entry.hue} iconSize={28} sizes="6rem" widths={[192, 384]} /></span>
+            <span class="min-w-0">
+              <span class="block text-xs leading-4 tracking-[.12em] uppercase text-muted mb-2">{label}</span>
+              <span transition:name={`work-title-${entry.work.id}`} transition:animate="initial" class:list={['vt-swap display-jp block w-fit text-base group-hover:text-accent-ink transition-colors', align === 'right' && 'ml-auto']}>{entry.work.data.name}</span>
+            </span>
+          </a>
+        )}
+      </div>
+    ))}
   </nav>}
 </Base>

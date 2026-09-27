@@ -130,7 +130,6 @@ time, .tabular-nums { white-space: nowrap; }
 @media (prefers-color-scheme: light) { :root:not(.dark) .when-dark { display: none; } }
 @media (prefers-color-scheme: dark) { :root:not(.light) .when-light { display: none; } }
 
-/* ダークでは台紙を文字(--ink)より暗くし、台紙と明るさが近いインクも暗くして沈まないようにする。tools/cursors.py も同じ値を使う。 */
 .sticker {
   display: inline-grid; place-items: center; rotate: -8deg;
   filter: drop-shadow(0 0 .5px color-mix(in oklch, var(--ink) 30%, transparent)) drop-shadow(0 6px 10px color-mix(in oklch, black 16%, transparent));
@@ -150,6 +149,7 @@ time, .tabular-nums { white-space: nowrap; }
 .avatar-fx { position: fixed; inset: 0; z-index: 30; pointer-events: none; overflow: clip; }
 .avatar-fx-item { position: absolute; display: block; }
 .avatar-fx-item > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* 暗色では台紙の明るさを文字より落とし、インクも台紙に埋もれない濃さにする。 */
 .sticker .sticker-base { color: light-dark(white, oklch(86% 0.015 var(--h))); }
 @media (prefers-color-scheme: dark) { :root:not(.light) .sticker .sticker-ink { filter: brightness(.72); } }
 :root.dark .sticker .sticker-ink { filter: brightness(.72); }
@@ -205,9 +205,9 @@ header.site.glass::before { content: none; }
 .work-hero { border-radius: 2rem; }
 @media (min-width: 40rem) { .work-hero { aspect-ratio: 12 / 5; } }
 @media (min-width: 64rem) { .work-hero { aspect-ratio: 3 / 1; } }
-/* コンテナ単位 cqi はカード自身ではなく直上の列幅を参照する。一覧と作品詳細の親に絞る。 */
+/* 高さを列幅から求めるので、カードではなく直上の列をコンテナにする。 */
 @supports (height: round(1px, 8px)) {
-  :is(li, article):has(> .work-card) { container-type: inline-size; }
+  .card-container { container-type: inline-size; }
   .work-card { aspect-ratio: auto; height: round(100cqi * 9 / 16, 8px); }
   @media (min-width: 40rem) { .work-hero { height: round(100cqi * 5 / 12, 8px); } }
   @media (min-width: 64rem) { .work-hero { height: round(100cqi / 3, 8px); } }

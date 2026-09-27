@@ -17,14 +17,14 @@ const entries = LAB.map((lab) => {
   return { lab, thumbs: [{ src: one, when: '' }] };
 });
 ---
-<Base title="Lab" wide>
+<Base title="Lab" wide jpHeadings={false}>
   <Hero title="Lab" lead="ブラウザで動かせる実験を置いています。" />
   <ul role="list" class="grid gap-x-6 gap-y-8 sm:grid-cols-2">
     {entries.map(({ lab, thumbs }, i) => (
-      <li class="reveal">
+      <li class="reveal card-container">
         <a href={`/lab/${lab.slug}/`} class:list={['work-card group', lab.darkScene && 'on-dark']}>
           <span class="cover" aria-hidden="true">
-            {thumbs.map(({ src, when }) => <Image src={src} alt="" widths={[480, 960]} sizes="(min-width: 40rem) 50vw, 100vw" loading={i < 2 ? 'eager' : 'lazy'} class:list={['cover-img', when]} />)}
+            {thumbs.map(({ src, when }) => <Image src={src} alt="" widths={[480, 960]} sizes="(min-width: 40rem) 50vw, 100vw" loading={i < 2 && thumbs.length === 1 ? 'eager' : 'lazy'} class:list={['cover-img', when]} />)}
           </span>
           <span class="caption">
             <span transition:name={`lab-${lab.slug}`} transition:animate="initial" class="vt-swap display block w-fit text-lg leading-6">{lab.title}</span>

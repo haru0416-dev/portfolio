@@ -15,7 +15,7 @@ import Lab from '../../layouts/Lab.astro';
 </Lab>
 
 <script>
-  import { startPetals, type PetalsControl } from '../../scripts/petals';
+  import type { PetalsControl } from '../../scripts/petals';
   document.addEventListener('astro:page-load', () => {
     const canvas = document.getElementById('petals') as HTMLCanvasElement | null;
     const label = document.getElementById('renderer');
@@ -38,11 +38,13 @@ import Lab from '../../layouts/Lab.astro';
     const gpuReady = ('gpu' in navigator)
       ? import('../../scripts/petals-gpu').then((m) => disposed ? null : m.startPetalsGPU(canvas)).catch(() => null)
       : Promise.resolve(null);
-    gpuReady.then((gpu) => {
+    gpuReady.then(async (gpu) => {
       if (disposed) { gpu?.dispose(); return; }
       ctl = gpu;
       if (gpu) { label.textContent = `WebGPU · ${gpu.count.toLocaleString()} petals`; }
       else {
+        const { startPetals } = await import('../../scripts/petals');
+        if (disposed) return;
         const c2 = canvas.cloneNode() as HTMLCanvasElement; // webgpu コンテキスト取得済みの canvas は 2d に戻せない
         canvas.replaceWith(c2);
         ctl = startPetals(c2);

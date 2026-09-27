@@ -81,7 +81,8 @@ const promises = [
     display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: .75rem;
     color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper));
   }
-  /* 狭い画面ではアイコンと文を横に並べて低く、3 列に並ぶ幅ではアイコンを上に置く。 */
-  .promise { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 1.5rem; }
-  @media (min-width: 40rem) { .promise { flex-direction: column; align-items: flex-start; gap: .875rem; padding: 1.5rem; border-radius: 2rem; } }
+  .promise { display: flex; align-items: center; gap: 1rem; }
+  /* 3 列では card の余白を使い、狭い画面だけ横並び用に詰める。 */
+  @media (width < 40rem) { .promise { padding: 1rem 1.25rem; border-radius: 1.5rem; } }
+  @media (min-width: 40rem) { .promise { flex-direction: column; align-items: flex-start; gap: .875rem; } }
 </style>

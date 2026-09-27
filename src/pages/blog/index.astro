@@ -11,6 +11,7 @@ import ArrowRight from '@lucide/astro/icons/arrow-right';
 
 const posts = await getPublishedPosts();
 const [latest, ...rest] = posts;
+const hasPosts = posts.length > 0;
 const tagCounts = new Map<string, number>();
 for (const post of posts) {
   for (const tag of post.data.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
@@ -51,9 +52,9 @@ for (const post of rest) {
           <PostList posts={posts} />
         </section>
       ))}
-      <div id="tag-empty" hidden={posts.length > 0}>
-        <p class="text-sm text-muted">{posts.length === 0 ? 'まだ記事がありません。' : 'このタグの記事はありません。'}</p>
-        {posts.length > 0 && <button id="tag-reset" type="button" class="chip glass press mt-4" aria-controls="blog-results">すべての記事を表示</button>}
+      <div id="tag-empty" hidden={hasPosts}>
+        <p class="text-sm text-muted">{hasPosts ? 'このタグの記事はありません。' : 'まだ記事がありません。'}</p>
+        {hasPosts && <button id="tag-reset" type="button" class="chip glass press mt-4" aria-controls="blog-results">すべての記事を表示</button>}
       </div>
     </div>
     <aside class="blog-aside" aria-label="ブログについて">
@@ -66,7 +67,7 @@ for (const post of rest) {
       </section>
       <section aria-labelledby="blog-tags-heading" class="blog-tags">
         <h2 id="blog-tags-heading" class="eyebrow mb-4"><span>Tags</span></h2>
-        {posts.length > 0 && (
+        {hasPosts && (
           <search aria-label="タグで絞り込む">
             <div id="tag-filter" class="flex flex-wrap gap-2 mb-4">
               <button type="button" class="chip glass press" data-tag="" aria-pressed="true" aria-controls="blog-results">すべて<span class="chip-count">{posts.length}</span></button>
