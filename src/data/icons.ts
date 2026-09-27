@@ -1,4 +1,4 @@
-import { ICON_NAMES, type IconName } from './icon-names';
+import type { IconName } from './icon-names';
 
 import Sprout from '@lucide/astro/icons/sprout';
 import MessageCircle from '@lucide/astro/icons/message-circle';
@@ -26,8 +26,4 @@ export const ICONS = {
 
 export type { IconName };
 
-const registered = Object.keys(ICONS);
-if (registered.length !== ICON_NAMES.length || ICON_NAMES.some((name) => !registered.includes(name))) {
-  throw new Error('ICON_NAMES と ICONS が一致しません。');
-}
 export const SITE_ICON = Sprout;

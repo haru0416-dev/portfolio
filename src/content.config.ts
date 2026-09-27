@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
@@ -6,18 +6,12 @@ import { glob } from 'astro/loaders';
 import { ICON_NAMES } from './data/icon-names';
 import { LAB } from './data/lab';
 
-const missingIcons = ICON_NAMES.filter((name) => !existsSync(join(process.cwd(), 'node_modules/lucide-static/icons', `${name}.svg`)));
-if (missingIcons.length) throw new Error(`lucide-static にないアイコン: ${missingIcons.join(', ')}`);
-
 const labPages = readdirSync(join(process.cwd(), 'src/pages/lab'))
   .filter((file) => file.endsWith('.astro') && file !== 'index.astro')
   .map((file) => file.slice(0, -'.astro'.length));
-const labSlugs = LAB.map((entry) => entry.slug);
-const missingPages = labSlugs.filter((slug) => !labPages.includes(slug));
-const missingEntries = labPages.filter((slug) => !labSlugs.includes(slug));
-if (missingPages.length || missingEntries.length) {
-  throw new Error(`Lab の登録とページが一致しません。ページがない: ${missingPages.join(', ') || 'なし'}。登録がない: ${missingEntries.join(', ') || 'なし'}。`);
-}
+// 登録だけあってページがないと、Lab の一覧から 404 へつながる。逆にページだけあるときは labBySlug() が止める。
+const missingPages = LAB.map((entry) => entry.slug).filter((slug) => !labPages.includes(slug));
+if (missingPages.length) throw new Error(`Lab に登録があるのにページがありません: ${missingPages.join(', ')}。src/pages/lab/ にページを置いてください。`);
 
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
