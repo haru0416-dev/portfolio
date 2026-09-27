@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import Sticker from '../components/Sticker.astro';
+import Wordmark from '../components/Wordmark.astro';
+import { SITE } from '../site';
+import '../styles/prose.css';
+import ShieldCheck from '@lucide/astro/icons/shield-check';
+import Cookie from '@lucide/astro/icons/cookie';
+import EyeOff from '@lucide/astro/icons/eye-off';
+import MegaphoneOff from '@lucide/astro/icons/megaphone-off';
+
+const UPDATED = '2026-09-27';
+
+const promises = [
+  { Icon: Cookie, title: 'Cookie なし', text: 'Cookie は 1 つも使いません。' },
+  { Icon: EyeOff, title: '追跡しない', text: '誰が読んだかは、私にも分かりません。' },
+  { Icon: MegaphoneOff, title: '広告なし', text: '広告に使わず、誰にも渡しません。' },
+];
+---
+<Base wide title="プライバシーポリシー" description="このサイトが集める情報と、その扱いについて。Cookie は使わず、閲覧者を追跡しません。">
+  <header class="flex items-end justify-between gap-6 pt-4 pb-12">
+    <div>
+      <h1 class="display text-5xl sm:text-7xl tracking-[-0.01em]"><Wordmark text="Privacy" /></h1>
+      <p class="text-base text-ink-2 mt-4 max-w-[36rem] hero-lead phrase">このサイトが集める情報と、その扱いについて。</p>
+    </div>
+    <div aria-hidden="true" class="privacy-art hero-lead"><Sticker icon={ShieldCheck} lift /></div>
+  </header>
+
+  <ul role="list" class="grid gap-3 sm:grid-cols-3 sm:gap-4 hero-lead">
+    {promises.map(({ Icon, title, text }) => (
+      <li class="promise card glass">
+        <span class="promise-icon" aria-hidden="true"><Icon size={22} stroke-width={2.25} /></span>
+        <span>
+          <span class="display-jp block text-lg leading-7">{title}</span>
+          <span class="block mt-1 text-sm leading-6 text-ink-2">{text}</span>
+        </span>
+      </li>
+    ))}
+  </ul>
+
+  <div class="prose mt-16 privacy-details privacy-body">
+    <h2 id="analytics">アクセス解析</h2>
+    <p>どのページがどれだけ読まれているか、表示が遅くないかを知るために、<a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a> を使っています。ページを開くと、次の情報が Cloudflare に送られます。</p>
+    <ul>
+      <li>開いたページの URL と、どこから来たか(参照元)</li>
+      <li>ブラウザ・OS・端末の種類と、画面の大きさ</li>
+      <li>国・地域</li>
+      <li>ページの読み込みにかかった時間</li>
+    </ul>
+    <p>Cloudflare Web Analytics は Cookie を使わず、閲覧者を個別に見分けて追跡することもないとしています。私が見られるのは集計された数字だけです。</p>
+
+    <h2 id="delivery">配信の記録</h2>
+    <p>このサイトは Cloudflare Pages から配信しています。通信のために、IP アドレスやブラウザの種類などが Cloudflare で処理されます。通信に失敗したとき、ブラウザがその報告を Cloudflare に送ることもあります。これらの扱いは <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare のプライバシーポリシー</a>に従います。</p>
+
+    <h2 id="storage">ブラウザに保存するもの</h2>
+    <p>Cookie は使っていません。次の 2 つだけをブラウザに保存します。どちらもお使いの端末の中にとどまり、どこにも送られません。</p>
+    <ul>
+      <li>テーマ(ライト・ダーク・端末の設定に合わせる)の選択。ブラウザのサイトデータを消すと消えます。</li>
+      <li>フッターの「Grid」で表示するガイド線の表示状態。タブを閉じると消えます。</li>
+    </ul>
+
+    <h2 id="services">外部のサービス</h2>
+    <ul>
+      <li>感想・不具合の報告は <a href="https://github.com/">GitHub</a> の Issues で受け付けています。投稿は公開され、GitHub のプライバシーポリシーに従って扱われます。</li>
+      <li>記事の「X で共有」は X の投稿画面を開くだけで、押すまでは X に何も送りません。</li>
+      <li>文字のフォントはこのサイトから配信していて、Google などの外部には読み込みに行きません。</li>
+    </ul>
+
+    <h2 id="purpose">使いみち</h2>
+    <p>集めた情報は、このサイトを読みやすく、速くするためだけに使います。広告には使わず、第三者に渡したり売ったりしません。</p>
+
+    <h2 id="contact">問い合わせ・変更</h2>
+    <p>このページについての質問は、<a href={`${SITE.repo}/issues`}>このサイトのリポジトリの Issues</a> へお願いします。内容を変えるときはこのページを更新し、下の最終更新日を改めます。</p>
+  </div>
+
+  <p class="privacy-body mt-12 flex items-center gap-2 text-sm text-muted">最終更新日<time datetime={UPDATED} class="tag tabular-nums">{UPDATED.replaceAll('-', '.')}</time></p>
+</Base>
+
+<style>
+  /* 見出しの文字(Privacy)と 1 行に並ぶ大きさ。 */
+  .privacy-art { flex-shrink: 0; width: 5.5rem; aspect-ratio: 1; }
+  @media (min-width: 40rem) { .privacy-art { width: 8rem; } }
+  .promise-icon {
+    display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: .75rem;
+    color: var(--accent-ink); background: color-mix(in oklch, var(--accent-soft) 70%, var(--paper));
+  }
+  /* 狭い画面ではアイコンと文を横に並べて低く、3 列に並ぶ幅ではアイコンを上に置く。 */
+  .promise { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 1.5rem; }
+  @media (min-width: 40rem) { .promise { flex-direction: column; align-items: flex-start; gap: .875rem; padding: 1.5rem; border-radius: 2rem; } }
+  .privacy-body { max-width: var(--container-reading); }
+</style>
