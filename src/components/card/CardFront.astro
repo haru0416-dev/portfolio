@@ -4,6 +4,8 @@ import { CARD, INK, CARD_RAYS, marineSnow, causticCells } from '../../data/card'
 import { qrPath } from '../../data/qr';
 import { SITE } from '../../site';
 import githubSvg from '../../assets/icons/github.svg?raw';
+import { getImage } from 'astro:assets';
+import haru from '../../assets/avatar/haru.png';
 
 interface Props { id: string }
 const { id } = Astro.props;
@@ -75,12 +77,16 @@ const bubbles = [0, 0.13, 0.24, 0.38, 0.5, 0.63, 0.77, 0.9].map((t) => {
   return { x: 47.6 - t * 3.2 + Math.sin(t * 11) * 0.8, y, r: 0.32 + t * 0.78 };
 });
 
-// 芽は仮置き。イラストができたら、この枠(中心・大きさ)に置き換える。
-const ART = { cx: W / 2, cy: 30, size: 30 };
-const sprout = ['M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3', 'M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4', 'M5 21h14'];
-const artTransform = `translate(${ART.cx} ${ART.cy}) rotate(-8) scale(${ART.size / 24}) translate(-12 -12)`;
+// イラストのシール(台紙の縁は画像に描いてある)。名前の上の空きに、サイトのシールと同じく傾けて置く。
+const ART = { cx: W / 2, cy: 30, height: 36 };
+const artWidth = ART.height * (haru.width / haru.height);
+// 名刺は幅 16rem で表示する。36mm の高さを 3 倍の画面でも粗くならない幅で書き出す。
+const art = await getImage({ src: haru, width: 480, format: 'webp' });
 ---
 <defs>
+  <filter id={`${id}-art-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy=".5" stdDeviation=".4" flood-color="#000" flood-opacity=".3" />
+  </filter>
   <linearGradient id={`${id}-sea`} x1="0" y1={-B} x2={W * 0.35} y2={H + B} gradientUnits="userSpaceOnUse">
     <stop offset="0" stop-color={INK.seaTop} /><stop offset=".45" stop-color={INK.seaMid} /><stop offset="1" stop-color={INK.seaDeep} />
   </linearGradient>
@@ -134,11 +140,7 @@ const artTransform = `translate(${ART.cx} ${ART.cy}) rotate(-8) scale(${ART.size
 
 <text x={S} y={S + 2.2} class="t-eyebrow" fill={INK.silver}>NOTES &amp; EXPERIMENTS</text>
 
-<g transform={artTransform} stroke-linecap="round" stroke-linejoin="round">
-  <g transform="translate(0 .5)" fill="#000" stroke="#000" stroke-width="7" opacity=".28">{sprout.map((d) => <path d={d} />)}</g>
-  <g fill={INK.stickerBase} stroke={INK.stickerBase} stroke-width="7">{sprout.map((d) => <path d={d} />)}</g>
-  <g fill="none" stroke={INK.accent} stroke-width="2">{sprout.map((d) => <path d={d} />)}</g>
-</g>
+<image href={art.src} x={f(-artWidth / 2)} y={f(-ART.height / 2)} width={f(artWidth)} height={ART.height} transform={`translate(${ART.cx} ${ART.cy}) rotate(-8)`} filter={`url(#${id}-art-shadow)`} />
 
 <text x={S} y={59} class="t-role" fill={INK.silver}>Developer — Rust / TypeScript</text>
 <text x={S - 0.6} y={71.2} class="t-name" fill={INK.white}>{SITE.name}<tspan fill={INK.accent}>.</tspan></text>

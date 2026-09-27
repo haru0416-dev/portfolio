@@ -4,8 +4,7 @@ import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import WorkCover from '../components/WorkCover.astro';
 import Wordmark from '../components/Wordmark.astro';
-import Sticker from '../components/Sticker.astro';
-import { SITE_ICON } from '../data/icons';
+import Avatar from '../components/Avatar.astro';
 import { SITE } from '../site';
 import { LAB } from '../data/lab';
 
@@ -17,15 +16,15 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
 <Base wide>
   <section class="min-h-[round(down,calc(50dvh-4rem),8px)] pb-12 flex items-center">
     <div class="w-full lg:w-2/3 parallax">
-      <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
-      {/* 小さなシールは名前の行の高さ(80 / 96px)に合わせる。 */}
-      <div class="flex items-end justify-between gap-4">
+      {/* 狭い画面では、シールを右上に重ねる。見出しの文字(左端から約 206px)と 16px 空く大きさにとどめる。 */}
+      <div class="relative">
+        <div class="lg:hidden hero-lead absolute top-0 right-0 size-[min(9.5rem,calc(100vw-14.875rem))] sm:size-48">
+          <Avatar lift eager sizes="(min-width: 40rem) 192px, 152px" />
+        </div>
+        <p class="eyebrow eyebrow-plain mb-6"><span>Notes &amp; experiments</span></p>
         <h1 class="display text-6xl sm:text-7xl tracking-[-0.01em]">
           <Wordmark text={SITE.name} /><span class="text-accent">.</span>
         </h1>
-        <div class="lg:hidden hero-lead shrink-0 size-20 sm:size-24">
-          <Sticker icon={SITE_ICON} lift class="text-accent" />
-        </div>
       </div>
       <p class="display-jp mt-6 text-base sm:text-xl text-ink hero-lead">
         作ったツールと開発メモ
@@ -39,9 +38,10 @@ const firstSentence = (s: string) => s.match(/^.*?。/)?.[0] ?? s;
         <a href={SITE.github} class="pill glass press">GitHub</a>
       </div>
     </div>
-    <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-center">
-      <div class="hero-lead shrink-0 size-60">
-        <Sticker icon={SITE_ICON} lift class="text-accent" />
+    {/* 下端を次の段との間の余白へはみ出させ、見出しと記事・作品の段をつなぐ。傾けた角が下へ出るぶん、記事・作品の見出しに届かない量にとどめる。 */}
+    <div aria-hidden="true" class="hidden lg:flex lg:w-1/3 justify-end self-end -mb-8">
+      <div class="hero-lead shrink-0 size-80">
+        <Avatar lift eager sizes="320px" />
       </div>
     </div>
   </section>

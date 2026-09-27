@@ -28,7 +28,6 @@ export const INK = {
   gray: c(66, 0.035, 280),
   /** サイトの --accent(ライト)と同じ。 */
   accent: c(66, 0.175, 356),
-  stickerBase: c(97, 0.008, 285),
   shallowSand: c(96, 0.035, 95),
   shallowAqua: c(89, 0.06, 205),
   deepTeal: c(73, 0.085, 218),

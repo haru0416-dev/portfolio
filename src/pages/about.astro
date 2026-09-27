@@ -7,9 +7,8 @@ import { LAB } from '../data/lab';
 import { dotted, formatDate } from '../date';
 import { LANGUAGES } from '../data/stack';
 import { SITE } from '../site';
-import Sticker from '../components/Sticker.astro';
+import Avatar from '../components/Avatar.astro';
 import BusinessCard from '../components/BusinessCard.astro';
-import { SITE_ICON } from '../data/icons';
 import Rss from '@lucide/astro/icons/rss';
 import Bug from '@lucide/astro/icons/bug';
 import Grid from '@lucide/astro/icons/grid-3x3';
@@ -47,9 +46,9 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
       <span class="display block text-lg leading-8 sm:text-xl text-ink-2 hero-lead">Hi, I'm</span>
       <span class="display block text-5xl min-[22.5rem]:text-6xl sm:text-7xl tracking-[-0.01em]"><Wordmark text={SITE.name} /><span class="text-accent">.</span></span>
     </h1>
-    {/* イラストに差し替える枠。下端を名前の行の下端にそろえる。 */}
+    {/* 下端を名前の行の下端にそろえる。 */}
     <div aria-hidden="true" class="about-hero-art hero-lead">
-      <Sticker icon={SITE_ICON} lift class="text-accent" />
+      <Avatar lift eager sizes="(min-width: 64rem) 320px, (min-width: 40rem) 256px, (min-width: 22.5rem) 150px, 128px" />
     </div>
   </header>
 
@@ -185,9 +184,11 @@ const counts = Object.fromEntries((Object.keys(KINDS) as Kind[]).map((k) => [k, 
 </script>
 
 <style>
-  .about-hero-art { flex-shrink: 0; width: 6rem; height: 6rem; }
-  @media (min-width: 22.5rem) { .about-hero-art { width: 7rem; height: 7rem; } }
-  @media (min-width: 40rem) { .about-hero-art { width: 15rem; height: 15rem; } }
+  /* 狭い画面では、名前(1 文字ずつ分けてあり折り返しを止められない)が 1 行に収まる大きさにとどめる。名前は 48px で約 138px、60px で約 172px。 */
+  .about-hero-art { flex-shrink: 0; width: min(8rem, calc(100vw - 12.5rem)); aspect-ratio: 1; }
+  @media (min-width: 22.5rem) { .about-hero-art { width: min(9.375rem, calc(100vw - 14.5rem)); } }
+  @media (min-width: 40rem) { .about-hero-art { width: 16rem; } }
+  @media (min-width: 64rem) { .about-hero-art { width: 20rem; } }
   @supports (corner-shape: squircle) { .tile, .cl-card { corner-shape: squircle; } }
 
   .cl-list { display: flex; flex-direction: column; gap: 1.5rem; }
