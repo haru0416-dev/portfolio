@@ -1,0 +1,7 @@
+---
+// 名刺の裏の絵(BusinessCard.astro)。ページには置かず、business-card.ts が取ってきて組み立てる。検索には載せない(_headers)。
+import CardArt from '../components/card/CardArt.astro';
+---
+<div data-layer="under"><CardArt side="back" id="bc-back-under" layer="under" /></div>
+<div data-layer="shadow"><CardArt side="back" id="bc-back-shadow" layer="shadow" /></div>
+<div data-layer="over"><CardArt side="back" id="bc-back-over" layer="over" /></div>

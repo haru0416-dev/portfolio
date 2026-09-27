@@ -13,11 +13,11 @@ import { CARD } from '../data/card';
         <span class="bc-light" aria-hidden="true"></span>
       </div>
       <div class="bc-face bc-back" data-face="back" aria-hidden="true">
-        {/* 裏の絵は千を超える図形で、ページに入れるとページ移動が重くなる。template に入れておき、あとで business-card.ts が組み立てる。
-            網の影の層だけを JS が傾きに合わせて動かし、水の厚みを出す。 */}
-        <template data-card-art><CardArt side="back" id="bc-back-under" layer="under" /></template>
-        <span class="bc-net-shadow" aria-hidden="true"><template data-card-art><CardArt side="back" id="bc-back-shadow" layer="shadow" /></template></span>
-        <template data-card-art><CardArt side="back" id="bc-back-over" layer="over" /></template>
+        {/* 裏の絵は千を超える図形で、圧縮しても 50KB ほどある。ページには置かず、business-card.ts が /card-back/ から取ってきて
+            ここに組み立てる。網の影の層だけを JS が傾きに合わせて動かし、水の厚みを出す。 */}
+        <template data-card-art="under"></template>
+        <span class="bc-net-shadow" aria-hidden="true"><template data-card-art="shadow"></template></span>
+        <template data-card-art="over"></template>
         <span class="bc-paper" aria-hidden="true"></span>
         <span class="bc-light" aria-hidden="true"></span>
       </div>

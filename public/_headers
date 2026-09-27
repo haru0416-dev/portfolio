@@ -18,3 +18,7 @@ https://:project.pages.dev/*
   X-Robots-Tag: noindex
 https://:version.:project.pages.dev/*
   X-Robots-Tag: noindex
+
+# 名刺の裏の絵(business-card.ts が取ってくる部品)。ページではないので検索に載せない
+/card-back/*
+  X-Robots-Tag: noindex

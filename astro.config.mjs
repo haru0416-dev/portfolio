@@ -104,6 +104,8 @@ export default defineConfig({
     },
   },
   integrations: [contentSecurityPolicy(), mdx(), sitemap({
+    // 名刺の裏の絵(business-card.ts が取ってくる部品)はページではない。
+    filter: (page) => !page.endsWith('/card-back/'),
     serialize(item) {
       const date = lastmod.get(new URL(item.url).pathname);
       return date ? { ...item, lastmod: date } : item;

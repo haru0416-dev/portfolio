@@ -20,6 +20,15 @@ function step(s: Spring, target: number, dt: number, k = STIFFNESS, c = DAMPING)
 
 /** 裏の絵を組み立てるまでの待ち時間(ms)。ページ移動のアニメーション(0.5 秒ほど)が終わるのを待つ。 */
 const MOUNT_BACK_AFTER = 1500;
+const BACK_ART_URL = '/card-back/';
+
+let backArt: Promise<Document> | null = null;
+/** 裏の絵を取ってくる。ページを移動しても 1 度だけにする。 */
+function loadBackArt() {
+  backArt ??= fetch(BACK_ART_URL).then((r) => r.text()).then((html) => new DOMParser().parseFromString(html, 'text/html'));
+  backArt.catch(() => { backArt = null; });
+  return backArt;
+}
 
 export function startBusinessCard(stage: HTMLElement): () => void {
   const hit = stage.querySelector<HTMLButtonElement>('.bc-hit')!;
@@ -44,7 +53,16 @@ export function startBusinessCard(stage: HTMLElement): () => void {
   // 裏の絵(千を超える図形)は template から、裏返しそうになったとき(カーソルが乗った・押した・フォーカスした)に組み立てる。
   // それ以外は MOUNT_BACK_AFTER 待ってから手が空いたときに組み立てる。アニメーション中もメインスレッドは空いて見えるため、
   // requestIdleCallback だけだとその最中に組み立てが走り、アニメーションが止まる。
-  const mountBack = () => stage.querySelectorAll<HTMLTemplateElement>('template[data-card-art]').forEach((t) => t.replaceWith(t.content));
+  const mountBack = () => {
+    if (ac.signal.aborted || !stage.querySelector('template[data-card-art]')) return;
+    loadBackArt().then((doc) => {
+      if (ac.signal.aborted) return;
+      stage.querySelectorAll<HTMLTemplateElement>('template[data-card-art]').forEach((t) => {
+        const art = doc.querySelector(`[data-layer="${t.dataset.cardArt}"] > svg`);
+        if (art) t.replaceWith(document.importNode(art, true));
+      });
+    }, () => {});
+  };
   const later = setTimeout(() => {
     if ('requestIdleCallback' in globalThis) {
       const id = requestIdleCallback(mountBack, { timeout: 2000 });
