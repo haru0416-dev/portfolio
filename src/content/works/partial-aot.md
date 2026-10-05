@@ -1,6 +1,6 @@
 ---
 name: partial-aot
-summary: "TypeScript のうち静的に決まる関数だけを C に変換し、ネイティブコードにする研究実装。残りの JavaScript とは bun:ffi でつなぐ。元の JavaScript と実行結果がビット単位で一致することを条件にしている。"
+summary: "TypeScript のうち、静的に決まる関数だけを C に変換してネイティブコードにする研究実装です。残りの JavaScript とは bun:ffi でつないでいます。元の JavaScript と実行結果がビット単位で一致することを条件にしています。"
 stack:
   - Bun
   - TypeScript

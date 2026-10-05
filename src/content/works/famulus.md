@@ -1,6 +1,6 @@
 ---
 name: famulus
-summary: AI 関連の情報を集め、公開用の文章を書く常駐エージェント。Bun 上で動き、Effect と SQLite を使っている。
+summary: "AI まわりの情報を集めて、公開する文章まで書く常駐エージェントです。Bun で動いていて、Effect と SQLite を使っています。"
 stack:
   - Bun
   - TypeScript
