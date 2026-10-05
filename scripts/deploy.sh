@@ -10,12 +10,14 @@ rm -f node_modules/.astro/data-store.json
 # 記事の変換に失敗してもビルドは成功扱いになり、本文が空のまま出力される。ログにエラーがあれば公開しない。
 log=$(mktemp)
 trap 'rm -f "$log"' EXIT
+# Lab の Pancake が読むフォントは git に入れていないので、なければ作る(そろっていれば何もしない)。
+uv run -q scripts/pancake.py
 astro build >"$log" 2>&1 || { cat "$log" >&2; exit 1; }
 cat "$log"
 if grep -q '\[ERROR\]' "$log"; then
   echo "ビルドのログにエラーがあるため、公開を中止しました。" >&2
   exit 1
 fi
-# 見出しのフォントは使う文字だけを持つので、記事で増えた文字が抜けていないか確かめる。
-uv run -q scripts/zen-maru.py --check
+# サイトのフォントは使う文字だけを持つので、記事で増えた文字が抜けていないか確かめる。
+uv run -q scripts/pancake-site.py --check
 wrangler pages deploy dist --project-name haru0416-portfolio --branch main

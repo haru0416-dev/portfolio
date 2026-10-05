@@ -7,13 +7,6 @@ import '../styles/prose.css';
 import HeartHandshake from '@lucide/astro/icons/heart-handshake';
 import FileText from '@lucide/astro/icons/file-text';
 
-const fonts = [
-  { name: 'Fredoka', use: '英字の見出し', href: 'https://fonts.google.com/specimen/Fredoka' },
-  { name: 'Nunito', use: '本文の英字', href: 'https://fonts.google.com/specimen/Nunito' },
-  { name: 'JetBrains Mono', use: 'コード', href: 'https://fonts.google.com/specimen/JetBrains+Mono' },
-  { name: 'Zen Maru Gothic', use: '和文の見出し', href: 'https://fonts.google.com/specimen/Zen+Maru+Gothic' },
-];
-
 const tools = [
   { name: 'Astro', use: 'サイトの生成', license: 'MIT', href: 'https://astro.build/' },
   { name: 'Tailwind CSS', use: 'スタイル', license: 'MIT', href: 'https://tailwindcss.com/' },
@@ -46,16 +39,9 @@ const tools = [
 
   <div class="prose max-w-reading mt-16">
     <h2 id="fonts">フォント</h2>
-    <p>このサイトの文字は、次の 4 つのフォントで表示しています。どれも <a href="https://openfontlicense.org/">SIL Open Font License 1.1</a> のもとで公開されているフォントで、Google などの外部からではなく、このサイトから配信しています。</p>
-    <ul>
-      {fonts.map((f) => <li><a href={f.href}>{f.name}</a>({f.use})</li>)}
-    </ul>
-    <p>和文の見出しは、Zen Maru Gothic を元にした 2 つの派生フォントで表示しています。</p>
-    <ul>
-      <li>このサイトの見出しで使う漢字だけを取り出したもの。数千字あるフォントを、見出しの文字だけに絞って軽くしています。</li>
-      <li>かなと約物の字間を詰めた「Zen Maru Kana」。見出しの文字の並びを締めるために作りました。</li>
-    </ul>
-    <p>どちらも元のフォントと同じライセンスで配布しています。各フォントの著作権表示とライセンスの全文は、次のファイルにまとめています。</p>
+    <p>このサイトの文字は、自作のフォント <a href="/works/pancake-mono/">Pancake</a> で表示しています。本文と見出しは Pancake Sans、コードは Pancake Mono です。どちらも <a href="https://github.com/subframe7536/maple-font">Maple Mono</a> と <a href="https://github.com/Kiwi-KawagotoKajiru/Kiwi-Maru">Kiwi Maru</a> を合成した派生フォントで、元のフォントと同じ <a href="https://openfontlicense.org/">SIL Open Font License 1.1</a> で配布しています。</p>
+    <p>サイトで配信しているのは、このサイトで使う文字だけを取り出したものです。数千字あるフォントを使う字だけに絞って軽くしています。<a href="/lab/pancake/">Lab の Pancake</a> では、全部の字が入ったものを読み込んで試せます。</p>
+    <p>フォントは Google などの外部からではなく、このサイトから配信しています。著作権表示とライセンスの全文は、次のファイルにまとめています。</p>
   </div>
   <a href="/fonts/OFL.txt" class="pill glass press mt-6"><FileText size={16} stroke-width={2.25} aria-hidden="true" />著作権表示とライセンスの全文</a>
 

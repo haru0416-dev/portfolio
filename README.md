@@ -91,23 +91,21 @@ bun run pages:dev
 
 ### フォント
 
-ラテン文字の見出しに Fredoka、和文見出しに Zen Maru Gothic 700、本文に Nunito と OS の日本語フォントを使う。フォントは自前配信し、Fredoka・Nunito・JetBrains Mono は Astro の Fonts API と `<Font />` で各ページに `@font-face` を書き込む。
+文字はすべて自作の [Pancake](https://github.com/haru0416-dev/pancake-mono) で描く。本文と見出しは Pancake Sans(Medium と Bold)、コードは Pancake Mono(Regular)。フォントは自前配信する。生成には uv と Python 3.12 以上が必要。
 
-和文見出しは、Zen Maru Gothic から作った 2 つのフォントで描く。漢字のサブセットは和文見出しのあるページで先読みし、かな・約物の派生フォントは使われるときに読み込む。再生成には uv と Python 3.12 以上が必要。
-
-- かなと約物を詰めた派生フォント。かなを優先して当てる。
+- サイトで使う文字だけのサブセット。ビルドした HTML とスクリプトから文字を集めるので、先にビルドする。英字とかなは常に全部入れる。Pancake Mono はコードの欄の字だけを持ち、それ以外の和文は Pancake Sans に落ちる。記事や見出しを足して文字が増えたら作り直してコミットする。デプロイ時に足りない文字がないか確かめ、足りなければ公開を止める。OG 画像も Bold のサブセットで描く。
 
   ```sh
-  uv run scripts/zen-maru-kana.py
+  bun run build && uv run scripts/pancake-site.py
   ```
 
-- 見出しで使う文字だけのサブセット。ビルドした HTML から文字を集めるので、先にビルドする。記事や見出しを足して文字が増えたら作り直してコミットする。デプロイ時に足りない文字がないか確かめ、足りなければ公開を止める。
+- Lab の Pancake が読む、文字の範囲で分けた全ウェイト。110MB ほどあるので git には入れず、デプロイ時に作る(出力がそろっていれば何もしない)。
 
   ```sh
-  bun run build && uv run scripts/zen-maru.py
+  uv run scripts/pancake.py
   ```
 
-出力は `public/fonts/zen-maru-kana-700.woff2` と `public/fonts/zen-maru-700.woff2`。元フォントと同じ SIL Open Font License を適用し、ライセンスを、サイトの他のフォントの分とまとめて [OFL.txt](public/fonts/OFL.txt) に同梱する。和文見出しのないページは `Base` に `jpHeadings={false}` を渡すと漢字サブセットの先読みを省ける。
+どちらも GitHub のリリースの zip を `node_modules/.cache/pancake/` に取ってきて使う。出力は `public/fonts/pancake-*.woff2` と `public/fonts/pancake/`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [OFL.txt](public/fonts/OFL.txt) に同梱する。
 
 ### OG 画像とカーソル
 

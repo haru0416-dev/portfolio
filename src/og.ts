@@ -1,6 +1,5 @@
 import { Renderer } from '@takumi-rs/core';
 import { fromHtml } from '@takumi-rs/helpers/html';
-import { googleFonts, subsetFonts, type FontSubset } from '@takumi-rs/helpers';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { SITE } from './site';
@@ -26,8 +25,8 @@ const C = {
   line: oklchToHex(32, 0.03, HUE), rule: oklchToHex(45, 0.04, HUE), paper2: oklchToHex(25, 0.028, HUE),
   accent: oklchToHex(77, 0.15, 356),
 };
-// サイトの和文見出しと同じく、かなは詰めた生成フォント、英字は Fredoka、漢字は Zen Maru Gothic で描く。
-const DISPLAY_JP = `font-family:'Zen Maru Kana',Fredoka,'Zen Maru Gothic';font-weight:600`;
+// サイトの見出しと同じく Pancake Sans の Bold で描く。
+const DISPLAY_JP = `font-family:'Pancake Sans';font-weight:700`;
 const chip = (text: string, tracking = 0) =>
   `<span style="display:flex;align-items:center;height:${L.chip.h}px;padding:0 ${L.chip.px}px;border-radius:${L.chip.radius}px;background-color:${C.paper2};border:2px solid ${C.line};letter-spacing:${tracking}em">${text}</span>`;
 const PAPER = THEME_COLOR.dark;
@@ -87,30 +86,15 @@ function phrases(text: string): string {
 }
 
 const renderer = new Renderer();
-let fontList: Promise<FontSubset[]> | undefined;
-const registered = new Map<string, Promise<unknown>>();
-
-let kana: Promise<unknown> | undefined;
+let font: Promise<unknown> | undefined;
 
 async function prepare(html: string) {
   const { node, css } = fromHtml(html);
   // ビルド後は dist/ で動くため、import.meta.url ではなく作業ディレクトリを基準にする。
-  kana ??= readFile(join(process.cwd(), 'public/fonts/zen-maru-kana-700.woff2'))
-    .then((data) => renderer.registerFont({ name: 'Zen Maru Kana', weight: 700, data }));
-  await kana;
-  fontList ??= googleFonts([
-    { name: 'Zen Maru Gothic', weight: 700 },
-    { name: 'Fredoka', weight: 600 },
-    { name: 'Nunito', weight: 700 },
-  ]);
-  await Promise.all(subsetFonts({ fonts: await fontList, source: node }).map((f) => {
-    if (!registered.has(f.key)) {
-      registered.set(f.key, f.data().then((data) => renderer.registerFont({
-        name: f.name, subsetOf: f.subsetOf, subsetRank: f.subsetRank, weight: f.weight, style: f.style, data,
-      })));
-    }
-    return registered.get(f.key);
-  }));
+  // サイトで使う文字だけのフォント(scripts/pancake-site.py)。OG 画像の文字はどれもページにも出るので、これで足りる。
+  font ??= readFile(join(process.cwd(), 'public/fonts/pancake-sans-700.woff2'))
+    .then((data) => renderer.registerFont({ name: 'Pancake Sans', weight: 700, data }));
+  await font;
   return { node, css };
 }
 
@@ -179,7 +163,7 @@ function page(els: El[], only?: string) {
     }
   }).join('');
   const card = `<div style="position:absolute;left:${L.card}px;top:${L.card}px;width:${W - 2 * L.card}px;height:${H - 2 * L.card}px;border:2px solid ${hide('card') ? 'transparent' : only ? '#000' : C.line};border-radius:${L.radius}px"></div>`;
-  return `<div style="display:flex;position:relative;width:${W}px;height:${H}px;${only ? 'background-color:#fff' : BG};font-family:Nunito,'Zen Maru Gothic';font-weight:700">${only ? '' : SEA}${card}${body}</div>`;
+  return `<div style="display:flex;position:relative;width:${W}px;height:${H}px;${only ? 'background-color:#fff' : BG};font-family:'Pancake Sans';font-weight:700">${only ? '' : SEA}${card}${body}</div>`;
 }
 
 const probes = new Map<string, Promise<Box>>();
@@ -238,7 +222,7 @@ function placer(els: El[]): Place {
 }
 
 const brand = (size: number, extra = '') => ({
-  key: 'logo', style: `font-family:Fredoka;font-weight:600;font-size:${size}px;${extra}white-space:nowrap`,
+  key: 'logo', style: `font-family:'Pancake Sans';font-weight:700;font-size:${size}px;${extra}white-space:nowrap`,
   content: `${esc(SITE.name)}<span style="color:${C.accent}">.</span>`, color: C.ink,
 });
 

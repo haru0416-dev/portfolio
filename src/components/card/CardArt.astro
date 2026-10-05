@@ -23,11 +23,11 @@ const { width: W, height: H, bleed: B } = CARD;
 <style is:global>
   .card-art { display: block; width: 100%; height: 100%; }
   /* 字の大きさは mm。2mm は約 5.7pt で、名刺で読める下限に近い。
-     欧文は Fredoka にそろえる。可変フォントの Nunito は PDF に Type 3 で埋め込まれ、印刷所の出力機で崩れることがある。 */
-  .card-art .t-eyebrow { font: 600 1.7px var(--font-fredoka), sans-serif; letter-spacing: .32px; }
-  .card-art .t-role { font: 600 2.1px var(--font-fredoka), sans-serif; letter-spacing: .1px; }
-  .card-art .t-name { font: 600 14px var(--font-fredoka), sans-serif; letter-spacing: -.12px; }
+     Pancake は可変フォントではないので、PDF に Type 3 で埋め込まれて印刷所の出力機で崩れることはない。 */
+  .card-art .t-eyebrow { font: 700 1.7px var(--font-sans); letter-spacing: .32px; }
+  .card-art .t-role { font: 700 2.1px var(--font-sans); letter-spacing: .1px; }
+  .card-art .t-name { font: 700 14px var(--font-sans); letter-spacing: -.12px; }
   .card-art .t-name-back { font-size: 14px; }
-  .card-art .t-jp { font: 700 2.1px var(--font-zen-maru), sans-serif; }
-  .card-art .t-mono { font: 400 2.05px var(--font-jetbrains), monospace; }
+  .card-art .t-jp { font: 700 2.1px var(--font-sans); }
+  .card-art .t-mono { font: 400 2.05px var(--font-mono); }
 </style>

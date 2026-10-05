@@ -6,7 +6,7 @@ import { dotted } from '../date';
 interface Props { slug: string }
 const meta = labBySlug(Astro.props.slug);
 ---
-<Base title={meta.title} description={meta.description} wide jpHeadings={false}>
+<Base title={meta.title} description={meta.description} wide>
   <header class="mb-12">
     <BackLink href="/lab/" label="Lab" />
     <h1 transition:name={`lab-${meta.slug}`} transition:animate="initial" class="vt-swap display w-fit text-2xl sm:text-3xl">{meta.title}</h1>

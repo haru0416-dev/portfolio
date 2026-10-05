@@ -69,11 +69,11 @@
   --color-accent-ink: var(--accent-ink);
   --color-mint: var(--mint);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --font-zen-maru: "Zen Maru", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  --font-display: var(--font-fredoka), var(--font-zen-maru);
-  --font-display-jp: "Zen Maru Kana", var(--font-fredoka), var(--font-zen-maru);
-  --font-sans: var(--font-nunito);
-  --font-mono: var(--font-jetbrains);
+  --font-sans: "Pancake Sans", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  /* 等幅はコードの欄の字だけを持つ。それ以外の和文は Pancake Sans で描く。 */
+  --font-mono: "Pancake Mono", "Pancake Sans", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: var(--font-sans);
+  --font-display-jp: var(--font-sans);
 }
 
 /* スクロールしない短いページで中身が横にずれないよう、スクロールバーの幅を常に取る。 */
@@ -88,7 +88,6 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   font-weight: 500;
-  font-feature-settings: "palt", "ss01", "cv11";
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   line-break: strict;
@@ -112,18 +111,20 @@ time, .tabular-nums { white-space: nowrap; }
 .skip-link:not(:focus-visible) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 .display { font-family: var(--font-display); font-weight: 600; }
-/* 見出しに使う文字だけの Zen Maru Gothic(scripts/zen-maru.py)。Google の分割版は先読みできず、遅い回線で漢字だけが後から差し替わる。 */
+/* サイトで使う文字だけの Pancake(scripts/pancake-site.py)。分割版は先読みできず、遅い回線で漢字だけが後から差し替わる。
+   ウェイトは 2 つだけ読み込むので、500 以下は Medium、600 以上は Bold で描く。 */
 @font-face {
-  font-family: "Zen Maru"; font-weight: 700; font-display: swap;
-  src: url("/fonts/zen-maru-700.woff2") format("woff2");
+  font-family: "Pancake Sans"; font-weight: 100 500; font-display: swap;
+  src: url("/fonts/pancake-sans-500.woff2") format("woff2");
 }
-/* palt 非対応のため、かな・約物を詰めた生成フォントを優先する。 */
 @font-face {
-  font-family: "Zen Maru Kana"; font-weight: 700; font-display: swap;
-  src: url("/fonts/zen-maru-kana-700.woff2") format("woff2");
-  unicode-range: U+3001-3002, U+3008-3011, U+3014-3015, U+3041-3096, U+309D-309E, U+30A1-30FB, U+30FD-30FE, U+FF01, U+FF08-FF09, U+FF0C, U+FF0E, U+FF1A-FF1B, U+FF1F;
+  font-family: "Pancake Sans"; font-weight: 600 900; font-display: swap;
+  src: url("/fonts/pancake-sans-700.woff2") format("woff2");
 }
-/* Fredoka は 600 のみ読み込むため 600 を指定する。和文は 700 しかないので、そのまま 700 で描かれる。 */
+@font-face {
+  font-family: "Pancake Mono"; font-weight: 100 900; font-display: swap;
+  src: url("/fonts/pancake-mono-400.woff2") format("woff2");
+}
 .display-jp { font-family: var(--font-display-jp); font-weight: 600; }
 
 :root.light .when-dark, :root.dark .when-light { display: none; }
