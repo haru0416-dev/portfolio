@@ -91,21 +91,23 @@ bun run pages:dev
 
 ### フォント
 
-文字はすべて自作の [Pancake](https://github.com/haru0416-dev/pancake-mono) で描く。本文と見出しは Pancake Sans(Medium と Bold)、コードは Pancake Mono(Regular)。フォントは自前配信する。生成には uv と Python 3.12 以上が必要。
+文字はすべて自作の [Pancake](https://github.com/haru0416-dev/pancake-mono) で描く。本文と見出しは Pancake Sans(Medium と Bold)、コードは Pancake Mono(Regular)で、どれも自前で配信する。フォントを作るには uv と Python 3.12 以上が要る。
 
-- サイトで使う文字だけのサブセット。ビルドした HTML とスクリプトから文字を集めるので、先にビルドする。英字とかなは常に全部入れる。Pancake Mono はコードの欄の字だけを持ち、それ以外の和文は Pancake Sans に落ちる。記事や見出しを足して文字が増えたら作り直してコミットする。デプロイ時に足りない文字がないか確かめ、足りなければ公開を止める。OG 画像も Bold のサブセットで描く。
+サイトのフォントは、サイトで使う文字だけを取り出したサブセットにしている。ビルドした HTML とスクリプトから文字を集めるので、先にビルドしてから作る。英字とかなは常に全部入れ、Pancake Mono にはコードの欄の字だけを入れる(それ以外の和文は Pancake Sans で表示される)。OG 画像も Bold のサブセットで描く。
 
-  ```sh
-  bun run build && uv run scripts/pancake-site.py
-  ```
+```sh
+bun run build && uv run scripts/pancake-site.py
+```
 
-- Lab の Pancake が読む、文字の範囲で分けた全ウェイト。110MB ほどあるので git には入れず、デプロイ時に作る(出力がそろっていれば何もしない)。
+記事や見出しを足して文字が増えたら、作り直してコミットする。デプロイのときに足りない文字がないかを確かめ、足りなければ公開を止める。
 
-  ```sh
-  uv run scripts/pancake.py
-  ```
+Lab の Pancake は、全ウェイトを文字の範囲で分けたものを読む。110MB ほどあるので git には入れず、デプロイのときに作る(出力がそろっていれば何もしない)。
 
-どちらも GitHub のリリースの zip を `node_modules/.cache/pancake/` に取ってきて使う。出力は `public/fonts/pancake-*.woff2` と `public/fonts/pancake/`。元フォントと同じ SIL Open Font License を適用し、ライセンスを [OFL.txt](public/fonts/OFL.txt) に同梱する。
+```sh
+uv run scripts/pancake.py
+```
+
+どちらも GitHub のリリースの zip を `node_modules/.cache/pancake/` に取ってきて使う。出力は `public/fonts/pancake-*.woff2` と `public/fonts/pancake/`。元のフォントと同じ SIL Open Font License で配り、ライセンスは [OFL.txt](public/fonts/OFL.txt) に入れてある。
 
 ### OG 画像とカーソル
 
