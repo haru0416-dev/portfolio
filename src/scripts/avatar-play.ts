@@ -1,7 +1,9 @@
 // 見出しのイラストの仕掛け。つつくとぷるんと弾んで泡と魚が昇り、撫でると揺れてハートと音符が出る。
 // 撫でるのは、マウスなら左右にこする往復、タッチなら長押し(指で撫でるとスクロールと区別できない)。
 
-const REDUCE = matchMedia('(prefers-reduced-motion: reduce)');
+import { animate, type AnimationPlaybackControls } from 'motion';
+import { REDUCE, SPRING } from './motion';
+
 /** 撫でていると判断する、左右の往復の回数と、その間の時間(ms)。 */
 const RUBS = 3, RUB_WINDOW = 900, RUB_MIN = 12;
 const HOLD = 450;
@@ -30,12 +32,13 @@ function emit(svg: string, x: number, y: number, size: number, rise: number, dri
   Object.assign(el.style, { left: `${x - size / 2}px`, top: `${y - size / 2}px`, width: `${size}px`, height: `${size}px` });
   fxLayer().append(el);
   const sway = (Math.random() - 0.5) * 16;
-  el.animate([
-    { transform: 'translate(0, 0) scale(.6)', opacity: 0 },
-    { transform: `translate(${sway}px, ${-rise * 0.25}px) scale(1)`, opacity: 1, offset: 0.15 },
-    { transform: `translate(${drift - sway}px, ${-rise * 0.7}px) scale(1)`, opacity: 1, offset: 0.7 },
-    { transform: `translate(${drift}px, ${-rise}px) scale(.9)`, opacity: 0 },
-  ], { duration, delay, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' }).finished.then(() => el.remove(), () => el.remove());
+  el.style.opacity = '0';
+  // 昇る向きは一定の速さで、左右のゆらぎと大きさは別の時間で動かす。出るときだけ少し弾ませる。
+  const opts = { duration: duration / 1000, delay: delay / 1000 };
+  animate(el, { scale: [0.4, 1.08, 1, 0.9] }, { ...opts, times: [0, 0.12, 0.25, 1], ease: ['backOut', 'easeOut', 'easeIn'] });
+  animate(el, { x: [0, sway, drift - sway, drift] }, { ...opts, times: [0, 0.2, 0.7, 1], ease: 'easeInOut' });
+  animate(el, { opacity: [0, 1, 1, 0] }, { ...opts, times: [0, 0.12, 0.7, 1] });
+  animate(el, { y: [0, -rise] }, { ...opts, ease: [0.3, 0.6, 0.4, 1] }).then(() => el.remove(), () => el.remove());
 }
 
 export function startAvatarPlay(root: HTMLElement): () => void {
@@ -44,10 +47,11 @@ export function startAvatarPlay(root: HTMLElement): () => void {
   const on = <K extends keyof HTMLElementEventMap>(type: K, fn: (e: HTMLElementEventMap[K]) => void) =>
     root.addEventListener(type, fn, { signal: ac.signal });
 
+  // つつかれたら一瞬つぶれて、ばねで弾みながら戻る。続けてつついても、いまの形からつぶし直す。
   const poke = (x: number, y: number) => {
-    art.animate([
-      { scale: '1 1' }, { scale: '1.12 .86' }, { scale: '.92 1.1' }, { scale: '1.05 .96' }, { scale: '.98 1.02' }, { scale: '1 1' },
-    ], { duration: 950, easing: 'ease-out' });
+    art.style.transformOrigin = '50% 85%';
+    animate(art, { scaleX: 1.14, scaleY: 0.84 }, { duration: 0.08, ease: 'easeOut' })
+      .then(() => animate(art, { scaleX: 1, scaleY: 1 }, SPRING.jelly));
     for (let i = 0; i < 6; i++) emit(BUBBLE, x + (Math.random() - 0.5) * 40, y + (Math.random() - 0.5) * 20, 8 + Math.random() * 12, 70 + Math.random() * 70, (Math.random() - 0.5) * 30, 1500 + Math.random() * 700, i * 80);
     const fishes = 1 + (Math.random() < 0.5 ? 1 : 0);
     for (let i = 0; i < fishes; i++) {
@@ -56,17 +60,19 @@ export function startAvatarPlay(root: HTMLElement): () => void {
     }
   };
 
-  let lastPet = 0, wiggle: Animation | null = null, wiggleTimer = 0, petUntil = 0;
+  let lastPet = 0, wiggle: AnimationPlaybackControls | null = null, wiggleTimer = 0, petUntil = 0;
   const pet = (x: number, y: number) => {
     const now = performance.now();
     petUntil = now + 600;
     if (!wiggle) {
-      wiggle = art.animate([{ rotate: '0deg' }, { rotate: '-4deg' }, { rotate: '0deg' }, { rotate: '4deg' }, { rotate: '0deg' }], { duration: 560, iterations: Infinity });
+      // 撫でている間は左右に揺れ、やめたら途中の角度からばねで真っすぐに戻る。
+      wiggle = animate(art, { rotate: [0, -4, 0, 4, 0] }, { duration: 0.56, ease: 'easeInOut', repeat: Infinity });
       const stop = () => {
         const remaining = petUntil - performance.now();
         if (remaining > 0) { wiggleTimer = window.setTimeout(stop, remaining); return; }
-        wiggle?.cancel();
+        wiggle?.stop();
         wiggle = null;
+        animate(art, { rotate: 0 }, SPRING.lift);
       };
       wiggleTimer = window.setTimeout(stop, 600);
     }
@@ -115,5 +121,5 @@ export function startAvatarPlay(root: HTMLElement): () => void {
     poke(e.clientX, e.clientY);
   });
 
-  return () => { ac.abort(); release(); clearTimeout(wiggleTimer); wiggle?.cancel(); };
+  return () => { ac.abort(); release(); clearTimeout(wiggleTimer); wiggle?.stop(); };
 }

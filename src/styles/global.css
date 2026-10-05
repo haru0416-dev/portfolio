@@ -134,7 +134,7 @@ time, .tabular-nums { white-space: nowrap; }
 .sticker {
   display: inline-grid; place-items: center; rotate: -8deg;
   filter: drop-shadow(0 0 .5px color-mix(in oklch, var(--ink) 30%, transparent)) drop-shadow(0 6px 10px color-mix(in oklch, black 16%, transparent));
-  transition: rotate 300ms var(--ease-out), translate 300ms var(--ease-out), filter 300ms var(--ease-out);
+  transition: filter 300ms var(--ease-out);
 }
 .sticker > svg { grid-area: 1 / 1; overflow: visible; }
 .sticker-fill, .sticker-fill > svg { width: 100%; height: 100%; }
@@ -159,11 +159,8 @@ time, .tabular-nums { white-space: nowrap; }
 /* イラストのシールは台紙ごと落とし、台紙を描いたシールと同じ明るさにする。 */
 @media (prefers-color-scheme: dark) { :root:not(.light) .sticker-art img { filter: brightness(.86); } }
 :root.dark .sticker-art img { filter: brightness(.86); }
-@media (hover: hover) and (pointer: fine) {
-  .sticker-lift:hover { rotate: -3deg; }
-  .sticker-hit:hover > .sticker-lift { rotate: 5deg; }
-  .sticker-lift:hover, .sticker-hit:hover > .sticker-lift { translate: 0 -4px; filter: drop-shadow(0 0 .5px color-mix(in oklch, var(--ink) 30%, transparent)) drop-shadow(0 12px 16px color-mix(in oklch, black 14%, transparent)); }
-}
+/* 持ち上げる動きは motion.ts。影だけここで伸ばす。 */
+.sticker-lift.is-lifted { filter: drop-shadow(0 0 .5px color-mix(in oklch, var(--ink) 30%, transparent)) drop-shadow(0 12px 16px color-mix(in oklch, black 14%, transparent)); }
 @media (prefers-reduced-motion: reduce) { .sticker { transition: none; } }
 
 .glass {
@@ -219,7 +216,7 @@ header.site.glass::before { content: none; }
 .cover-thumb .cover { justify-content: center; }
 .cover {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden;
-  background-color: var(--cover-bg); color: var(--cover-fg); transition: transform 500ms var(--ease-out);
+  background-color: var(--cover-bg); color: var(--cover-fg);
 }
 /* 題名は左下、バッジは左上に重なるため、アイコンは右に寄せる。 */
 .work-card .cover { padding: 0 7% 14% 0; }
@@ -247,12 +244,12 @@ header.site.glass::before { content: none; }
 /* 写真のカバーだけは、題名が読めるよう下端を紙色でぼかす。 */
 .work-card:has(.cover-img) .caption { background: linear-gradient(to top, color-mix(in oklch, var(--paper) 85%, transparent), transparent); }
 
-.press:active { transform: scale(0.94); }
-.press:where(:not(.pill, .chip, .link-row)) { transition: transform 160ms var(--ease-out), color 150ms ease, background-color 150ms ease; }
+/* 押したときに縮む動きは motion.ts。 */
+.press:where(:not(.pill, .chip, .link-row)) { transition: color 150ms ease, background-color 150ms ease; }
 
 .pill, .chip {
   display: inline-flex; align-items: center; font-weight: 700;
-  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+  transition: background-color 150ms ease, color 150ms ease;
 }
 .pill {
   gap: .5rem; height: 2.5rem;
@@ -274,7 +271,7 @@ header.site.glass::before { content: none; }
 .link-row {
   display: flex; align-items: center; gap: .75rem; min-height: 3.5rem; padding: .5rem 1rem; border-radius: 1rem;
   background: var(--surface); color: var(--ink);
-  transition: background-color 150ms ease, transform 160ms var(--ease-out);
+  transition: background-color 150ms ease;
 }
 .link-row-accent { background: var(--accent-btn); color: var(--on-accent); }
 /* ホバーの面は列の外へはみ出させ、文字の位置は動かさない。 */
@@ -283,7 +280,7 @@ header.site.glass::before { content: none; }
   content: ""; position: absolute; inset: 0 -.75rem; z-index: -1; border-radius: 1rem;
   background: color-mix(in oklch, var(--ink) 5%, transparent); opacity: 0; transition: opacity 150ms ease;
 }
-.card-link { transition: background-color 150ms ease, transform 160ms var(--ease-out); }
+.card-link { transition: background-color 150ms ease; }
 
 .tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .75rem; border-radius: .375rem; font-size: var(--text-xs); line-height: 1rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
 .tag-link { transition: background-color 150ms ease, color 150ms ease; }
@@ -315,7 +312,6 @@ header.site.glass::before { content: none; }
   .tag-link:hover { background: var(--accent-soft); color: var(--ink); }
   .u-link:hover::after { transform: scaleX(1); }
   .work-card:hover { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px color-mix(in oklch, var(--accent) 45%, var(--line)); }
-  .work-card:hover .cover { transform: scale(1.05); }
 }
 
 /* 上下の 6px はフォーカス枠(3px + 3px)が切れないための余白。 */
@@ -364,43 +360,15 @@ header.site.glass::before { content: none; }
 .sea .deep, .sea .caustic, .sea .surface { position: absolute; inset: 0; width: 100%; height: 100%; }
 .sea .surface { opacity: .85; }
 
-.wm-char { display: inline-block; opacity: 0; transform: translateY(.15em); animation: wm-in 500ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 48ms + 80ms); animation-delay: calc((sibling-index() - 1) * 48ms + 80ms); }
-.hero-lead { opacity: 0; animation: wm-in 600ms var(--ease-out) forwards; animation-delay: 380ms; }
-@keyframes wm-in { to { opacity: 1; transform: none; } }
-
-/* animation の一括指定は timeline をリセットするため、個別に指定する。 */
-@supports ((animation-timeline: view()) and (animation-range: entry)) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation-name: reveal; animation-fill-mode: both; animation-timing-function: linear;
-      animation-timeline: view();
-      animation-range: entry 0% entry 40%;
-    }
-    @keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-    .parallax {
-      animation-name: drift; animation-fill-mode: both; animation-timing-function: linear;
-      animation-timeline: scroll(root);
-      animation-range: 0 480px;
-    }
-    @keyframes drift { to { transform: translateY(-24px); opacity: 0.6; } }
-  }
-}
-
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .sea .sun {
-      animation-name: sun-drift; animation-fill-mode: both; animation-timing-function: linear;
-      animation-timeline: scroll(root); animation-range: 0 100vh;
-    }
-    @keyframes sun-drift { to { transform: translateY(-40vh); opacity: 0; } }
-  }
-}
+.wm-char { display: inline-block; }
+/* 現れる演出・スクロールに合わせた動き・押したときの縮みは motion.ts。
+   head のスクリプトが data-motion を付けてから motion.ts が動くまでの間だけ隠す。motion.ts が読み込めなかったときは 2 秒後に出す。 */
+:root[data-motion] :is(.wm-char, .hero-lead, .reveal) { opacity: 0; animation: motion-fallback 0s 2s forwards; }
+@keyframes motion-fallback { to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .wm-char, .hero-lead { transform: none; animation-duration: 200ms; animation-delay: 0ms; }
   .sea i { animation: none; }
   .sea .caustic, .sea .surface { display: none; }
-  .work-card:hover .cover { transform: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
 }
 

@@ -54,6 +54,8 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
         };
         globalThis.applySiteTheme = apply;
         apply();
+        // 現れる演出の要素を、motion.ts が動くまで隠す(global.css)。初回の読み込みだけ。
+        if (!globalThis.__themeSwapBound && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.dataset.motion = '';
         if (!globalThis.__themeSwapBound) {
           globalThis.__themeSwapBound = true;
           document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
@@ -92,12 +94,14 @@ const socialImageAlt = social?.alt ?? `haru のロゴと「${SITE.description}�
     <a href="#content" class="skip-link pill pill-accent">本文へ移動</a>
     <script>
       import { installSmoothScroll } from '../scripts/smooth-scroll';
+      import { installMotion } from '../scripts/motion';
       import { startSurface } from '../scripts/surface';
       import { startDeep, touchDeep } from '../scripts/deep';
       import { isDark } from '../scripts/theme';
       import type { BackgroundControl } from '../scripts/background';
       import type { TransitionBeforePreparationEvent } from 'astro:transitions/client';
       installSmoothScroll();
+      installMotion();
       // 作品ページが絡む遷移では、その作品だけをモーフさせる。一覧の他のカードが前後リンクへ飛ぶのを防ぐ。
       let focusWork: string | undefined;
       const workId = (url: URL) => url.pathname.match(/^\/works\/([^/]+)\/?$/)?.[1];

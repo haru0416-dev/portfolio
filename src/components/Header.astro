@@ -64,7 +64,14 @@ const path = Astro.url.pathname;
     background: var(--paper);
     color: var(--ink);
     box-shadow: 0 8px 24px var(--glass-lo);
+    transform-origin: top right;
+    /* 開くときはスクリプト(motion)のばねで出す。閉じるときは popover がすぐ消えるので、CSS で少しだけ残して薄くする。 */
+    transition: opacity 120ms ease-in, translate 120ms ease-in, display 120ms allow-discrete, overlay 120ms allow-discrete;
   }
+  .theme-options:not(:popover-open) { opacity: 0; translate: 0 -4px; }
+  /* 開いた最初のコマから透明にしておき、スクリプトのばねが始まる前に一瞬全部見えるのを防ぐ。 */
+  @starting-style { .theme-options:popover-open { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .theme-options:not(:popover-open) { translate: none; } }
   .theme-options fieldset { min-width: 0; }
   .theme-options label {
     display: flex;
@@ -83,7 +90,9 @@ const path = Astro.url.pathname;
   .theme-options input:focus-visible { outline: none; }
 </style>
 <script>
+  import { animate } from 'motion';
   import { isDark, onThemeChange } from '../scripts/theme';
+  import { SPRING, reduced } from '../scripts/motion';
   let cleanup: (() => void) | undefined;
   document.addEventListener('astro:before-swap', () => {
     cleanup?.();
@@ -137,13 +146,24 @@ const path = Astro.url.pathname;
       transition.finished.finally(() => { tide.remove(); delete root.dataset.themeSwitch; });
     };
     let openedByKey = false;
-    const markPointer = () => { openedByKey = false; };
+    let opening: ReturnType<typeof animate> | undefined;
+    // Enter で押したときも、.press の縮み(motion の press)が作り物の pointerdown を出す。本物の操作だけを数える。
+    const markPointer = (e: PointerEvent) => { if (e.isTrusted) openedByKey = false; };
     const markKey = () => { openedByKey = true; };
     const syncOpen = () => {
       const open = popover.matches(':popover-open');
       btn.setAttribute('aria-expanded', String(open));
       // マウスで開いたときはキーボード用の枠を出さない。
       if (open) popover.querySelector<HTMLInputElement>('input:checked')?.focus({ focusVisible: openedByKey } as FocusOptions);
+      // 開くときはばねで出し、終わったら手で書いた値を外す。閉じるときは途中でも止めて外し、CSS の遷移に任せる。
+      opening?.stop();
+      popover.style.opacity = ''; popover.style.transform = '';
+      if (!open) return;
+      opening = reduced()
+        ? animate(popover, { opacity: [0, 1] }, { duration: 0.15 })
+        : animate(popover, { opacity: [0, 1], y: [-8, 0], scale: [0.96, 1] }, { ...SPRING.enter, visualDuration: 0.3, opacity: { duration: 0.15 } });
+      const mine = opening;
+      mine.then(() => { if (opening !== mine) return; opening = undefined; popover.style.opacity = ''; popover.style.transform = ''; });
     };
     sync();
     btn.addEventListener('pointerdown', markPointer);

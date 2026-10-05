@@ -176,18 +176,45 @@ for (const entry of log) {
 </Base>
 
 <script>
+  import { animate, stagger } from 'motion';
+  import { hide, reduced, show } from '../scripts/motion';
+
   document.addEventListener('astro:page-load', () => {
     const group = document.querySelector<HTMLElement>('[data-changelog-filter]');
     const list = document.getElementById('changelog-list');
     if (!group || !list) return;
     const buttons = group.querySelectorAll<HTMLButtonElement>('button[data-kind]');
-    group.addEventListener('click', (ev) => {
+    const items = [...list.querySelectorAll<HTMLElement>('.cl-item')];
+    const years = [...list.querySelectorAll<HTMLElement>('.cl-year')];
+    let run = 0;
+    let leavingAnim: ReturnType<typeof hide> | undefined;
+    // 消える項目を先に薄くしてから並べ替え、新しく出る項目を上から順に出す。
+    group.addEventListener('click', async (ev) => {
       const btn = (ev.target as Element).closest<HTMLButtonElement>('button[data-kind]');
-      if (!btn) return;
+      if (!btn || btn.getAttribute('aria-pressed') === 'true') return;
       const kind = btn.dataset.kind!;
+      const id = ++run;
       buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-      list.querySelectorAll<HTMLElement>('.cl-item').forEach((li) => { li.hidden = kind !== '' && li.dataset.kind !== kind; });
-      list.querySelectorAll<HTMLElement>('.cl-year').forEach((y) => { y.hidden = !y.querySelector('.cl-item:not([hidden])'); });
+      const keep = (li: HTMLElement) => kind === '' || li.dataset.kind === kind;
+      const leaving = items.filter((li) => !li.hidden && !keep(li));
+      const entering = items.filter((li) => li.hidden && keep(li));
+      // 前の絞り込みの消える動きが残っていると、終わったときに透明な値を書き戻すので止める。
+      leavingAnim?.stop();
+      leavingAnim = undefined;
+      if (leaving.length) {
+        leavingAnim = hide(leaving, { opacity: 0, scale: 0.98 });
+        await leavingAnim;
+      }
+      if (id !== run) return;
+      leavingAnim = undefined;
+      items.forEach((li) => { li.hidden = !keep(li); });
+      // 途中で止めた動きは次のコマで値を書き戻すので、残る項目は消すのではなく元の姿へ動かして戻す。
+      const staying = items.filter((li) => !li.hidden && !entering.includes(li));
+      if (staying.length) animate(staying, { opacity: 1, scale: 1, y: 0 }, { duration: 0.15, ease: 'easeOut' });
+      years.forEach((y) => { y.hidden = !y.querySelector('.cl-item:not([hidden])'); });
+      if (!entering.length) return;
+      if (reduced()) show(entering, { opacity: [0, 1], scale: 1 });
+      else animate(entering, { opacity: [0, 1], y: [8, 0], scale: 1 }, { type: 'spring', visualDuration: 0.35, bounce: 0, opacity: { duration: 0.2 }, delay: stagger(0.03) });
     });
   });
 </script>

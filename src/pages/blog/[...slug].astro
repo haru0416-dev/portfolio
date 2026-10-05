@@ -71,8 +71,8 @@ const jsonLd = {
     {post.data.tags.map((t) => <meta property="article:tag" content={t} />)}
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   </Fragment>
-  <article>
-    <div class="read-progress" aria-hidden="true"></div>
+  <article data-post-body>
+    <div class="read-progress" aria-hidden="true" hidden></div>
     <BackLink href="/blog/" label="Blog" />
     <header class="mb-12">
       <div class="text-xs text-muted flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 tracking-[.04em]">
@@ -93,6 +93,7 @@ const jsonLd = {
         <details class="toc-box" open>
           <summary id="toc-heading" class="eyebrow eyebrow-plain"><span>目次</span><i class="toc-mark" aria-hidden="true"></i></summary>
           <ol role="list">
+            <li class="toc-marker" aria-hidden="true"></li>
             {toc.map((h) => <li class:list={[h.depth === 3 && 'toc-sub']}><a href={`#${h.slug}`}>{h.text}</a></li>)}
           </ol>
         </details>
@@ -149,14 +150,9 @@ const jsonLd = {
 </Base>
 
 <style>
-  article { position: relative; view-timeline: --post block; }
-  /* 本文の上端が画面の上に来てから、下端が画面の下に来るまでを 0〜100% とする。 */
-  .read-progress { position: fixed; top: 4rem; left: 0; right: 0; z-index: 11; height: 2px; background: var(--accent); transform-origin: left; pointer-events: none; }
-  @supports (animation-timeline: view()) {
-    .read-progress { animation: read-progress linear both; animation-timeline: --post; animation-range: contain; }
-    @keyframes read-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  }
-  @supports not (animation-timeline: view()) { .read-progress { display: none; } }
+  article { position: relative; }
+  /* 本文の上端が画面の上に来てから、下端が画面の下に来るまでを 0〜100% とする(motion.ts)。 */
+  .read-progress { position: fixed; top: 4rem; left: 0; right: 0; z-index: 11; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); pointer-events: none; }
   /* プレビューは script で作るため、Astro の属性が付かない。 */
   :global(.fn-preview) {
     position: absolute; z-index: 20; width: min(20rem, calc(100vw - 2rem)); padding: .75rem 1rem; border-radius: .75rem;
@@ -174,13 +170,16 @@ const jsonLd = {
     rotate: 45deg; translate: 0 -.125rem; transition: rotate 200ms var(--ease-out), translate 200ms var(--ease-out);
   }
   .toc details[open] .toc-mark { rotate: 225deg; translate: 0 .125rem; }
-  .toc ol { margin-top: .5rem; display: grid; }
+  .toc ol { position: relative; isolation: isolate; margin-top: .5rem; display: grid; }
+  /* 読んでいる章の下に敷く面。章が変わると motion.ts のばねで滑って移る。 */
+  .toc-marker { position: absolute; top: 0; left: 0; right: 0; z-index: -1; border-radius: .5rem; background: color-mix(in oklch, var(--accent-soft) 70%, transparent); opacity: 0; pointer-events: none; }
+  .toc-clip { overflow: hidden; }
   .toc a {
     display: block; padding: .25rem .5rem; border-radius: .5rem; font-size: var(--text-sm); line-height: 1.5rem;
     color: var(--ink-2); text-wrap: pretty; word-break: auto-phrase; transition: color 150ms ease, background-color 150ms ease;
   }
   .toc .toc-sub a { padding-left: 1.5rem; color: var(--muted); }
-  .toc a[aria-current="true"] { color: var(--accent-ink); font-weight: 700; }
+  .toc a[aria-current="true"] { color: var(--accent-ink); }
   @media (hover: hover) and (pointer: fine) { .toc a:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 6%, transparent); } }
   /* 本文は左寄せなので、64rem 以上なら右に 3rem 空けて 14rem の目次が列の中に収まる。 */
   @media (min-width: 64rem) {
@@ -192,6 +191,9 @@ const jsonLd = {
 </style>
 
 <script>
+  import { animate } from 'motion';
+  import { SPRING, hide as fadeOut, reduced, show as fadeIn } from '../../scripts/motion';
+
   let offToc: (() => void) | undefined;
   document.addEventListener('astro:before-swap', () => { offToc?.(); offToc = undefined; });
   document.addEventListener('astro:page-load', () => {
@@ -204,6 +206,31 @@ const jsonLd = {
     syncOpen();
     wide.addEventListener('change', syncOpen);
     details?.addEventListener('toggle', syncOpen);
+    // 狭い画面で目次を開け閉めするとき、高さをばねで変える。閉じるときは縮み終わってから閉じる。
+    const summary = details?.querySelector('summary');
+    const list = details?.querySelector('ol');
+    // 閉じている途中にもう一度押したら、いまの高さから開き直す。
+    let closing = false, folding: ReturnType<typeof animate> | undefined;
+    const onSummary = (e: Event) => {
+      if (!details || !list || wide.matches || reduced()) return;
+      e.preventDefault();
+      folding?.stop();
+      list.classList.add('toc-clip');
+      const done = () => { list.classList.remove('toc-clip'); list.style.height = ''; list.style.opacity = ''; folding = undefined; };
+      if (!details.open || closing) {
+        const from = closing ? list.offsetHeight : 0;
+        closing = false;
+        details.open = true;
+        const run = folding = animate(list, { height: [from, list.scrollHeight], opacity: 1 }, { ...SPRING.enter, visualDuration: 0.35, opacity: { duration: 0.2 } });
+        run.then(() => { if (folding === run) done(); });
+      } else {
+        closing = true;
+        const run = folding = animate(list, { height: [list.offsetHeight, 0], opacity: 0 }, { duration: 0.2, ease: 'easeIn' });
+        run.then(() => { if (folding !== run) return; closing = false; details.open = false; done(); });
+      }
+    };
+    summary?.addEventListener('click', onSummary);
+    const marker = toc.querySelector<HTMLElement>('.toc-marker');
     const links = new Map([...toc.querySelectorAll<HTMLAnchorElement>('a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
     const headings = [...links.keys()].map((id) => document.getElementById(id)).filter((h): h is HTMLElement => !!h);
     let active: HTMLAnchorElement | undefined;
@@ -219,8 +246,18 @@ const jsonLd = {
       if (next === active) return;
       active?.removeAttribute('aria-current');
       next?.setAttribute('aria-current', 'true');
+      // 最初の 1 回は滑らせずに置く。
+      if (marker && next) {
+        const to = { y: next.offsetTop, height: next.offsetHeight, opacity: 1 };
+        if (!active || reduced()) animate(marker, to, { duration: 0 });
+        else animate(marker, to, SPRING.lift);
+      }
       active = next;
     };
+    // 幅が変わって目次の折り返しが変わったり、閉じていた目次を開いたりしたら、下敷きを今の章に置き直す。
+    const place = () => { if (marker && active) animate(marker, { y: active.offsetTop, height: active.offsetHeight, opacity: 1 }, { duration: 0 }); };
+    const resized = new ResizeObserver(place);
+    if (list) resized.observe(list);
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
@@ -232,6 +269,8 @@ const jsonLd = {
     offToc = () => {
       removeEventListener('scroll', onScroll); removeEventListener('resize', onScroll);
       wide.removeEventListener('change', syncOpen); details?.removeEventListener('toggle', syncOpen);
+      summary?.removeEventListener('click', onSummary);
+      resized.disconnect(); folding?.stop();
       cancelAnimationFrame(raf);
     };
   });
@@ -256,9 +295,17 @@ const jsonLd = {
       if (!code || block.querySelector('.code-copy')) return;
       const button = template.content.firstElementChild!.cloneNode(true) as HTMLButtonElement;
       let timer = 0;
+      const [copyIcon, doneIcon] = [button.querySelector('.icon-copy')!, button.querySelector('.icon-done')!];
+      // 2 つのアイコンを入れ替える。出る方はぷるんと弾ませる。
+      const swap = (out: Element, inn: Element) => {
+        if (reduced()) { animate(out, { opacity: 0 }, { duration: 0.15 }); animate(inn, { opacity: 1 }, { duration: 0.15 }); return; }
+        animate(out, { opacity: 0, scale: 0.6 }, { duration: 0.12, ease: 'easeIn' });
+        animate(inn, { opacity: [0, 1], scale: [0.4, 1] }, { ...SPRING.jelly, visualDuration: 0.4, opacity: { duration: 0.15 } });
+      };
       button.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(code.textContent ?? '');
+          if (button.dataset.state !== 'done') swap(copyIcon, doneIcon);
           button.dataset.state = 'done';
           button.setAttribute('aria-label', 'コピーしました');
         } catch {
@@ -266,6 +313,7 @@ const jsonLd = {
         }
         clearTimeout(timer);
         timer = window.setTimeout(() => {
+          if (button.dataset.state === 'done') swap(doneIcon, copyIcon);
           delete button.dataset.state;
           button.setAttribute('aria-label', 'コードをコピー');
         }, 1500);
@@ -279,15 +327,28 @@ const jsonLd = {
     if (!button || !navigator.clipboard) return;
     const label = button.querySelector('span')!;
     let timer = 0;
+    // 文言を上へ抜いて、下から入れ替える。
+    let wanted = label.textContent;
+    const say = async (text: string) => {
+      if (wanted === text) return;
+      wanted = text;
+      if (!reduced()) await animate(label, { opacity: 0, y: -6 }, { duration: 0.1, ease: 'easeIn' });
+      // 抜いている間にまた押されたら、新しい方に任せる。
+      if (wanted !== text) return;
+      label.textContent = text;
+      if (reduced()) return;
+      animate(label, { opacity: [0, 1], y: [6, 0] }, { ...SPRING.enter, visualDuration: 0.3, opacity: { duration: 0.15 } });
+    };
+    label.style.display = 'inline-block';
     button.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(location.href.split('#')[0]);
-        label.textContent = 'コピーしました';
+        say('コピーしました');
       } catch {
-        label.textContent = 'コピーできませんでした';
+        say('コピーできませんでした');
       }
       clearTimeout(timer);
-      timer = window.setTimeout(() => { label.textContent = 'リンクをコピー'; }, 1500);
+      timer = window.setTimeout(() => { say('リンクをコピー'); }, 1500);
     });
   });
 
@@ -304,20 +365,29 @@ const jsonLd = {
     preview.hidden = true;
     document.querySelector('article')!.append(preview);
     let shown: HTMLAnchorElement | undefined;
+    let leaving: Promise<void> | undefined;
     const show = (a: HTMLAnchorElement) => {
       const note = document.getElementById(decodeURIComponent(a.hash.slice(1)));
       if (!note) return;
       const body = note.cloneNode(true) as HTMLElement;
       body.querySelectorAll('[data-footnote-backref]').forEach((b) => b.remove());
       preview.innerHTML = body.innerHTML;
+      const appearing = preview.hidden || !!leaving;
+      leaving = undefined;
       preview.hidden = false;
       const art = preview.offsetParent!.getBoundingClientRect(), r = a.getBoundingClientRect();
       const left = Math.min(Math.max(0, r.left - art.left - 16), art.width - preview.offsetWidth);
       preview.style.left = `${Math.max(0, left)}px`;
       preview.style.top = `${r.bottom - art.top + 8}px`;
+      if (appearing) fadeIn(preview, { opacity: [0, 1], y: [-4, 0], scale: [0.98, 1] });
       shown = a;
     };
-    const hide = () => { preview.hidden = true; shown = undefined; };
+    const hide = () => {
+      if (preview.hidden || leaving) return;
+      shown = undefined;
+      const run: Promise<void> = leaving = new Promise((done) => { fadeOut(preview).then(() => done()); });
+      run.then(() => { if (leaving === run) { preview.hidden = true; leaving = undefined; } });
+    };
     const ctrl = new AbortController();
     const opts = { signal: ctrl.signal };
     for (const a of refs) {

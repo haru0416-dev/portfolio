@@ -32,10 +32,9 @@
   position: absolute; top: .375rem; right: .375rem; display: grid; place-items: center; width: 2.5rem; height: 2.5rem;
   border-radius: .75rem; color: var(--muted); transition: color 150ms ease, background-color 150ms ease, opacity 150ms ease;
 }
-.code-copy > * { grid-area: 1 / 1; transition: opacity 150ms ease, scale 200ms var(--ease-out); }
-.code-copy .icon-done { opacity: 0; scale: .6; color: var(--accent-ink); }
-.code-copy[data-state="done"] .icon-copy { opacity: 0; scale: .6; }
-.code-copy[data-state="done"] .icon-done { opacity: 1; scale: 1; }
+/* アイコンの入れ替えは記事ページのスクリプト(motion)。 */
+.code-copy > * { grid-area: 1 / 1; }
+.code-copy .icon-done { opacity: 0; color: var(--accent-ink); }
 @media (hover: hover) and (pointer: fine) {
   .code-copy { opacity: 0; }
   .code-block:hover .code-copy, .code-copy:focus-visible, .code-copy[data-state] { opacity: 1; }
