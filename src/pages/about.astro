@@ -86,7 +86,7 @@ for (const entry of log) {
 
   <section aria-labelledby="changelog" class="mt-24">
     <h2 id="changelog" class="about-h2">Changelog</h2>
-    <div role="group" aria-label="種類で絞り込む" class="flex flex-wrap gap-2 mb-8" data-changelog-filter>
+    <div role="group" aria-label="種類で絞り込む" class="flex flex-wrap gap-2 mb-8" data-changelog-filter data-chip-group>
       <button type="button" class="chip glass press" data-kind="" aria-pressed="true" aria-controls="changelog-list">すべて<span class="chip-count">{log.length}</span></button>
       {(Object.keys(KINDS) as Kind[]).map((k) => (
         <button type="button" class="chip glass press" data-kind={k} aria-pressed="false" aria-controls="changelog-list">{KINDS[k].label}<span class="chip-count">{counts[k]}</span></button>

@@ -16,7 +16,7 @@ const stacks = LANGUAGES.filter((l) => works.some((w) => w.data.stack.includes(l
   </Hero>
 
   <search aria-label="言語で絞り込む" class="mb-6">
-    <div id="stack-filter" class="scroll-row -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 sm:flex-wrap">
+    <div id="stack-filter" data-chip-group class="scroll-row -mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 sm:flex-wrap">
       <button type="button" class="chip glass press" data-stack="" aria-pressed="true" aria-controls="work-results">すべて</button>
       {stacks.map((s) => <button type="button" class="chip glass press" data-stack={s} aria-pressed="false" aria-controls="work-results">#{s}</button>)}
     </div>

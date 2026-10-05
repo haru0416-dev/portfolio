@@ -113,7 +113,18 @@ function scrollLinked() {
   const post = document.querySelector<HTMLElement>('[data-post-body]');
   if (bar && post) {
     bar.hidden = false;
-    stops.push(scroll(animate(bar, { scaleX: [0, 1] }, { ease: 'linear' }), { target: post, offset: ['start start', 'end end'] }));
+    const offset = ['start start', 'end end'] as const;
+    stops.push(scroll(animate(bar, { scaleX: [0, 1] }, { ease: 'linear' }), { target: post, offset: [...offset] }));
+    // 読み終えたら、バーを一度だけ光らせる。少し戻ってからまた読み終えたら、もう一度光る。
+    const glow = bar.querySelector<HTMLElement>('.read-progress-glow');
+    let done = false;
+    if (glow) stops.push(scroll((p: number) => {
+      if (p < 0.97) { done = false; return; }
+      if (done || p < 0.999) return;
+      done = true;
+      if (reduced()) animate(glow, { opacity: [0, 0.8, 0] }, { duration: 0.6 });
+      else animate(glow, { opacity: [0, 1, 0], scaleY: [1, 3, 1] }, { duration: 0.9, ease: 'easeOut', times: [0, 0.2, 1] });
+    }, { target: post, offset: [...offset] }));
   }
   if (reduced()) return () => stops.forEach((stop) => stop());
   // トップの見出しの塊は、最初の 480px で少し上へ逃がして薄くする。
@@ -137,6 +148,100 @@ function scrollLinked() {
   return () => stops.forEach((stop) => stop());
 }
 
+/** 作品と実験のカードを、カーソルのある側へ少し傾ける。押したらすぐ平らに戻し、ページ遷移の撮影に傾きを残さない。 */
+function tilts() {
+  if (!finePointer.matches) return () => {};
+  const ac = new AbortController();
+  const MAX = 5;
+  document.querySelectorAll<HTMLElement>('.work-card:not(.work-hero)').forEach((card) => {
+    const on = <K extends keyof HTMLElementEventMap>(type: K, fn: (e: HTMLElementEventMap[K]) => void) => card.addEventListener(type, fn, { signal: ac.signal });
+    on('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || reduced()) return;
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+      animate(card, { rotateY: px * MAX * 2, rotateX: -py * MAX * 2, transformPerspective: 900 }, SPRING.lift);
+    });
+    const flat = (fast: boolean) => animate(card, { rotateX: 0, rotateY: 0 }, fast ? { duration: 0.08 } : SPRING.lift);
+    on('pointerleave', () => flat(false));
+    on('pointerdown', () => flat(true));
+  });
+  return () => ac.abort();
+}
+
+/** 1 つだけ選べるチップの列([data-chip-group])で、選んだ面を押したチップへ滑らせる。
+ *  aria-pressed の変化を見張るので、各ページのスクリプトは今までどおり属性を付け替えるだけでよい。
+ *  一覧の絞り込みの View Transition の最中([data-morphing])は、遷移が面を動かすので、ここではすぐ置く。 */
+function chipIndicators() {
+  const stops: VoidFunction[] = [];
+  document.querySelectorAll<HTMLElement>('[data-chip-group]').forEach((group) => {
+    const pill = document.createElement('span');
+    pill.className = 'chip-indicator';
+    pill.setAttribute('aria-hidden', 'true');
+    group.prepend(pill);
+    group.classList.add('has-indicator');
+    let first = true;
+    const place = (instant = false) => {
+      const chip = group.querySelector<HTMLElement>('.chip[aria-pressed="true"]');
+      if (!chip) { animate(pill, { opacity: 0 }, FADE); return; }
+      const to = { x: chip.offsetLeft, y: chip.offsetTop, width: chip.offsetWidth, height: chip.offsetHeight, opacity: 1 };
+      const now = first || instant || reduced() || group.closest('[data-morphing]');
+      first = false;
+      animate(pill, to, now ? { duration: 0 } : SPRING.lift);
+    };
+    place();
+    const watch = new MutationObserver(() => place());
+    watch.observe(group, { subtree: true, attributeFilter: ['aria-pressed'] });
+    const resized = new ResizeObserver(() => place(true));
+    resized.observe(group);
+    stops.push(() => { watch.disconnect(); resized.disconnect(); pill.remove(); group.classList.remove('has-indicator'); });
+  });
+  return () => stops.forEach((stop) => stop());
+}
+
+/** 大事なボタン([data-magnetic])を、乗せたカーソルの方へ少しだけ寄せる。 */
+function magnets() {
+  if (!finePointer.matches) return () => {};
+  const ac = new AbortController();
+  document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((el) => {
+    el.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || reduced()) return;
+      const r = el.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      animate(el, { x: Math.max(-6, Math.min(6, dx * 0.2)), y: Math.max(-4, Math.min(4, dy * 0.3)) }, SPRING.lift);
+    }, { signal: ac.signal });
+    el.addEventListener('pointerleave', () => { animate(el, { x: 0, y: 0 }, SPRING.jelly); }, { signal: ac.signal });
+  });
+  return () => ac.abort();
+}
+
+/** 読み始めたらヘッダーを 8px 低くし、ページの上へ戻ったら元に戻す。高さは変えず、
+ *  --header-shrink の分だけ上へずらす(global.css)。記事の読み進みバーとテーマの選択肢も同じだけ上がる。 */
+const SHRINK = 8;
+function headerShrink() {
+  const root = document.documentElement;
+  if (reduced()) { root.style.removeProperty('--header-shrink'); return () => {}; }
+  let shrunk = false;
+  const set = (on: boolean, instant = false) => {
+    if (on === shrunk) return;
+    shrunk = on;
+    animate(root, { '--header-shrink': `${on ? SHRINK : 0}px` } as DOMKeyframesDefinition, instant ? { duration: 0 } : { ...SPRING.lift, bounce: 0 });
+  };
+  root.style.setProperty('--header-shrink', '0px');
+  set(scrollY > 48, true);
+  // 行き来しやすいよう、縮めるのと戻すのとで線をずらす。
+  return scroll((_: number, info: { y: { current: number } }) => {
+    const y = info.y.current;
+    if (y > 48) set(true);
+    else if (y < 16) set(false);
+  });
+}
+
+/** 数字を、前の値から新しい値までばねで数え上げる。読み上げには最後の値だけを渡す。 */
+export function countTo(from: number, to: number, render: (n: number) => void) {
+  if (reduced() || from === to) { render(to); return; }
+  animate(from, to, { ...SPRING.enter, visualDuration: 0.45, onUpdate: (v) => render(Math.round(v)) });
+}
+
 /** 要素を出す。位置を少し下からずらし、動きを減らす設定では透明度だけにする。 */
 export function show(el: Element | Element[], keyframes: DOMKeyframesDefinition = { opacity: [0, 1], y: [8, 0] }) {
   return reduced() ? animate(el, { opacity: [0, 1] }, REDUCED_FADE) : animate(el, keyframes, { ...SPRING.enter, visualDuration: 0.3, opacity: { duration: 0.2 } });
@@ -154,7 +259,7 @@ export function installMotion() {
   installed = true;
   const setup = () => {
     enterHero();
-    const stops = [enterOnView(), pressables(), hovers(), scrollLinked()];
+    const stops = [enterOnView(), pressables(), hovers(), scrollLinked(), tilts(), chipIndicators(), magnets(), headerShrink()];
     return () => stops.forEach((stop) => stop());
   };
   // 初回の astro:page-load は画像やフォントを読み終えた load のあとに来るので、待たずにすぐ始める。

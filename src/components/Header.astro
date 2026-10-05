@@ -15,13 +15,15 @@ const path = Astro.url.pathname;
     {/* ロゴの文字が出て 4 項目と並ぶと 378px 要る。それより狭い間は、隙間を詰めて右の余白に収める。 */}
     <Logo href="/" collapse />
     <nav aria-label="メイン" class="flex shrink-0 items-center gap-1 max-[23.625rem]:gap-0.5 sm:gap-2 text-xs tracking-[.04em] min-[25rem]:tracking-[.08em] uppercase">
-      {nav.map((n) => {
+      {nav.some((n) => path.startsWith(n.href)) && <span class="nav-current" aria-hidden="true"></span>}
+      {nav.map((n, i) => {
         const current = path.startsWith(n.href);
         return (
           <a
             href={n.href}
             aria-current={current ? 'page' : undefined}
-            class:list={['inline-flex shrink-0 items-center h-8 rounded-lg px-1 max-[23.625rem]:px-0.5 sm:px-3 whitespace-nowrap transition-colors font-bold', current ? 'bg-paper-2 text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
+            style={`view-transition-name: nav-link-${i}`}
+            class:list={['nav-link inline-flex shrink-0 items-center h-8 rounded-lg px-1 max-[23.625rem]:px-0.5 sm:px-3 whitespace-nowrap transition-colors font-bold', current ? 'text-ink' : 'text-muted hover:text-ink hover:bg-paper-2']}
           >{n.label}</a>
         );
       })}
@@ -52,7 +54,7 @@ const path = Astro.url.pathname;
 <style>
   .theme-options {
     position: fixed;
-    inset: 4.5rem max(1rem, env(safe-area-inset-right), calc((100vw - var(--container-site)) / 2 + 2rem)) auto auto;
+    inset: calc(4.5rem - var(--header-shrink, 0px)) max(1rem, env(safe-area-inset-right), calc((100vw - var(--container-site)) / 2 + 2rem)) auto auto;
     margin: 0;
     width: 16rem;
     max-width: calc(100vw - 2rem);
@@ -72,6 +74,20 @@ const path = Astro.url.pathname;
   /* 開いた最初のコマから透明にしておき、スクリプトのばねが始まる前に一瞬全部見えるのを防ぐ。 */
   @starting-style { .theme-options:popover-open { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .theme-options:not(:popover-open) { translate: none; } }
+  /* 今いるページの面。リンクの外に置き、アンカーで今のリンクに重ねる。ページを移ると View Transition が前のページの面から滑らせる(global.css)。
+     リンクにも遷移名を付けるのは、遷移の間も文字を面の上に描くため。名前の付いた要素は文書の順に重なるので、面を先に置く。 */
+  nav { position: relative; isolation: isolate; }
+  .nav-link { view-transition-class: nav-link; }
+  .nav-link[aria-current="page"] { anchor-name: --nav-current; }
+  .nav-current {
+    position: absolute; z-index: -1; border-radius: .5rem; background: var(--paper-2); pointer-events: none;
+    position-anchor: --nav-current; top: anchor(top); left: anchor(left); width: anchor-size(width); height: anchor-size(height);
+    view-transition-name: nav-current;
+  }
+  @supports not (anchor-name: --a) {
+    .nav-current { display: none; }
+    .nav-link[aria-current="page"] { background: var(--paper-2); }
+  }
   .theme-options fieldset { min-width: 0; }
   .theme-options label {
     display: flex;

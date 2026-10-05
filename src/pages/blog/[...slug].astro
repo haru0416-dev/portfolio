@@ -72,7 +72,7 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')} />
   </Fragment>
   <article data-post-body>
-    <div class="read-progress" aria-hidden="true" hidden></div>
+    <div class="read-progress" aria-hidden="true" hidden><span class="read-progress-glow"></span></div>
     <BackLink href="/blog/" label="Blog" />
     <header class="mb-12">
       <div class="text-xs text-muted flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 tracking-[.04em]">
@@ -152,7 +152,9 @@ const jsonLd = {
 <style>
   article { position: relative; }
   /* 本文の上端が画面の上に来てから、下端が画面の下に来るまでを 0〜100% とする(motion.ts)。 */
-  .read-progress { position: fixed; top: 4rem; left: 0; right: 0; z-index: 11; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); pointer-events: none; }
+  /* 読み終えたときに一度だけ光る(motion.ts)。 */
+  .read-progress-glow { position: absolute; inset: 0; background: var(--accent); box-shadow: 0 0 12px var(--accent); opacity: 0; }
+  .read-progress { position: fixed; top: calc(4rem - var(--header-shrink, 0px)); left: 0; right: 0; z-index: 11; height: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); pointer-events: none; }
   /* プレビューは script で作るため、Astro の属性が付かない。 */
   :global(.fn-preview) {
     position: absolute; z-index: 20; width: min(20rem, calc(100vw - 2rem)); padding: .75rem 1rem; border-radius: .75rem;

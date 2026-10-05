@@ -69,7 +69,7 @@ for (const post of rest) {
         <h2 id="blog-tags-heading" class="eyebrow mb-4"><span>Tags</span></h2>
         {hasPosts && (
           <search aria-label="タグで絞り込む">
-            <div id="tag-filter" class="flex flex-wrap gap-2 mb-4">
+            <div id="tag-filter" data-chip-group class="flex flex-wrap gap-2 mb-4">
               <button type="button" class="chip glass press" data-tag="" aria-pressed="true" aria-controls="blog-results">すべて<span class="chip-count">{posts.length}</span></button>
               {tags.map((t) => <button type="button" class="chip glass press" data-tag={t} aria-pressed="false" aria-controls="blog-results">#{t}<span class="chip-count"><span class="sr-only">、</span>{tagCounts.get(t)}<span class="sr-only"> 件</span></span></button>)}
             </div>

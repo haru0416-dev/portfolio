@@ -180,6 +180,9 @@ time, .tabular-nums { white-space: nowrap; }
 }
 @supports not (backdrop-filter: blur(1px)) { .glass { background: var(--paper-2); } }
 header.site.glass::before { content: none; }
+/* 読み始めたら、高さは変えずに上へずらして低く見せる。中身は半分だけ戻して真ん中に置く(motion.ts)。 */
+header.site { translate: 0 calc(-1 * var(--header-shrink, 0px)); }
+header.site > div { translate: 0 calc(var(--header-shrink, 0px) / 2); }
 
 /* 区切り線は重ねて描き、border による寸法の変化を避ける。 */
 .dotted { position: relative; }
@@ -194,7 +197,7 @@ header.site.glass::before { content: none; }
 .petal-sky { background: linear-gradient(to bottom in oklch, color-mix(in oklch, var(--paper-2) 60%, var(--paper)), var(--paper-2)); }
 
 @supports (corner-shape: squircle) {
-  .card, .work-card, .cover-thumb, .pill, .chip, .link-row, .petal-sky { corner-shape: squircle; }
+  .card, .work-card, .cover-thumb, .pill, .chip, .chip-indicator, .link-row, .petal-sky { corner-shape: squircle; }
 }
 
 .work-card {
@@ -263,6 +266,10 @@ header.site.glass::before { content: none; }
   font-size: var(--text-xs); line-height: 1rem; color: var(--ink-2);
 }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); backdrop-filter: none; -webkit-backdrop-filter: none; }
+/* 1 つだけ選べるチップの列。選んだ面(.chip-indicator)は motion.ts が足して、押したチップへ滑らせる。 */
+[data-chip-group] { position: relative; isolation: isolate; }
+.chip-indicator { position: absolute; top: 0; left: 0; z-index: -1; border-radius: .5rem; background: var(--ink); opacity: 0; pointer-events: none; }
+.has-indicator .chip[aria-pressed="true"] { background: transparent; }
 .chip-count { margin-left: .25rem; font-weight: 500; font-variant-numeric: tabular-nums; opacity: .6; }
 @media (forced-colors: active) { .chip[aria-pressed="true"] { outline: 2px solid ButtonText; outline-offset: -2px; } }
 
@@ -547,6 +554,17 @@ html[data-astro-transition="back"]::view-transition-old(.swap), html[data-astro-
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(header), ::view-transition-new(header), ::view-transition-old(footer), ::view-transition-new(footer),
 ::view-transition-group(header), ::view-transition-group(footer) { animation: none; }
+/* ナビの今いるページの面と、絞り込みのチップの選んだ面は、前の位置から少し行き過ぎて止まる。
+   文字(リンクとチップ)にも遷移名を付けて面の上に描き、その場で色だけ入れ替える。 */
+::view-transition-group(nav-current), ::view-transition-group(chip-indicator) { animation-duration: 420ms; animation-timing-function: cubic-bezier(.34, 1.3, .64, 1); }
+::view-transition-old(nav-current), ::view-transition-old(chip-indicator) { animation: none; opacity: 0; }
+::view-transition-new(nav-current), ::view-transition-new(chip-indicator) { animation: none; }
+::view-transition-old(nav-current):only-child { opacity: 1; animation: vt-pill-out 160ms ease-in both; }
+::view-transition-new(nav-current):only-child { animation: vt-pill-in 220ms ease-out both; }
+@keyframes vt-pill-out { to { opacity: 0; } }
+@keyframes vt-pill-in { from { opacity: 0; } }
+::view-transition-group(*.nav-link), ::view-transition-group(*.filter-chip) { animation: none; }
+::view-transition-old(*.nav-link), ::view-transition-new(*.nav-link), ::view-transition-old(*.filter-chip), ::view-transition-new(*.filter-chip) { animation-duration: 200ms; }
 /* 絞り込みでは項目だけを補間し、本文の伸縮と二重表示を避ける。 */
 html:active-view-transition-type(filter)::view-transition-group(main) { animation: none; }
 html:active-view-transition-type(filter)::view-transition-old(main) { display: none; }

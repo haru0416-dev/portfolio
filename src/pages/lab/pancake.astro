@@ -40,11 +40,11 @@ const features = [
 <Lab slug="pancake">
   <div class="space-y-4" data-pancake data-samples={JSON.stringify(samples)}>
     <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
-      <div role="group" aria-label="ファミリー" class="flex flex-wrap items-center gap-2" data-family>
+      <div role="group" aria-label="ファミリー" class="flex flex-wrap items-center gap-2" data-family data-chip-group>
         <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">Family</span>
         {families.map((f, i) => <button type="button" class="chip glass press" data-value={f.value} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>)}
       </div>
-      <div role="group" aria-label="見本" class="flex flex-wrap items-center gap-2" data-preset>
+      <div role="group" aria-label="見本" class="flex flex-wrap items-center gap-2" data-preset data-chip-group>
         <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">Sample</span>
         {presets.map((p, i) => <button type="button" class="chip glass press" data-value={p.value} aria-pressed={i === 0 ? 'true' : 'false'}>{p.label}</button>)}
       </div>

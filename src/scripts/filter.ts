@@ -1,3 +1,5 @@
+import { countTo } from './motion';
+
 const filters = {
   blog: { prefix: 'tag', results: 'blog-results', item: 'post', values: 'tags', label: '記事' },
   works: { prefix: 'stack', results: 'work-results', item: 'work', values: 'stack', label: '作品' },
@@ -42,6 +44,15 @@ function mountFilter(kind: keyof typeof filters): MountedFilter | undefined {
       originalName: element.style.getPropertyValue('view-transition-name'),
       namePriority: element.style.getPropertyPriority('view-transition-name'),
     }));
+  // 件数は目に見える方だけを数え上げ、読み上げには最後の文言だけを渡す(状態の欄は aria-atomic)。
+  const spoken = document.createElement('span');
+  spoken.className = 'sr-only';
+  const visible = document.createElement('span');
+  visible.setAttribute('aria-hidden', 'true');
+  spoken.textContent = visible.textContent = status.textContent ?? '';
+  status.replaceChildren(spoken, visible);
+  let shownCount = items.filter(({ element }) => !element.hidden).length;
+  let counting = 0;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const canTransition = typeof document.startViewTransition === 'function'
     && CSS.supports('selector(:active-view-transition-type(filter))');
@@ -50,7 +61,22 @@ function mountFilter(kind: keyof typeof filters): MountedFilter | undefined {
   let generation = 0;
   let transition: ViewTransition | undefined;
 
+  // 絞り込みの遷移の間だけ、チップと選んだ面に名前を付ける。面を先に描き、チップの文字をその上に描く。
+  const chips = () => [box.querySelector<HTMLElement>('.chip-indicator'), ...buttons.map(({ element }) => element)].filter((el): el is HTMLElement => !!el);
+  const nameChips = () => {
+    box.dataset.morphing = '';
+    chips().forEach((el, i) => {
+      if (i === 0 && el.matches('.chip-indicator')) { el.style.viewTransitionName = 'chip-indicator'; return; }
+      el.style.viewTransitionName = `filter-chip-${i}`;
+      el.style.setProperty('view-transition-class', 'filter-chip');
+    });
+  };
+  const unnameChips = () => {
+    delete box.dataset.morphing;
+    chips().forEach((el) => { el.style.viewTransitionName = ''; el.style.removeProperty('view-transition-class'); });
+  };
   const restoreNames = () => {
+    unnameChips();
     named.forEach(({ element, name, originalClass, classPriority, originalName, namePriority }) => {
       element.style.setProperty('view-transition-class', originalClass, classPriority);
       if (name) element.style.setProperty('view-transition-name', originalName, namePriority);
@@ -75,7 +101,16 @@ function mountFilter(kind: keyof typeof filters): MountedFilter | undefined {
       element.hidden = !items.some((item) => !item.hidden);
     });
     empty.hidden = count > 0;
-    status.textContent = `${selected ? `#${selected} · ` : ''}${count} 件の${label}`;
+    const head = selected ? `#${selected} · ` : '';
+    spoken.textContent = `${head}${count} 件の${label}`;
+    // 遷移の間は画面が撮った絵なので、終わってから数える。
+    const from = shownCount;
+    const id = ++counting;
+    // 数えている途中で次の絞り込みが来たら、古い方は書かない。
+    const run = () => countTo(shownCount, count, (n) => { if (id !== counting) return; shownCount = n; visible.textContent = `${head}${n} 件の${label}`; });
+    visible.textContent = `${head}${from} 件の${label}`;
+    if (transition) transition.finished.then(run, run);
+    else run();
     // 絞り込みを URL に残し、共有や再読み込み、記事のタグからのリンクで同じ状態を開けるようにする。
     const url = new URL(location.href);
     if (selected) url.searchParams.set(prefix, selected);
@@ -96,6 +131,7 @@ function mountFilter(kind: keyof typeof filters): MountedFilter | undefined {
       element.style.setProperty('view-transition-class', 'item');
       if (name) element.style.setProperty('view-transition-name', name);
     });
+    nameChips();
     transition = document.startViewTransition({
       update: () => { if (current === generation) apply(); },
       types: ['filter'],
