@@ -11,3 +11,7 @@ pnpm-debug.log*
 .idea/
 .playwright-mcp/
 .wrangler/
+
+# scripts/pancake.py が作る(110MB ほどあるので入れない)
+public/fonts/pancake/
+__pycache__/

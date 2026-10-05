@@ -1,0 +1,178 @@
+---
+import Lab from '../../layouts/Lab.astro';
+import '../../styles/prose.css';
+
+const families = [
+  { value: 'Pancake Mono', label: 'Mono' },
+  { value: 'Pancake Sans', label: 'Sans' },
+];
+const samples = {
+  code: `// 和文 1 字は英字 2 字ぶんの幅
+const 挨拶 = "こんにちは、Pancake";
+if (count != 0 && width >= 12) {
+  return items.filter((item) => item.ok);
+}
+<------>  <===|===>  -->  ||>  <3`,
+  text: `まるくてかわいい日英フォントです。
+
+長音「ー」と漢数字「一」、カタカナの「カ」と漢字の「力」を見比べてみてください。ーーー と 〜〜〜 は続けて打つとつながります。全角スペース「　」は点の枠で見えます。
+
+The quick brown fox jumps over the lazy dog.`,
+  symbols: `★ ♡ ♪ ※  ✻ ✳ ✢ ⏺ ◐ ◓
+～〜  －ー  ①②③  → ← ↑ ↓
+ABC abc 123  ＡＢＣ ａｂｃ １２３`,
+};
+const presets = [
+  { value: 'code', label: 'コード' },
+  { value: 'text', label: '文章' },
+  { value: 'symbols', label: '記号' },
+];
+// どれも README の「字形の切り替え」にある機能。calt だけはデフォルトで有効。
+const features = [
+  { tag: 'calt', label: 'リガチャ', on: true },
+  { tag: 'cv91', label: '全角スペースを空白に', on: false },
+  { tag: 'cv92', label: 'カタカナを小さく', on: false },
+  { tag: 'cv93', label: '全角英数を Kiwi Maru に', on: false },
+  { tag: 'cv94', label: '濁点を元の大きさに', on: false },
+  { tag: 'ss20', label: '<3 をハートに', on: false },
+];
+---
+<Lab slug="pancake">
+  <div class="space-y-4" data-pancake data-samples={JSON.stringify(samples)}>
+    <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
+      <div role="group" aria-label="ファミリー" class="flex flex-wrap items-center gap-2" data-family>
+        <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">Family</span>
+        {families.map((f, i) => <button type="button" class="chip glass press" data-value={f.value} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>)}
+      </div>
+      <div role="group" aria-label="見本" class="flex flex-wrap items-center gap-2" data-preset>
+        <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">Sample</span>
+        {presets.map((p, i) => <button type="button" class="chip glass press" data-value={p.value} aria-pressed={i === 0 ? 'true' : 'false'}>{p.label}</button>)}
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm text-ink-2">
+      <label class="flex items-center gap-2">
+        <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">Weight</span>
+        <input type="range" min="100" max="800" step="100" value="400" data-weight class="w-32 sm:w-40 accent-[var(--accent)]" />
+        <output class="tabular-nums w-24" data-weight-out>Regular 400</output>
+      </label>
+      <label class="flex items-center gap-2">
+        <span class="text-xs leading-4 tracking-[.08em] uppercase text-muted w-16">Size</span>
+        <input type="range" min="12" max="72" step="1" value="20" data-size class="w-32 sm:w-40 accent-[var(--accent)]" />
+        <output class="tabular-nums w-12" data-size-out>20px</output>
+      </label>
+      <button type="button" class="chip glass press" aria-pressed="false" data-italic>イタリック</button>
+    </div>
+
+    <textarea data-specimen spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="試し打ちの文字" rows="8" class="specimen block w-full rounded-3xl p-6">{samples.code}</textarea>
+
+    <div role="group" aria-label="字形の切り替え" class="flex flex-wrap items-center gap-2" data-features>
+      {features.map((f) => <button type="button" class="chip glass press" data-tag={f.tag} aria-pressed={f.on ? 'true' : 'false'}>{f.label}<code class="ml-2 text-xs font-normal opacity-70">{f.tag}</code></button>)}
+    </div>
+    <p class="text-xs leading-4 tracking-[.08em] text-muted" role="status" data-status></p>
+  </div>
+
+  <div class="prose mt-12 max-w-[44rem]">
+    <p>Maple Mono と Kiwi Maru を合成して作った、まるくてかわいい日英フォントです。等幅の Pancake Mono と、文章向けの Pancake Sans を切り替えて試せます。上の欄には好きな文字を打ち込めます。</p>
+    <p>フォントは 1 ウェイトで 3〜4MB あるので、打った文字が入っている範囲のファイルだけを読み込んでいます。範囲をまたぐ字の組み合わせでは、リガチャやカーニングがかからないことがあります。</p>
+    <p>詳しい説明は <a href="/works/pancake-mono/">Works</a> に、ダウンロードは <a href="https://github.com/haru0416-dev/pancake-mono/releases/latest">GitHub の Releases</a> にあります。</p>
+  </div>
+</Lab>
+
+<style>
+  .specimen {
+    min-height: 16rem; resize: vertical; color: var(--ink); background: var(--paper-2);
+    box-shadow: inset 0 0 0 1px var(--line); line-height: 1.6; tab-size: 2; white-space: pre-wrap;
+    font-family: "Pancake Mono Lab", ui-monospace, monospace;
+  }
+  .specimen:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+</style>
+
+<script>
+  type Face = { family: string; weight: number; style: 'normal' | 'italic'; dir: string };
+  type Manifest = { version: string; ranges: string[]; faces: Face[] };
+  const NAMES: Record<number, string> = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold' };
+  // 端末に同じ名前のフォントが入っていても、そちらを使わないよう別名で登録する。
+  const alias = (family: string) => `${family} Lab`;
+  const added = new Set<string>();
+  let manifest: Promise<Manifest | null> | null = null;
+
+  document.addEventListener('astro:page-load', () => {
+    const root = document.querySelector<HTMLElement>('[data-pancake]');
+    if (!root) return;
+    const q = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const specimen = q<HTMLTextAreaElement>('[data-specimen]');
+    const weight = q<HTMLInputElement>('[data-weight]'), weightOut = q<HTMLOutputElement>('[data-weight-out]');
+    const size = q<HTMLInputElement>('[data-size]'), sizeOut = q<HTMLOutputElement>('[data-size-out]');
+    const italic = q<HTMLButtonElement>('[data-italic]');
+    const status = q<HTMLElement>('[data-status]');
+    const samples = JSON.parse(root.dataset.samples!) as Record<string, string>;
+    let current = '';
+    let pending = 0;
+    const pressed = (group: string) => q<HTMLButtonElement>(`[${group}] button[aria-pressed="true"]`);
+    manifest ??= fetch('/fonts/pancake/manifest.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
+    const register = (m: Manifest, face: Face) => {
+      if (added.has(face.dir)) return;
+      added.add(face.dir);
+      m.ranges.forEach((unicodeRange, i) => {
+        const font = new FontFace(alias(face.family), `url(/fonts/pancake/${face.dir}/${i}.woff2) format("woff2")`, { weight: String(face.weight), style: face.style, unicodeRange, display: 'swap' });
+        document.fonts.add(font);
+      });
+    };
+
+    const update = async () => {
+      const family = pressed('data-family').dataset.value!;
+      const w = Number(weight.value), style = italic.getAttribute('aria-pressed') === 'true' ? 'italic' : 'normal';
+      weightOut.value = `${NAMES[w]} ${w}`;
+      sizeOut.value = `${size.value}px`;
+      specimen.style.fontFamily = `"${alias(family)}", ${family.endsWith('Mono') ? 'ui-monospace, monospace' : 'sans-serif'}`;
+      specimen.style.fontWeight = String(w);
+      specimen.style.fontStyle = style;
+      specimen.style.fontSize = `${size.value}px`;
+      specimen.style.fontFeatureSettings = [...root.querySelectorAll<HTMLButtonElement>('[data-features] button')]
+        .map((b) => `"${b.dataset.tag}" ${b.getAttribute('aria-pressed') === 'true' ? 1 : 0}`).join(', ');
+      const m = await manifest;
+      if (!m) { status.textContent = 'フォントを読み込めませんでした。'; return; }
+      const face = m.faces.find((f) => f.family === family && f.weight === w && f.style === style);
+      if (!face) return;
+      // スライダーを動かしている間に通ったウェイトまで読み込まないよう、止まってから登録する。
+      // それまでは登録済みのいちばん近いウェイトで表示される。
+      clearTimeout(pending);
+      await new Promise((resolve) => { pending = window.setTimeout(resolve, 250); });
+      register(m, face);
+      current = `${family} ${NAMES[w]}${style === 'italic' ? ' Italic' : ''} · v${m.version}`;
+      await document.fonts.ready;
+      status.textContent = current;
+    };
+
+    const choose = (group: string, onChange?: (b: HTMLButtonElement) => void) => {
+      q(`[${group}]`).addEventListener('click', (event) => {
+        const button = (event.target as Element).closest<HTMLButtonElement>('button[data-value]');
+        if (!button || button.getAttribute('aria-pressed') === 'true') return;
+        root.querySelectorAll(`[${group}] button[data-value]`).forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+        onChange?.(button);
+        update();
+      });
+    };
+    choose('data-family');
+    choose('data-preset', (b) => { specimen.value = samples[b.dataset.value!]; });
+    const toggle = (b: HTMLButtonElement) => { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); update(); };
+    italic.addEventListener('click', () => toggle(italic));
+    q('[data-features]').addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('button[data-tag]');
+      if (button) toggle(button);
+    });
+    weight.addEventListener('input', update);
+    size.addEventListener('input', update);
+    // 打った字が別の範囲にあると、その範囲のファイルをここで読み込む。
+    const onLoading = () => { status.textContent = '読み込み中…'; };
+    const onDone = () => { status.textContent = current; };
+    document.fonts.addEventListener('loading', onLoading);
+    document.fonts.addEventListener('loadingdone', onDone);
+    document.addEventListener('astro:before-swap', () => {
+      document.fonts.removeEventListener('loading', onLoading);
+      document.fonts.removeEventListener('loadingdone', onDone);
+    }, { once: true });
+    update();
+  });
+</script>

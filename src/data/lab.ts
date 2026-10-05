@@ -9,6 +9,12 @@ export type LabEntry = {
 
 export const LAB: LabEntry[] = [
   {
+    slug: 'pancake',
+    title: 'Pancake',
+    description: '自作のフォント Pancake Mono と Pancake Sans を、文字を打って試せます。',
+    date: '2026-10-05',
+  },
+  {
     slug: 'dither',
     title: 'Dither',
     description: '惑星の縁と星空を、組織的ディザで数色に落として描いています。',

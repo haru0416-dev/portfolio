@@ -9,6 +9,7 @@ export const ICON_NAMES = [
   'external-link',
   'cpu',
   'bug',
+  'type',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
