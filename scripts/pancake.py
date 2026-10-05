@@ -27,7 +27,7 @@ from pathlib import Path
 from fontTools import subset
 from fontTools.ttLib import TTFont
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "node_modules" / ".cache" / "pancake"
 OUT = ROOT / "public" / "fonts" / "pancake"
