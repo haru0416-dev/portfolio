@@ -15,7 +15,7 @@ const palettes = Object.entries(PALETTES);
     <button type="button" id="dither-pause" class="chip glass press" aria-pressed="false">一時停止</button>
   </div>
   <p class="mt-8 text-sm text-ink-2 max-w-[44rem]">
-    画面を 2px 単位に落として描き、各ピクセルの色に Bayer 2×2 の閾値行列のずれを足してから、パレットの中で最も近い色を選んでいます。すべて CPU の Canvas 2D で計算しています。
+    画面を 2px 単位に粗くして描き、各ピクセルの色に Bayer 2×2 の閾値行列のずれを足してから、パレットの中でいちばん近い色を選んでいます。計算はぜんぶ CPU の Canvas 2D でやっています。
   </p>
 </Lab>
 
