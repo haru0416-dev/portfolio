@@ -4,6 +4,8 @@ import Base from '../layouts/Base.astro';
 import Wordmark from '../components/Wordmark.astro';
 import { getPublishedPosts, getWorks } from '../data/collections';
 import { LAB } from '../data/lab';
+import { CONTRIBUTIONS, CONTRIBUTIONS_SHOWN } from '../data/contributions';
+import ContributionItem from '../components/ContributionItem.astro';
 import { dotted, formatDate } from '../date';
 import { LANGUAGES } from '../data/stack';
 import { SITE } from '../site';
@@ -17,6 +19,8 @@ import ArrowUp from '@lucide/astro/icons/arrow-up';
 import Flask from '@lucide/astro/icons/flask-conical';
 import GitHubMark from '../assets/icons/github.svg';
 
+const contribs = [...CONTRIBUTIONS].sort((a, b) => b.date.localeCompare(a.date) || b.number - a.number);
+const contribShown = contribs.slice(0, CONTRIBUTIONS_SHOWN), contribMore = contribs.slice(CONTRIBUTIONS_SHOWN);
 const [works, posts] = await Promise.all([getWorks(), getPublishedPosts()]);
 // このサイト自体も Astro の使用例として数える。
 const uses = new Map<string, number>([['Astro', 1]]);
@@ -83,6 +87,22 @@ for (const entry of log) {
       ))}
     </section>
   </div>
+
+  <section aria-labelledby="contributions" class="mt-24">
+    <h2 id="contributions" class="about-h2">Contributions</h2>
+    <p class="phrase text-sm text-ink-2 -mt-2 mb-8">ほかの人のリポジトリに送って取り込まれた PR と、報告して直った Issue です。</p>
+    <ul role="list" class="contrib-list">
+      {contribShown.map((c) => <ContributionItem c={c} />)}
+    </ul>
+    {contribMore.length > 0 && (
+      <details class="contrib-more" data-contrib-more>
+        <summary class="pill glass press mt-6">すべて表示<span class="chip-count">{CONTRIBUTIONS.length}</span></summary>
+        <ul role="list" class="contrib-list mt-6">
+          {contribMore.map((c) => <ContributionItem c={c} />)}
+        </ul>
+      </details>
+    )}
+  </section>
 
   <section aria-labelledby="changelog" class="mt-24">
     <h2 id="changelog" class="about-h2">Changelog</h2>
@@ -179,6 +199,38 @@ for (const entry of log) {
   import { animate, stagger } from 'motion';
   import { hide, reduced, show } from '../scripts/motion';
 
+  // 貢献の残りを開け閉めする。開くときは高さをばねで伸ばし、閉じるときは縮み終わってから閉じる。
+  document.addEventListener('astro:page-load', () => {
+    const more = document.querySelector<HTMLDetailsElement>('[data-contrib-more]');
+    const summary = more?.querySelector('summary');
+    const list = more?.querySelector<HTMLElement>('.contrib-list');
+    const count = summary?.querySelector('.chip-count');
+    if (!more || !summary || !list || !count) return;
+    const label = (open: boolean) => { summary.firstChild!.textContent = open ? '閉じる' : 'すべて表示'; count.toggleAttribute('hidden', open); };
+    let run: ReturnType<typeof animate> | undefined;
+    summary.addEventListener('click', (e) => {
+      e.preventDefault();
+      run?.stop();
+      const opening = !more.open || more.dataset.closing === '';
+      delete more.dataset.closing;
+      // 閉じた details の中身も高さを返すので、閉じていたときは 0 から伸ばす。
+      const from = more.open ? list.offsetHeight : 0;
+      if (opening) {
+        more.open = true;
+        label(true);
+        if (reduced()) { list.style.height = ''; return; }
+        const anim = run = animate(list, { height: [from, list.scrollHeight] }, { type: 'spring', visualDuration: 0.4, bounce: 0 });
+        anim.then(() => { if (run === anim) list.style.height = ''; });
+      } else {
+        label(false);
+        if (reduced()) { more.open = false; return; }
+        more.dataset.closing = '';
+        const anim = run = animate(list, { height: [from, 0] }, { duration: 0.22, ease: 'easeIn' });
+        anim.then(() => { if (run !== anim) return; more.open = false; delete more.dataset.closing; list.style.height = ''; });
+      }
+    });
+  });
+
   document.addEventListener('astro:page-load', () => {
     const group = document.querySelector<HTMLElement>('[data-changelog-filter]');
     const list = document.getElementById('changelog-list');
@@ -234,11 +286,20 @@ for (const entry of log) {
   .cl-card { display: block; margin-top: .5rem; padding: 1rem 1.5rem; border-radius: 1rem; }
   .cl-card, .tile {
     color: var(--ink); background: var(--surface); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
-    transition: background-color 150ms ease, transform 160ms var(--ease-out);
+    transition: background-color 150ms ease;
   }
   .tile[aria-pressed="true"] { background: var(--accent-soft); }
   @media (hover: hover) and (pointer: fine) { :is(.cl-card, .tile):hover { background: var(--accent-soft); } }
 
+  /* 貢献は増えていくので、新しい分だけ出して残りは畳む。開け閉めの高さは下のスクリプト(motion)。 */
+  .contrib-list { display: grid; gap: 1rem; }
+  @media (min-width: 64rem) { .contrib-list { grid-template-columns: 1fr 1fr; } }
+  .contrib-more > summary { list-style: none; width: fit-content; cursor: var(--cursor-point, pointer); }
+  .contrib-more > summary::-webkit-details-marker { display: none; }
+  .contrib-more .contrib-list { overflow: hidden; }
+  /* 開いているときは「閉じる」を一覧の下に回す。 */
+  .contrib-more[open] { display: flex; flex-direction: column; }
+  .contrib-more[open] > summary { order: 1; }
   .about-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-3xl); line-height: 3rem; margin-bottom: 1.5rem; }
   .skill-group + .skill-group { margin-top: 2rem; }
 

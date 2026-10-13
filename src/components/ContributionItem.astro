@@ -1,0 +1,34 @@
+---
+import { REPOS, type Contribution } from '../data/contributions';
+import { dotted } from '../date';
+interface Props { c: Contribution }
+const { c } = Astro.props;
+const repo = REPOS[c.repo];
+// `…` で囲んだ所はコードとして出す。
+const parts = c.summary.split('`');
+const href = `https://github.com/${c.repo}/${c.kind === 'pr' ? 'pull' : 'issues'}/${c.number}`;
+---
+<li class="reveal">
+  <a href={href} class="contrib-card press">
+    <span class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+      <span class="tag tabular-nums">{c.kind === 'pr' ? 'PR' : 'Issue'} #{c.number}</span>
+      {c.status && <span class="tag badge">{c.status}</span>}
+      <span class="font-bold text-ink">{repo.name}</span>
+      <time datetime={c.date} class="tabular-nums ml-auto">{dotted(c.date)}</time>
+    </span>
+    <span class="phrase block mt-2 text-sm leading-6 text-ink-2">{parts.map((t, i) => (i % 2 ? <code>{t}</code> : t))}</span>
+    <span class="block mt-1 text-xs leading-4 text-muted">{repo.about}</span>
+  </a>
+</li>
+
+<style>
+  .contrib-card {
+    display: block; height: 100%; padding: 1rem 1.5rem; border-radius: 1rem;
+    color: var(--ink); background: var(--surface); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--line);
+    transition: background-color 150ms ease;
+  }
+  /* --force の -- が 1 本の線につながらないよう、リガチャを切る。 */
+  code { font-family: var(--font-mono); font-size: .9em; font-variant-ligatures: none; font-feature-settings: "calt" 0; }
+  @supports (corner-shape: squircle) { .contrib-card { corner-shape: squircle; } }
+  @media (hover: hover) and (pointer: fine) { .contrib-card:hover { background: var(--accent-soft); } }
+</style>
