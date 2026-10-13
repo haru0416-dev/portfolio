@@ -12,7 +12,7 @@ export const REPOS = {
   'ccusage/ccusage': { name: 'ccusage', about: 'Claude Code などの使用量を集計する CLI' },
   'oven-sh/bun': { name: 'Bun', about: 'JavaScript のランタイム' },
   'niaka3dayo/agent-skills-vrc-udon': { name: 'agent-skills-vrc-udon', about: 'UdonSharp のコードを書く AI 向けのスキル集' },
-  'ProjectTesca/MenSharp': { name: 'MenSharp', about: 'UdonSharp より C# に近い VRChat 向けのコンパイラ' },
+  'ProjectTesca/MenSharp': { name: 'MenSharp', about: 'UdonSharp より C# との互換性が高いコンパイラ' },
 } as const;
 
 export type Contribution = {
@@ -28,7 +28,7 @@ export type Contribution = {
 export const CONTRIBUTIONS: Contribution[] = [
   { repo: 'yksr-melt/Meltype', kind: 'pr', number: 512, date: '2026-10-12', summary: '日本語の途中の英単語で「つ」が崩れるのと、助詞の「と」で英単語が割れるのを直した' },
   { repo: 'ProjectTesca/MenSharp', kind: 'issue', number: 1, date: '2026-09-10', summary: '副作用のある呼び出しをまたぐと、先に計算した値がコード生成で失われるのを報告した。v0.1.1 で直った' },
-  { repo: 'lindera/lindera', kind: 'pr', number: 922, date: '2026-08-16', summary: 'Node.js 版に、トークンを素のオブジェクトで返す `tokenizeObjects` を足した。大きな文書を続けて解析してもメモリが増え続けない' },
+  { repo: 'lindera/lindera', kind: 'pr', number: 922, date: '2026-08-16', summary: 'Node.js 版に、トークンを素のオブジェクトで返す `tokenizeObjects` を足した。同期のループで大きな文書を続けて解析しても、ネイティブのメモリが増え続けない' },
   { repo: 'lindera/lindera', kind: 'pr', number: 923, date: '2026-08-16', summary: 'SudachiDict を、汎用の辞書ビルダーだけで Lindera の辞書にする手順を書いた' },
   { repo: 'oven-sh/bun', kind: 'issue', number: 33593, date: '2026-07-07', summary: '子プロセスの IPC の `channel` に `ref` などがなく、execa の `execaNode()` が動かないのを報告した', status: '修正中' },
   { repo: 'ccusage/ccusage', kind: 'issue', number: 1105, date: '2026-05-20', summary: 'Codex のログを読む順番が決まらず、テストがたまに落ちるのを報告した。読む前に並べ替える形で直った' },
